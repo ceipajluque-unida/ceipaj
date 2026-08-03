@@ -1,41 +1,18 @@
 // estructura de las pantallas internas
 import { useEffect, useState } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { Button } from 'antd';
 import { cerrarSesion, llamarApi, usuarioActual } from '../servicios/api.js';
 import MenuUsuario from './MenuUsuario.jsx';
+import MenuLateral, { MODULO_POR_RUTA } from './MenuLateral.jsx';
+import SinAcceso from './SinAcceso.jsx';
 import Icono from './iconos.jsx';
 import { useInstitucion } from '../contextos/institucion.jsx';
 
-// menú agrupado por temas...cada ítem se ve solo si el rol tiene ese módulo
-const GRUPOS = [
-  { titulo: null, items: [{ clave: 'inicio', ruta: '/', texto: 'Inicio' }] },
-  { titulo: 'Captación', items: [
-    { clave: 'leads', ruta: '/leads', texto: 'Interesados' },
-    { clave: 'seguimiento', ruta: '/seguimiento', texto: 'Seguimiento' },
-    { clave: 'conversion', ruta: '/conversion', texto: 'Conversión' },
-  ] },
-  { titulo: 'Aliados', items: [
-    { clave: 'aliados', ruta: '/aliados', texto: 'Aliados' },
-    { clave: 'comisiones', ruta: '/comisiones', texto: 'Comisiones' },
-    { clave: 'portal', ruta: '/portal', texto: 'Mi portal' },
-  ] },
-  // solo lo ve el proveedor del servicio: el menú se arma con los módulos del rol
-  { titulo: 'Plataforma', items: [
-    { clave: 'instituciones', ruta: '/instituciones', texto: 'Instituciones' },
-    { clave: 'planes', ruta: '/planes', texto: 'Planes' },
-  ] },
-  { titulo: 'Gestión', items: [
-    { clave: 'reportes', ruta: '/reportes', texto: 'Reportes' },
-    { clave: 'pagos', ruta: '/pagos', texto: 'Pagos' },
-    { clave: 'suscripcion', ruta: '/suscripcion', texto: 'Suscripción' },
-    { clave: 'usuarios', ruta: '/usuarios', texto: 'Usuarios' },
-    { clave: 'auditoria', ruta: '/auditoria', texto: 'Auditoría' },
-    { clave: 'configuracion', ruta: '/configuracion', texto: 'Configuración' },
-  ] },
-];
-
 const CLAVE_MENU = 'ceipaj_menu_oculto';
+
+// el proveedor no pertenece a ninguna institución: su casa es la lista de instituciones
+const INICIO_POR_ROL = { superadministrador: '/instituciones', aliado: '/portal' };
 
 // avisa al backend para que invalide el token y recién ahí limpia y sale
 export async function salir() {
@@ -47,6 +24,7 @@ export async function salir() {
 export default function Diseno() {
   const institucion = useInstitucion();
   const usuario = usuarioActual();
+  const ubicacion = useLocation();
   const [modulos, setModulos] = useState(null);
   const [bloqueados, setBloqueados] = useState([]);
   const [plan, setPlan] = useState(null);
@@ -57,6 +35,9 @@ export default function Diseno() {
     window.innerWidth <= 860 ? true : localStorage.getItem(CLAVE_MENU) === '1'
   );
 
+  const esProveedor = usuario?.rol === 'superadministrador';
+  const inicio = INICIO_POR_ROL[usuario?.rol] ?? '/';
+
   useEffect(() => {
     // si la sesión venció, llamarApi ya redirige al ingreso
     llamarApi('/api/autenticacion/perfil')
@@ -66,8 +47,8 @@ export default function Diseno() {
         setPlan(respuesta.plan ?? null);
       })
       .catch((excepcion) => setError(excepcion.message));
-    // pendientes por módulo; si falla, el menú va sin badges
-    llamarApi('/api/resumen/badges').then(setBadges).catch(() => setBadges({}));
+    // el proveedor no tiene pendientes de captación: los badges son de la institución
+    if (!esProveedor) llamarApi('/api/resumen/badges').then(setBadges).catch(() => setBadges({}));
   }, []);
 
   function alternarMenu() {
@@ -78,8 +59,10 @@ export default function Diseno() {
     });
   }
 
-  // el aliado ve su portal, no el inicio gerencial
-  const puedeVer = (clave) => clave === 'inicio' ? usuario?.rol !== 'aliado' : modulos?.includes(clave);
+  // el aliado ve su portal y el proveedor sus instituciones, no el inicio gerencial
+  const puedeVer = (clave) => clave === 'inicio'
+    ? !INICIO_POR_ROL[usuario?.rol]
+    : modulos?.includes(clave);
 
   if (error) {
     return (
@@ -91,6 +74,15 @@ export default function Diseno() {
   }
   if (!modulos) return <p className="mensaje-centrado">Cargando…</p>;
 
+  // se corta acá y no en cada pantalla: escribir la dirección a mano de un módulo ajeno
+  // dibujaba la pantalla igual y encima el error del backend
+  const raiz = `/${ubicacion.pathname.split('/')[1] ?? ''}`;
+  const moduloPedido = MODULO_POR_RUTA[raiz];
+  const motivo = !moduloPedido ? null
+    : !puedeVer(moduloPedido) ? 'rol'
+    : bloqueados.includes(moduloPedido) ? 'plan'
+    : null;
+
   return (
     <div className={`app ${oculto ? 'oculto' : ''}`}>
       {/* el fondo oscuro cierra el menú al tocarlo; sigue nativo porque antd le impone alto propio y dejaría de tapar la pantalla */}
@@ -99,42 +91,9 @@ export default function Diseno() {
       <aside className="lateral">
         <div className="marca">
           <span className="marca-logo"><Icono nombre="marca" tam={24} /></span>
-          <span>{institucion.nombre}</span>
+          <span>{esProveedor ? 'Panel del proveedor' : institucion.nombre}</span>
         </div>
-        <nav aria-label="Menú principal">
-          {GRUPOS.map((grupo, indice) => {
-            const items = grupo.items.filter((item) => puedeVer(item.clave));
-            if (items.length === 0) return null;
-            return (
-              <div className="grupo-nav" key={grupo.titulo ?? indice}>
-                {grupo.titulo && <span className="grupo-titulo">{grupo.titulo}</span>}
-                <ul className="lista-nav">
-                  {items.map((item) => {
-                    // el módulo que el rol tiene pero el plan no incluye se muestra con
-                    // candado en vez de esconderse: así se ve qué habilita cambiar de plan
-                    const trabado = bloqueados.includes(item.clave);
-                    return (
-                      <li key={item.clave}>
-                        <NavLink to={trabado ? '/suscripcion' : item.ruta} end={item.ruta === '/'}
-                          className={({ isActive }) => `${isActive && !trabado ? 'activo' : ''} ${trabado ? 'trabado' : ''}`}
-                          title={trabado ? `El plan ${plan?.texto ?? ''} no incluye este módulo` : undefined}>
-                          <span className="icono"><Icono nombre={item.clave} /></span>{item.texto}
-                          {trabado && (
-                            <span className="candado" aria-hidden="true"><Icono nombre="candado" tam={14} /></span>
-                          )}
-                          {trabado && <span className="oculto-visual"> no incluido en tu plan</span>}
-                          {!trabado && badges[item.clave] > 0 && (
-                            <span className="badge">{badges[item.clave]}<span className="oculto-visual"> pendientes</span></span>
-                          )}
-                        </NavLink>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            );
-          })}
-        </nav>
+        <MenuLateral puedeVer={puedeVer} bloqueados={bloqueados} plan={plan} badges={badges} />
       </aside>
 
       <div className="principal">
@@ -146,9 +105,10 @@ export default function Diseno() {
             onClick={alternarMenu}
             aria-label="Abrir u ocultar menú"
           />
-          <span className="titulo-app">{institucion.nombre}</span>
+          <span className="titulo-app">{esProveedor ? 'Panel del proveedor' : institucion.nombre}</span>
           <div className="barra-derecha">
-            {plan && usuario?.rol !== 'aliado' && (
+            {/* el proveedor no contrata la plataforma, así que no le corresponde ningún plan */}
+            {plan && !esProveedor && usuario?.rol !== 'aliado' && (
               <NavLink to="/suscripcion" className={`chip-plan ${plan.vigente ? '' : 'sin-plan'}`}
                 title={plan.vigente ? 'Plan contratado' : 'Sin suscripción vigente: el sistema funciona con el plan mínimo'}>
                 Plan {plan.texto}
@@ -161,7 +121,9 @@ export default function Diseno() {
           </div>
         </header>
         <main className="contenido">
-          <Outlet context={{ usuario, modulos }} />
+          {motivo
+            ? <SinAcceso inicio={inicio} motivo={motivo} plan={plan?.texto} />
+            : <Outlet context={{ usuario, modulos, bloqueados, inicio }} />}
         </main>
       </div>
     </div>

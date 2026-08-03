@@ -14,14 +14,19 @@ function fechaDeHoy() {
 export default function PantallaPrincipal() {
   const usuario = usuarioActual();
   const navegar = useNavigate();
-  const { modulos } = useOutletContext() ?? {};
+  const { modulos, bloqueados = [] } = useOutletContext() ?? {};
   const esAliado = usuario?.rol === 'aliado';
+  // el proveedor no tiene indicadores de captación propios: pedirlos le daba un 403 en la
+  // cara apenas entraba, que era la primera pantalla que veía
+  const esProveedor = usuario?.rol === 'superadministrador';
   const [datos, setDatos] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (esAliado) return;
-    llamarApi('/api/reportes/indicadores')
+    if (esAliado || esProveedor) return;
+    // por resumen y no por reportes: reportes está detrás del candado del plan y el
+    // inicio tiene que abrir siempre, incluso con el plan más chico
+    llamarApi('/api/resumen/indicadores')
       .then(setDatos)
       .catch((excepcion) => {
         // si el token venció, llamarApi ya limpió la sesión y hay que volver al ingreso
@@ -31,6 +36,7 @@ export default function PantallaPrincipal() {
   }, []);
 
   if (esAliado) return <Navigate to="/portal" replace />;
+  if (esProveedor) return <Navigate to="/instituciones" replace />;
   if (error) return <p className="error">{error}</p>;
   if (!datos) return <p className="mensaje-centrado">Cargando…</p>;
 
@@ -40,9 +46,11 @@ export default function PantallaPrincipal() {
   const hayPendientes = sinContacto > 0 || enRiesgo > 0;
   const maximoCanal = Math.max(...datos.leadsPorCanal.map((fila) => fila.total), 1);
   const maximoEstado = Math.max(...datos.leadsPorEstado.map((fila) => fila.total), 1);
-  const veLeads = modulos?.includes('leads');
-  const veSeguimiento = modulos?.includes('seguimiento');
-  const veReportes = modulos?.includes('reportes');
+  // el candado del plan también cuenta: enlazar a un módulo trabado solo lleva a un aviso
+  const disponible = (clave) => modulos?.includes(clave) && !bloqueados.includes(clave);
+  const veLeads = disponible('leads');
+  const veSeguimiento = disponible('seguimiento');
+  const veReportes = disponible('reportes');
 
   return (
     <>

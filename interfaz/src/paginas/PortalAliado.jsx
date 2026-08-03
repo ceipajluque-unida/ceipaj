@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Button, Checkbox, Input, Table } from 'antd';
 import { llamarApi, usuarioActual } from '../servicios/api.js';
 import { avisarError, toast } from '../servicios/avisos.js';
-import { contar, fecha } from '../servicios/formato.js';
+import { contar, fecha, legible } from '../servicios/formato.js';
 import Modal from '../componentes/Modal.jsx';
 import AvisoPrivacidad from '../componentes/AvisoPrivacidad.jsx';
 
@@ -69,7 +69,7 @@ export default function PortalAliado() {
       title: 'Cómo va',
       dataIndex: 'estado',
       key: 'estado',
-      render: (valor) => <span className={`estado estado-${valor}`}>{TEXTO_ESTADO[valor] ?? valor}</span>,
+      render: (valor) => <span className={`estado estado-${valor}`}>{TEXTO_ESTADO[valor] ?? legible(valor)}</span>,
     },
     {
       title: 'Lo registraste el',

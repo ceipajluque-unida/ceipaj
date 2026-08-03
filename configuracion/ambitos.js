@@ -26,7 +26,8 @@ export const CLAVES_PLATAFORMA = [
   // suscripción: cuánto dura y con cuánto aviso lo define el proveedor
   'MESES_SUSCRIPCION', 'DIAS_AVISO_VENCIMIENTO',
   // textos legales: los publica el proveedor del servicio
-  'TEXTO_PRESENTACION', 'TEXTO_AVISO_PRIVACIDAD', 'TEXTO_CONSENTIMIENTO', 'IMAGEN_FONDO_INGRESO', 'COLOR_ACENTO',
+  'TEXTO_PRESENTACION', 'MOSTRAR_TEXTOS_INGRESO', 'TEXTO_AVISO_PRIVACIDAD', 'TEXTO_CONSENTIMIENTO',
+  'IMAGEN_FONDO_INGRESO', 'COLOR_ACENTO',
   'TEXTO_POLITICA', 'TEXTO_TERMINOS',
   // dirección web del sistema
   'APP_URL',

@@ -12,8 +12,12 @@ export const CARPETA = path.join(RAIZ, 'planes');
 // solo estas subcarpetas: el nombre viene del código, nunca de lo que mande el navegador
 const SUBCARPETAS = { planes: CARPETA, fondo: path.join(RAIZ, 'fondo') };
 export const CARPETA_FONDO = SUBCARPETAS.fondo;
+// la miniatura del plan es chica y 400 KB le sobran; el fondo del ingreso ocupa la
+// pantalla entera y con ese tope no entraba ninguna imagen de 1920 × 1080, que es
+// justo la medida que la propia ayuda recomienda
 export const MAXIMO_KB = 400;
-const MAXIMO_BYTES = MAXIMO_KB * 1024;
+export const MAXIMO_KB_FONDO = 2048;
+const MAXIMO_POR_CARPETA = { planes: MAXIMO_KB, fondo: MAXIMO_KB_FONDO };
 // solo formatos de imagen conocidos, y se confía en la firma del archivo, no en el nombre
 const FIRMAS = [
   { tipo: 'image/png', extension: 'png', bytes: [0x89, 0x50, 0x4e, 0x47] },
@@ -35,14 +39,15 @@ export async function guardar(base64, subcarpeta = 'planes') {
   } catch {
     throw new ErrorVisible('La imagen no se pudo leer.');
   }
-  if (datos.length > MAXIMO_BYTES) {
-    throw new ErrorVisible(`La imagen no puede pasar de ${Math.round(MAXIMO_BYTES / 1024)} KB.`);
+  const destino = SUBCARPETAS[subcarpeta];
+  if (!destino) throw new ErrorVisible('Destino de imagen no válido.');
+  const topeKb = MAXIMO_POR_CARPETA[subcarpeta] ?? MAXIMO_KB;
+  if (datos.length > topeKb * 1024) {
+    throw new ErrorVisible(`La imagen pesa ${Math.round(datos.length / 1024)} KB y el máximo es ${topeKb} KB. Probá guardarla como JPG.`);
   }
   const firma = reconocer(datos);
   if (!firma) throw new ErrorVisible('El archivo tiene que ser una imagen PNG, JPG o WEBP.');
 
-  const destino = SUBCARPETAS[subcarpeta];
-  if (!destino) throw new ErrorVisible('Destino de imagen no válido.');
   await mkdir(destino, { recursive: true });
   // el nombre lo genera el sistema: así no se puede escribir fuera de la carpeta
   const nombre = `${randomUUID()}.${firma.extension}`;

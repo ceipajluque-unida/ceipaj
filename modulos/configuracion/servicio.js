@@ -6,9 +6,10 @@ import { registrarAuditoria } from '../../servidor/auditoria.js';
 import { enviarCorreo } from '../../servidor/correo.js';
 import { enviarSms } from '../../servidor/sms.js';
 import { ErrorVisible } from '../../servidor/errores.js';
-import { INSTITUCION, ROLES, COLORES_SISTEMA } from '../../configuracion/ajustes.js';
+import { INSTITUCION, ROLES, COLORES_SISTEMA, LEGALES } from '../../configuracion/ajustes.js';
 import { AMBITO, ambitoDe } from '../../configuracion/ambitos.js';
 import { bd } from '../../servidor/bd/conexion.js';
+import { institucionActual } from '../../servidor/contexto.js';
 import { POLITICA_PRIVACIDAD, TERMINOS_Y_CONDICIONES, AVISO_PRIVACIDAD, PRESENTACION_LOGIN } from '../../configuracion/legales.js';
 import { limpiarCache } from '../pagos/pasarelas/freno.js';
 
@@ -42,6 +43,20 @@ export async function obtenerConfiguracion(rol) {
   })).filter((grupo) => grupo.ajustes.length > 0);
 }
 
+// el nombre y la ciudad se editan desde acá pero también figuran en la tabla de
+// instituciones, que es lo que ve el proveedor en su listado. sin esta copia las dos
+// quedaban distintas y no había forma de saber cuál valía.
+async function reflejarEnLaInstitucion(guardados) {
+  const institucionId = institucionActual();
+  if (institucionId === null) return;
+  const campos = [];
+  const args = [];
+  if ('INSTITUCION_NOMBRE' in guardados) { campos.push('nombre = ?'); args.push(guardados.INSTITUCION_NOMBRE); }
+  if ('INSTITUCION_CIUDAD' in guardados) { campos.push('ciudad = ?'); args.push(guardados.INSTITUCION_CIUDAD || null); }
+  if (campos.length === 0) return;
+  await bd.query(`UPDATE instituciones SET ${campos.join(', ')} WHERE id = ?`, [...args, institucionId]);
+}
+
 export async function guardarConfiguracion(cambios, solicitante, ip) {
   // el filtro va también acá y no solo al dibujar la pantalla: ocultar un campo en la
   // interfaz no impide mandar el PUT a mano con la clave que no corresponde
@@ -58,6 +73,7 @@ export async function guardarConfiguracion(cambios, solicitante, ip) {
   }
   if (Object.keys(validos).length === 0) throw new ErrorVisible('No hay cambios para guardar.');
   await ajustes.guardar(validos);
+  await reflejarEnLaInstitucion(validos);
   // al tocar la pasarela lo que quedó cacheado de ella ya no sirve
   if (Object.keys(validos).some((clave) => clave.startsWith('PAGOPAR_'))) {
     limpiarCache();
@@ -90,6 +106,8 @@ export function textosLegales() {
     terminos: ajustes.leer('TEXTO_TERMINOS', TERMINOS_Y_CONDICIONES),
     aviso: ajustes.leer('TEXTO_AVISO_PRIVACIDAD', AVISO_PRIVACIDAD),
     presentacion: ajustes.leer('TEXTO_PRESENTACION', PRESENTACION_LOGIN),
+    // con la imagen que ya trae el texto escrito, el nombre y la presentación se apagan
+    mostrarTextos: ajustes.leerBooleano('MOSTRAR_TEXTOS_INGRESO', LEGALES.MOSTRAR_TEXTOS_INGRESO),
     color: ajustes.leer('COLOR_ACENTO', COLORES_SISTEMA[0].valor),
     // ruta lista para usar, o vacío si no se cargó ninguna imagen
     fondo: ajustes.leer('IMAGEN_FONDO_INGRESO', '') ? `/api/fondo/${ajustes.leer('IMAGEN_FONDO_INGRESO', '')}` : '',

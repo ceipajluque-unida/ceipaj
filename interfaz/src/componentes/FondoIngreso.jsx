@@ -1,14 +1,17 @@
 // subida de la imagen de fondo del ingreso. es un ajuste de la plataforma, así que
 // aparece solo cuando el catálogo trae la clave, o sea para quien tenga ese ámbito.
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Button } from 'antd';
 import { llamarApi } from '../servicios/api.js';
 import { avisarError, toast } from '../servicios/avisos.js';
 
-export const AYUDA_FONDO = 'PNG, JPG o WEBP · hasta 400 KB · se recomienda 1920 × 1080 px';
+export const AYUDA_FONDO = 'JPG, PNG o WEBP · hasta 2 MB · se recomienda 1920 × 1080 px';
 
 export default function FondoIngreso({ actual, alCambiar }) {
   const [subiendo, setSubiendo] = useState(false);
+  // el campo se abre desde el botón: metido dentro de un <label>, el <button> de antd se
+  // come el clic y el selector de archivos no llegaba a abrirse nunca
+  const entrada = useRef(null);
 
   async function elegir(evento) {
     const archivo = evento.target.files?.[0];
@@ -37,11 +40,17 @@ export default function FondoIngreso({ actual, alCambiar }) {
       {actual
         ? <img src={`/api/fondo/${actual}`} alt="Fondo actual de la pantalla de ingreso" />
         : <span className="sin-imagen">Sin imagen: el panel del ingreso usa el color del sistema</span>}
-      <label className="subir-fondo">
+      <div className="subir-fondo">
         {/* nativo a propósito: el Upload de antd cambia el flujo y acá alcanza con esto */}
-        <input type="file" accept="image/png,image/jpeg,image/webp" onChange={elegir} disabled={subiendo} />
-        <Button component="span" disabled={subiendo}>{subiendo ? 'Subiendo…' : 'Elegir imagen'}</Button>
-      </label>
+        <input ref={entrada} type="file" accept="image/png,image/jpeg,image/webp"
+          onChange={elegir} disabled={subiendo} aria-label="Elegir la imagen de fondo del ingreso" />
+        <Button onClick={() => entrada.current?.click()} disabled={subiendo}>
+          {subiendo ? 'Subiendo…' : actual ? 'Cambiar imagen' : 'Elegir imagen'}
+        </Button>
+        {actual && !subiendo && (
+          <Button danger onClick={() => alCambiar?.('')}>Quitar</Button>
+        )}
+      </div>
       <span className="nota">{AYUDA_FONDO}</span>
     </div>
   );

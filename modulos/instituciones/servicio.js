@@ -4,8 +4,19 @@ import { bd } from '../../servidor/bd/conexion.js';
 import { registrarAuditoria } from '../../servidor/auditoria.js';
 import { ErrorVisible } from '../../servidor/errores.js';
 import { validarCorreo, validarTelefono, validarLargo, LARGOS } from '../../comun/validar.js';
+import * as ajustes from '../../servidor/ajustesSistema.js';
 
 const CAMPOS = 'id, nombre, ciudad, correo_contacto, telefono, direccion, activo, creado_en';
+
+// el nombre vive en esta tabla, pero el resto del sistema (la barra, los correos, el
+// recibo) lo lee de los ajustes de la institución. si solo se guardara acá, renombrar un
+// colegio no cambiaba nada en ninguna pantalla: se copia para que no haya dos verdades.
+async function copiarAAjustes(institucionId, datos) {
+  await ajustes.guardar(
+    { INSTITUCION_NOMBRE: datos.nombre, INSTITUCION_CIUDAD: datos.ciudad ?? '' },
+    institucionId
+  );
+}
 
 function datosValidados(cuerpo) {
   const nombre = String(cuerpo?.nombre ?? '').trim();
@@ -47,6 +58,7 @@ export async function crear(cuerpo, solicitante, ip) {
     'INSERT INTO instituciones (nombre, ciudad, correo_contacto, telefono, direccion) VALUES (?, ?, ?, ?, ?)',
     [datos.nombre, datos.ciudad, datos.correo, datos.telefono, datos.direccion]
   );
+  await copiarAAjustes(resultado.insertId, datos);
   await registrarAuditoria({ usuarioId: solicitante.id, accion: 'institucion_creada', detalle: datos.nombre, ip });
   return obtener(resultado.insertId);
 }
@@ -58,6 +70,7 @@ export async function editar(id, cuerpo, solicitante, ip) {
     'UPDATE instituciones SET nombre = ?, ciudad = ?, correo_contacto = ?, telefono = ?, direccion = ? WHERE id = ?',
     [datos.nombre, datos.ciudad, datos.correo, datos.telefono, datos.direccion, id]
   );
+  await copiarAAjustes(Number(id), datos);
   await registrarAuditoria({ usuarioId: solicitante.id, accion: 'institucion_editada', detalle: `${antes.nombre} → ${datos.nombre}`, ip });
   return obtener(id);
 }

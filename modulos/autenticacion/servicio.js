@@ -247,7 +247,10 @@ export async function cambiarClave({ usuarioId, claveActual, claveNueva }, ip) {
   const [filas] = await bd.query('SELECT * FROM usuarios WHERE id = ? AND activo = 1', [usuarioId]);
   const usuario = filas[0];
   if (!usuario || !(await bcrypt.compare(String(claveActual ?? ''), usuario.clave_hash))) {
-    throw new ErrorVisible('La contraseña actual no es correcta.', 401);
+    // 400 y no 401: la sesión está bien, lo que vino mal es el campo del formulario.
+    // con 401 la interfaz lo tomaba por sesión vencida y echaba al ingreso a quien se
+    // equivocaba de tecla, justo en la pantalla obligatoria de la clave temporal.
+    throw new ErrorVisible('La contraseña actual no es correcta.', 400);
   }
   const claveHash = await bcrypt.hash(claveNueva, SEGURIDAD.RONDAS_BCRYPT);
   await bd.query('UPDATE usuarios SET clave_hash = ?, debe_cambiar_clave = 0, clave_actualizada_en = NOW() WHERE id = ?', [claveHash, usuario.id]);

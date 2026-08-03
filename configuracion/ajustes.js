@@ -201,7 +201,7 @@ export const PLANES_SUSCRIPCION = [
     meses: 1,
     maxUsuarios: 3,
     modulos: ['leads', 'seguimiento'],
-    incluye: ['Gestión de interesados', 'Seguimiento y alertas', 'Hasta 3 usuarios internos'],
+    incluye: ['Gestión de interesados', 'Seguimiento y alertas'],
   },
   {
     valor: 'estandar',
@@ -210,7 +210,7 @@ export const PLANES_SUSCRIPCION = [
     meses: 1,
     maxUsuarios: 8,
     modulos: ['leads', 'seguimiento', 'aliados', 'portal', 'comisiones', 'reportes'],
-    incluye: ['Todo lo del plan Básico', 'Aliados institucionales y comisiones', 'Reportes con exportación', 'Hasta 8 usuarios internos'],
+    incluye: ['Todo lo del plan Básico', 'Aliados institucionales y comisiones', 'Reportes con exportación'],
   },
   {
     valor: 'avanzado',
@@ -219,7 +219,7 @@ export const PLANES_SUSCRIPCION = [
     meses: 1,
     maxUsuarios: null,
     modulos: [],
-    incluye: ['Todo lo del plan Estándar', 'Conversión con el sistema académico', 'Tablero gerencial completo', 'Usuarios internos sin límite'],
+    incluye: ['Todo lo del plan Estándar', 'Conversión con el sistema académico', 'Tablero gerencial completo'],
   },
 ];
 
@@ -254,6 +254,9 @@ export const LIMITES = {
 };
 
 export const LEGALES = {
+  // con una imagen de fondo que ya trae el nombre y el texto escritos encima, mostrarlos
+  // otra vez los superpone. apagando esto el panel del ingreso queda solo con la foto.
+  MOSTRAR_TEXTOS_INGRESO: true,
   AVISO_CONSENTIMIENTO:
     'El interesado autoriza al CEIPAJ a registrar y usar sus datos de contacto ' +
     'únicamente para informarle sobre su oferta educativa y dar seguimiento a su ' +

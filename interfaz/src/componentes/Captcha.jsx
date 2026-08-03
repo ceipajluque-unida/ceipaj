@@ -42,5 +42,5 @@ export default function Captcha({ claveSitio, alResolver }) {
   }, [claveSitio]);
 
   if (!claveSitio) return null;
-  return <div className="captcha my-2" ref={caja} />;
+  return <div className="captcha" ref={caja} />;
 }

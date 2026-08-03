@@ -29,13 +29,18 @@ export default function Ingreso() {
   const [captchaRespuesta, setCaptchaRespuesta] = useState('');
   const [presentacion, setPresentacion] = useState('');
   const [fondo, setFondo] = useState('');
+  const [mostrarTextos, setMostrarTextos] = useState(true);
 
   useEffect(() => {
     llamarApi('/api/autenticacion/estado')
       .then((estado) => setCaptcha(estado.captcha ?? { activo: false, claveSitio: '' }))
       .catch(() => {});
     llamarApi('/api/configuracion/legales')
-      .then((t) => { setPresentacion(t.presentacion ?? ''); setFondo(t.fondo ?? ''); })
+      .then((t) => {
+        setPresentacion(t.presentacion ?? '');
+        setFondo(t.fondo ?? '');
+        setMostrarTextos(t.mostrarTextos !== false);
+      })
       .catch(() => {});
   }, []);
 
@@ -116,15 +121,24 @@ export default function Ingreso() {
     }
   }
 
+  // sin textos y sin imagen el panel sería un rectángulo de color vacío, así que en ese
+  // caso se cae a la pantalla centrada de siempre
+  const conPanel = mostrarTextos || Boolean(fondo);
+  // el velo solo hace falta cuando hay texto encima; con la imagen sola la taparía al pedo
+  const fondoPanel = fondo
+    ? { backgroundImage: `${mostrarTextos ? `${VELO}, ` : ''}url(${fondo})` }
+    : undefined;
+
   // la clase extra acota a esta pantalla las reglas de dos columnas: sin ella el media
   // query también le borraba el nombre a recuperar, restablecer y configuración inicial
   return (
-    <main className="pantalla-auth con-marca">
-      {/* el velo va sobre la foto para que el texto blanco conserve su contraste medible */}
-      <aside className="marca-auth" style={fondo ? { backgroundImage: `${VELO}, url(${fondo})` } : undefined}>
-        <h1>{institucion.nombre}</h1>
-        {presentacion && <div className="presentacion">{comoHtml(presentacion)}</div>}
-      </aside>
+    <main className={`pantalla-auth ${conPanel ? 'con-marca' : ''}`}>
+      {conPanel && (
+        <aside className={`marca-auth ${mostrarTextos ? '' : 'solo-imagen'}`} style={fondoPanel}>
+          {mostrarTextos && <h1>{institucion.nombre}</h1>}
+          {mostrarTextos && presentacion && <div className="presentacion">{comoHtml(presentacion)}</div>}
+        </aside>
+      )}
 
       <div className="caja-auth">
       <section className="tarjeta-auth">

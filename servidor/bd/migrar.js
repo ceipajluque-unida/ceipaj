@@ -89,17 +89,31 @@ async function sembrarInstitucion(conexion) {
   console.log(`institución "${ajuste?.valor || INSTITUCION.NOMBRE}" creada con id ${id}, datos existentes traspasados`);
 }
 
-// los tres planes de siempre entran una sola vez; después se editan desde el sistema
+// los tres planes de siempre entran una sola vez; después se editan desde el sistema.
+// aparte se completan los límites de los que ya existían: las dos columnas se agregaron
+// después, así que en una base vieja quedaron en NULL y el candado por plan no trababa
+// nada. se tocan solo si las dos siguen sin valor, para no pisar lo que se haya editado
+// (el avanzado guarda cadena vacía, que significa "todos los módulos", y ya no es NULL).
 async function sembrarPlanes(conexion) {
   const [[{ total }]] = await conexion.query('SELECT COUNT(*) AS total FROM planes');
-  if (Number(total) > 0) return;
-  for (const [orden, plan] of PLANES_SUSCRIPCION.entries()) {
-    await conexion.query(
-      'INSERT INTO planes (clave, titulo, precio, meses, incluye, max_usuarios, modulos_incluidos, orden) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [plan.valor, plan.texto, plan.precio, plan.meses, plan.incluye.join('\n'), plan.maxUsuarios, plan.modulos.join('\n'), orden]
-    );
+  if (Number(total) === 0) {
+    for (const [orden, plan] of PLANES_SUSCRIPCION.entries()) {
+      await conexion.query(
+        'INSERT INTO planes (clave, titulo, precio, meses, incluye, max_usuarios, modulos_incluidos, orden) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        [plan.valor, plan.texto, plan.precio, plan.meses, plan.incluye.join('\n'), plan.maxUsuarios, plan.modulos.join('\n'), orden]
+      );
+    }
+    console.log(`planes cargados: ${PLANES_SUSCRIPCION.length}`);
+    return;
   }
-  console.log(`planes cargados: ${PLANES_SUSCRIPCION.length}`);
+  for (const plan of PLANES_SUSCRIPCION) {
+    const [resultado] = await conexion.query(
+      `UPDATE planes SET max_usuarios = ?, modulos_incluidos = ?
+        WHERE clave = ? AND max_usuarios IS NULL AND modulos_incluidos IS NULL`,
+      [plan.maxUsuarios, plan.modulos.join('\n'), plan.valor]
+    );
+    if (resultado.affectedRows > 0) console.log(`límites completados en el plan ${plan.valor}`);
+  }
 }
 
 async function migrar() {

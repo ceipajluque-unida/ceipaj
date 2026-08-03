@@ -68,14 +68,21 @@ export async function guardar(cambios, institucionId = null) {
 
 // catálogo de todo lo configurable; la pantalla de configuración se dibuja de acá
 export const CATALOGO = [
+  // los datos del colegio que contrata: los edita su propio administrador
   { categoria: 'Institucional', ajustes: [
     { clave: 'INSTITUCION_NOMBRE', etiqueta: 'Nombre de la institución', tipo: 'texto', porDefecto: INSTITUCION.NOMBRE },
     { clave: 'INSTITUCION_CIUDAD', etiqueta: 'Ciudad', tipo: 'texto', porDefecto: INSTITUCION.CIUDAD },
+    { clave: 'ACADEMICO_CLAVE_ENTRADA', etiqueta: 'Clave que usa el sistema académico para enviarnos los matriculados', tipo: 'secreto', porDefecto: '', generable: true },
+  ] },
+  // los del proveedor del servicio: son los que salen impresos en el recibo del cobro,
+  // así que estaban mal puestos bajo "Institucional", donde parecían del colegio
+  { categoria: 'Datos del proveedor', ajustes: [
+    { clave: 'RECIBO_EMISOR_NOMBRE', etiqueta: 'Razón social que sale impresa en el recibo', tipo: 'texto', porDefecto: RECIBO.EMISOR_NOMBRE },
     { clave: 'RECIBO_EMISOR_DIRECCION', etiqueta: 'Dirección', tipo: 'texto', porDefecto: RECIBO.EMISOR_DIRECCION },
     { clave: 'RECIBO_EMISOR_TELEFONO', etiqueta: 'Teléfono', tipo: 'texto', porDefecto: RECIBO.EMISOR_TELEFONO },
     { clave: 'RECIBO_EMISOR_CORREO', etiqueta: 'Correo de contacto', tipo: 'texto', porDefecto: RECIBO.EMISOR_CORREO },
+    { clave: 'RECIBO_SERIE', etiqueta: 'Letras con las que empieza la numeración del recibo', tipo: 'texto', porDefecto: RECIBO.SERIE },
     { clave: 'APP_URL', etiqueta: 'Dirección web del sistema', tipo: 'texto', porDefecto: APLICACION.URL },
-    { clave: 'ACADEMICO_CLAVE_ENTRADA', etiqueta: 'Clave que usa el sistema académico para enviarnos los matriculados', tipo: 'secreto', porDefecto: '', generable: true },
   ] },
   { categoria: 'Seguridad', ajustes: [
     { clave: 'CLAVE_LARGO_MIN', etiqueta: 'Cantidad mínima de caracteres de la contraseña', tipo: 'numero', min: 6, max: 64, porDefecto: POLITICA_CLAVE.LARGO_MIN },
@@ -123,15 +130,17 @@ export const CATALOGO = [
     // Vive en configuracion/ajustes.js y lo cambia quien tiene acceso al servidor.
     { clave: 'PAGOPAR_TOKEN_PUBLICO', etiqueta: 'Token público de la pasarela de pagos', tipo: 'texto', porDefecto: '' },
     { clave: 'PAGOPAR_TOKEN_PRIVADO', etiqueta: 'Token privado de la pasarela de pagos', tipo: 'secreto', porDefecto: '' },
-    { clave: 'RECIBO_EMISOR_NOMBRE', etiqueta: 'Razón social que sale impresa en el recibo', tipo: 'texto', porDefecto: RECIBO.EMISOR_NOMBRE },
-    { clave: 'RECIBO_SERIE', etiqueta: 'Letras con las que empieza la numeración del recibo', tipo: 'texto', porDefecto: RECIBO.SERIE },
   ] },
   { categoria: 'Textos legales', ajustes: [
-    { clave: 'TEXTO_PRESENTACION', etiqueta: 'Presentación que se muestra en la pantalla de ingreso', tipo: 'parrafo', porDefecto: PRESENTACION_LOGIN },
+    { clave: 'MOSTRAR_TEXTOS_INGRESO', etiqueta: 'Mostrar el nombre y la presentación sobre la imagen del ingreso', tipo: 'booleano',
+      porDefecto: LEGALES.MOSTRAR_TEXTOS_INGRESO ? '1' : '0',
+      ayuda: 'Apagalo si la imagen de fondo ya trae el nombre y el texto escritos, para que no se superpongan.' },
+    { clave: 'TEXTO_PRESENTACION', etiqueta: 'Presentación que se muestra en la pantalla de ingreso', tipo: 'parrafo', porDefecto: PRESENTACION_LOGIN,
+      depende: { clave: 'MOSTRAR_TEXTOS_INGRESO', valor: '1' } },
     // guarda solo el nombre del archivo; la imagen se sube aparte y se sirve estática
     { clave: 'COLOR_ACENTO', etiqueta: 'Color del sistema (se aplica a todas las instituciones)', tipo: 'opcion',
       opciones: COLORES_SISTEMA, porDefecto: COLORES_SISTEMA[0].valor },
-    { clave: 'IMAGEN_FONDO_INGRESO', etiqueta: 'Imagen de fondo del ingreso (1920 × 1080 px, hasta 400 KB)', tipo: 'texto', porDefecto: '' },
+    { clave: 'IMAGEN_FONDO_INGRESO', etiqueta: 'Imagen de fondo del ingreso (1920 × 1080 px, hasta 2 MB)', tipo: 'texto', porDefecto: '' },
     { clave: 'TEXTO_AVISO_PRIVACIDAD', etiqueta: 'Aviso que aparece debajo de los formularios de registro', tipo: 'parrafo', porDefecto: AVISO_PRIVACIDAD },
     { clave: 'TEXTO_CONSENTIMIENTO', etiqueta: 'Texto de la autorización que se tilda al registrar un interesado', tipo: 'parrafo', porDefecto: LEGALES.AVISO_CONSENTIMIENTO },
     { clave: 'TEXTO_POLITICA', etiqueta: 'Política de privacidad', tipo: 'documento', porDefecto: POLITICA_PRIVACIDAD },

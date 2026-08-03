@@ -101,7 +101,8 @@ a { color: var(--acento); }
 .fondo-ingreso { display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-start; }
 .fondo-ingreso img { width: 100%; max-width: 340px; aspect-ratio: 16/9; object-fit: cover; border-radius: 9px; border: 1px solid var(--borde); }
 .fondo-ingreso .sin-imagen { color: var(--texto-suave); font-size: 0.82rem; }
-.subir-fondo input[type='file'] { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.subir-fondo { display: flex; gap: 0.5rem; align-items: center; }
+.subir-fondo input[type='file'] { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .campo-ancho { grid-column: 1 / -1; }
 
 /* aviso de la ley 7593 debajo de los formularios de alta */
@@ -135,7 +136,9 @@ a { color: var(--acento); }
 .titulo-app { font-weight: 600; color: var(--texto-suave); font-size: 0.9rem; }
 .barra-derecha { margin-left: auto; display: flex; align-items: center; gap: 0.6rem; }
 
-.contenido { padding: 1.1rem 1.4rem; max-width: 1500px; width: 100%; }
+/* sin tope de ancho: con el max-width el contenido quedaba pegado a la izquierda y en un
+   monitor ancho sobraba una franja muerta a la derecha */
+.contenido { padding: 1.1rem 1.4rem; width: 100%; flex: 1; }
 
 /* ---------- menú de usuario (arriba a la derecha) ---------- */
 .menu-usuario { position: relative; }
@@ -274,7 +277,7 @@ th, td { text-align: left; padding: 0.6rem 0.65rem; border-bottom: 1px solid var
 th { color: var(--texto-suave); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.02em; }
 tbody tr:hover td { background: var(--panel-2); }
 
-.estado { border-radius: 999px; padding: 0.15rem 0.65rem; font-size: 0.74rem; font-weight: 600; white-space: nowrap; text-transform: capitalize; }
+.estado { border-radius: 999px; padding: 0.15rem 0.65rem; font-size: 0.74rem; font-weight: 600; white-space: nowrap; }
 .estado-nuevo { background: var(--acento-suave); color: var(--acento); }
 .estado-interesado, .estado-pendiente { background: var(--ambar-fondo); color: var(--ambar); }
 .estado-matriculado, .estado-exitoso, .estado-pagada { background: var(--verde-fondo); color: var(--verde); }
@@ -324,6 +327,8 @@ tbody tr:hover td { background: var(--panel-2); }
 }
 .marca-auth h1 { color: #fff; font-size: 1.6rem; line-height: 1.2; margin: 0; }
 .marca-auth .presentacion { max-height: 8.5rem; overflow-y: auto; }
+/* con los textos apagados el panel es solo la foto y, sin hijos, en celular se aplasta */
+.marca-auth.solo-imagen { min-height: 32vh; padding: 0; }
 
 @media (min-width: 900px) {
   .pantalla-auth.con-marca {
@@ -336,9 +341,10 @@ tbody tr:hover td { background: var(--panel-2); }
     background: var(--acento); color: #fff; padding: 3.5rem;
     background-size: cover; background-position: center;
   }
-  /* el ch escala con el font-size, así que al agrandar el título hay que bajar el tope
-     o se sale de la columna. el clamp baja solo cuando la ventana es angosta. */
-  .marca-auth h1 { color: #fff; font-size: clamp(2.4rem, 4vw, 4rem); line-height: 1.12; margin: 0; max-width: 14ch; }
+  /* el ch escala con el font-size, así que el tope va en caracteres y no en píxeles. con
+     14 el nombre del instituto caía en cuatro líneas angostas al lado de párrafos que
+     usaban todo el ancho; con 24 entra en dos y acompaña al texto de abajo. */
+  .marca-auth h1 { color: #fff; font-size: clamp(2.4rem, 4vw, 4rem); line-height: 1.12; margin: 0; max-width: 24ch; }
   /* sin tope de caracteres: el texto usa todo el panel, que es la columna 1fr */
   .marca-auth .presentacion { max-width: none; max-height: none; overflow: visible; font-size: 1.02rem; line-height: 1.7; }
   .marca-auth .presentacion p { margin: 0 0 1rem; }

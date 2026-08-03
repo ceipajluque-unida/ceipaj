@@ -55,5 +55,5 @@ export const PERMISOS_EXPORTACION = {
   comisiones: PERMISOS.comisiones,
   pagos: PERMISOS.pagos,
   suscripciones: PERMISOS.suscripcion,
-  auditoria: [ROLES.ADMINISTRADOR],
+  auditoria: PERMISOS.auditoria,
 };

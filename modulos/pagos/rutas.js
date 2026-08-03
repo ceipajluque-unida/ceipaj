@@ -2,22 +2,21 @@
 import { Router } from 'express';
 import * as controlador from './controlador.js';
 import { autenticar, permitirRoles } from '../../servidor/middleware/autenticar.js';
-import { PERMISOS } from '../../configuracion/permisos.js';
-import { ROLES } from '../../configuracion/ajustes.js';
+import { PERMISOS, PERMISOS_ESCRITURA } from '../../configuracion/permisos.js';
 
 export const rutasPagos = Router();
 
 // medios de pago disponibles para el formulario de cobro
-rutasPagos.get('/medios', autenticar, permitirRoles(ROLES.ADMINISTRADOR), controlador.medios);
+rutasPagos.get('/medios', autenticar, permitirRoles(...PERMISOS_ESCRITURA.pagos), controlador.medios);
 
 // crear cobros es tarea del administrador; mirarlos también puede la dirección
-rutasPagos.post('/', autenticar, permitirRoles(ROLES.ADMINISTRADOR), controlador.crear);
+rutasPagos.post('/', autenticar, permitirRoles(...PERMISOS_ESCRITURA.pagos), controlador.crear);
 rutasPagos.get('/', autenticar, permitirRoles(...PERMISOS.pagos), controlador.listar);
 
 // pago de un plan de suscripción
-rutasPagos.post('/plan', autenticar, permitirRoles(ROLES.ADMINISTRADOR), controlador.pagarPlan);
+rutasPagos.post('/plan', autenticar, permitirRoles(...PERMISOS_ESCRITURA.pagos), controlador.pagarPlan);
 
-rutasPagos.post('/conciliar', autenticar, permitirRoles(ROLES.ADMINISTRADOR), controlador.conciliar);
+rutasPagos.post('/conciliar', autenticar, permitirRoles(...PERMISOS_ESCRITURA.pagos), controlador.conciliar);
 
 // mientras el usuario paga, la pantalla pregunta por acá si ya se acreditó
 rutasPagos.get('/:referencia/estado', autenticar, permitirRoles(...PERMISOS.pagos), controlador.estado);
