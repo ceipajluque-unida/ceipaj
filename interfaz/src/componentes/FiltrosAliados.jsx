@@ -1,5 +1,6 @@
 // búsqueda y estado del padrón de aliados, junto con la regla de filtrado que aplica la página
 import { Button, Input, Select } from 'antd';
+import { sinAcentos } from '../servicios/formato.js';
 
 export const FILTROS_VACIOS = { buscar: '', estado: '' };
 
@@ -10,12 +11,12 @@ const OPCIONES_ESTADO = [
 ];
 
 export function filtrarAliados(aliados, filtros) {
-  const buscado = filtros.buscar.trim().toLowerCase();
+  const buscado = sinAcentos(filtros.buscar.trim());
   return aliados.filter((aliado) => {
     if (filtros.estado === 'activo' && !aliado.activo) return false;
     if (filtros.estado === 'inactivo' && aliado.activo) return false;
     if (!buscado) return true;
-    return `${aliado.nombre} ${aliado.institucion ?? ''} ${aliado.correo}`.toLowerCase().includes(buscado);
+    return sinAcentos(`${aliado.nombre} ${aliado.institucion ?? ''} ${aliado.correo}`).includes(buscado);
   });
 }
 

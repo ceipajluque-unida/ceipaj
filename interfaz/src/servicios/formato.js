@@ -65,3 +65,9 @@ export function legible(valor) {
   if (!valor) return '—';
   return TEXTOS[valor] ?? valor.charAt(0).toUpperCase() + valor.slice(1);
 }
+
+// para buscar en el navegador como busca la base: mysql usa utf8mb4_spanish_ci, que
+// ignora acentos, y sin esto escribir "gonzalez" no encontraba a "González"
+export function sinAcentos(texto) {
+  return String(texto ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}

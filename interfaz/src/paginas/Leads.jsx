@@ -7,6 +7,7 @@ import { avisarError, toast } from '../servicios/avisos.js';
 import { contar, legible } from '../servicios/formato.js';
 import Modal from '../componentes/Modal.jsx';
 import TablaLeads from '../componentes/TablaLeads.jsx';
+import Legales from '../componentes/Legales.jsx';
 
 const FORMULARIO_VACIO = { nombre: '', cedula: '', telefono: '', correo: '', canal: '', aliadoId: '', consentimiento: false };
 const FILTROS_VACIOS = { estado: '', canal: '', buscar: '', incluirBajas: '' };
@@ -196,7 +197,7 @@ export default function Leads() {
             El interesado autorizó que guardemos sus datos para contactarlo.
           </Checkbox>
           <p className="ayuda">
-            {opciones.avisoConsentimiento} <a href="/privacidad" target="_blank" rel="noreferrer">Ver la política de privacidad</a>
+            {opciones.avisoConsentimiento} <Legales variante="enlace" />
           </p>
           {error && <p className="error">{error}</p>}
           <div className="acciones">

@@ -112,7 +112,7 @@ export default function Configuracion() {
           value={valor}
           min={ajuste.min}
           max={ajuste.max}
-          addonBefore={ajuste.moneda ? 'Gs.' : undefined}
+          prefix={ajuste.moneda ? "Gs." : undefined}
           formatter={ajuste.moneda ? conMiles : undefined}
           parser={ajuste.moneda ? sinMiles : undefined}
           onChange={(numero) => editar(ajuste.clave, numero === null || numero === undefined ? '' : String(numero))}

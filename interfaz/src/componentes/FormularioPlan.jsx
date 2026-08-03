@@ -15,7 +15,7 @@ export default function FormularioPlan({ abierto, editando, modulos, formulario,
           <label><span>Precio en guaraníes</span>
             {/* con el punto de miles se lee de un vistazo si son 250.000 o 2.500.000 */}
             <InputNumber value={formulario.precio} min={1} step={50000} style={{ width: '100%' }}
-              formatter={conMiles} parser={sinMiles} addonBefore="Gs."
+              formatter={conMiles} parser={sinMiles} prefix="Gs."
               onChange={(valor) => alCambiar({ ...formulario, precio: valor })} />
           </label>
           <label><span>Meses que dura</span>

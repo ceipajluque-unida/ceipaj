@@ -8,7 +8,9 @@ import { fecha, contar } from '../servicios/formato.js';
 import Modal from '../componentes/Modal.jsx';
 
 export default function Conversion() {
-  const [matriculados, setMatriculados] = useState([]);
+  // arranca en null y no en []: con la lista vacía la pantalla afirmaba que el
+  // académico no informó a nadie antes de haber preguntado
+  const [matriculados, setMatriculados] = useState(null);
   const [abierto, setAbierto] = useState(false);
   const [archivo, setArchivo] = useState(null);
   const [resumen, setResumen] = useState(null); // qué trajo la última importación
@@ -131,7 +133,8 @@ export default function Conversion() {
 
       <section className="panel">
         <h3>Matriculados según el sistema académico</h3>
-        {matriculados.length > 0 && (
+        {matriculados === null && <p className="nota">Cargando…</p>}
+        {matriculados?.length > 0 && (
           <>
             <p className="nota">{contar(matriculados.length, 'matriculado informado', 'matriculados informados')}.</p>
             <div className="tabla-envoltura">
@@ -139,7 +142,7 @@ export default function Conversion() {
             </div>
           </>
         )}
-        {matriculados.length === 0 && (
+        {matriculados?.length === 0 && (
           <div className="vacio">
             <p>El sistema académico todavía no informa matriculados.</p>
             <Button onClick={abrirImportacion}>Importar planilla</Button>

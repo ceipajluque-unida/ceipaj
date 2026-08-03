@@ -8,24 +8,14 @@ import { guaranies, fecha, contar, legible } from '../servicios/formato.js';
 import Modal from '../componentes/Modal.jsx';
 import VentanaPago from '../componentes/VentanaPago.jsx';
 import TablaPagos from '../componentes/TablaPagos.jsx';
+import TarjetasPlanes, { ETIQUETA_CAMBIO } from '../componentes/TarjetasPlanes.jsx';
 import { descargarArchivo } from '../servicios/descargas.js';
-
-// alto fijo para que las tarjetas queden parejas aunque las imágenes vengan de distintos tamaños
-const ESTILO_PORTADA = { width: '100%', height: 110, objectFit: 'cover', borderRadius: 10 };
 
 function textoPeriodo(meses) {
   if (meses === 1) return 'por mes';
   if (meses === 12) return 'por año';
   return `cada ${meses} meses`;
 }
-
-// qué dice el botón según lo que implique cambiarse a ese plan
-const ETIQUETA_CAMBIO = {
-  alta: 'Contratar',
-  renovacion: 'Renovar',
-  mejora: 'Mejorar a este plan',
-  reduccion: 'Pasar a este plan',
-};
 
 export default function Suscripciones() {
   const navegar = useNavigate();
@@ -195,48 +185,13 @@ export default function Suscripciones() {
 
       <section className="panel">
         <h3>Planes disponibles</h3>
-        <div className="cuadricula">
-          {planes.map((plan) => (
-            <article className={`plan ${vigente?.plan === plan.valor ? 'plan-actual' : ''}`} key={plan.valor}>
-              {/* decorativa: el título va justo abajo, repetirlo en el alt molesta al lector de pantalla */}
-              {plan.imagen && <img src={`/api/planes/imagenes/${plan.imagen}`} alt="" style={ESTILO_PORTADA} />}
-              <h3>{plan.texto}{vigente?.plan === plan.valor && <span className="etiqueta">tu plan</span>}</h3>
-              {plan.descripcion && <p className="nota">{plan.descripcion}</p>}
-              <p className="cifra">{guaranies(plan.precio)}</p>
-              <p className="nota">{textoPeriodo(plan.meses)}</p>
-              <ul className="lista-plan">
-                <li>{plan.maxUsuarios ? `Hasta ${contar(plan.maxUsuarios, 'usuario', 'usuarios')}` : 'Usuarios sin límite'}</li>
-                <li>{plan.modulos?.length ? `Módulos: ${plan.modulos.map(legible).join(', ')}` : 'Todos los módulos'}</li>
-                {plan.incluye.map((punto) => <li key={punto}>{punto}</li>)}
-              </ul>
-              {esAdministrador && (() => {
-                const cambio = datos.cambios?.[plan.valor];
-                const esElActual = vigente?.plan === plan.valor;
-                return (
-                  <>
-                    {/* el detalle va antes del botón: quien lo aprieta ya sabe qué se le cobra */}
-                    {cambio && !esElActual && cambio.credito > 0 && (
-                      <p className="nota">
-                        Se te descuentan {guaranies(cambio.credito)} por lo que queda del plan {cambio.planActual}.
-                      </p>
-                    )}
-                    {cambio?.tipo === 'reduccion' && (
-                      <p className="nota">Empieza el {fecha(cambio.desde)}, al terminar el período que ya pagaste.</p>
-                    )}
-                    <Button
-                      type={esElActual ? 'default' : 'primary'}
-                      aria-label={`${ETIQUETA_CAMBIO[cambio?.tipo] ?? 'Contratar'} el plan ${plan.texto}`}
-                      onClick={() => abrirPago(plan, cambio)}
-                    >
-                      {esElActual ? 'Renovar por otro período' : ETIQUETA_CAMBIO[cambio?.tipo] ?? 'Contratar'}
-                      {cambio && cambio.aPagar !== plan.precio && ` · ${guaranies(cambio.aPagar)}`}
-                    </Button>
-                  </>
-                );
-              })()}
-            </article>
-          ))}
-        </div>
+        <TarjetasPlanes
+          planes={planes}
+          vigente={vigente}
+          cambios={datos.cambios}
+          esAdministrador={esAdministrador}
+          alElegir={abrirPago}
+        />
       </section>
 
       <section className="panel">

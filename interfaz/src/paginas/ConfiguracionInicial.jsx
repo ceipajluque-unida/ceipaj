@@ -2,9 +2,10 @@
 // de ningún colegio: es quien configura la apariencia, la pasarela y los planes, y recién
 // después da de alta las instituciones con su administrador.
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Button, Input } from 'antd';
 import { guardarSesion, llamarApi } from '../servicios/api.js';
+import Legales from '../componentes/Legales.jsx';
 import { useInstitucion } from '../contextos/institucion.jsx';
 
 export default function ConfiguracionInicial() {
@@ -77,11 +78,6 @@ export default function ConfiguracionInicial() {
 
         {paso === 1 && (
           <form onSubmit={crearProveedor}>
-            <p className="ayuda">
-              Esta primera cuenta es la del <strong>proveedor del servicio</strong>: desde
-              ella se configuran la apariencia, la pasarela de pagos y los planes, y se dan
-              de alta las instituciones con su administrador.
-            </p>
             <label>Nombre completo
               <Input name="nombre" value={datos.nombre} onChange={cambiar} required />
             </label>
@@ -117,9 +113,7 @@ export default function ConfiguracionInicial() {
             <Button type="primary" htmlType="submit" disabled={cargando}>{cargando ? 'Verificando…' : 'Activar y entrar'}</Button>
           </form>
         )}
-        <p className="ayuda pie-auth">
-          <Link to="/privacidad">Política de privacidad</Link>
-        </p>
+        <Legales />
       </section>
     </main>
   );

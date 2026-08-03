@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Button, Input, Select, Table } from 'antd';
 import { llamarApi } from '../servicios/api.js';
 import { avisarError, toast } from '../servicios/avisos.js';
-import { fecha, contar, legible } from '../servicios/formato.js';
+import { fecha, contar, legible, sinAcentos } from '../servicios/formato.js';
 import Modal from '../componentes/Modal.jsx';
 
 const ACCION_VACIA = { tipo: '', detalle: '' };
@@ -16,7 +16,7 @@ function dias(cantidad) {
 
 export default function Seguimiento() {
   const [opciones, setOpciones] = useState(null);
-  const [estudiantes, setEstudiantes] = useState([]);
+  const [estudiantes, setEstudiantes] = useState(null);
   const [filtros, setFiltros] = useState(FILTROS_VACIOS);
   const [elegido, setElegido] = useState(null); // estudiante abierto en la ventana
   const [acciones, setAcciones] = useState([]);
@@ -63,14 +63,14 @@ export default function Seguimiento() {
     }
   }
 
-  if (!opciones) return <p className="mensaje-centrado">Cargando…</p>;
+  if (!opciones || !estudiantes) return <p className="mensaje-centrado">Cargando…</p>;
 
   const enRiesgo = estudiantes.filter((estudiante) => estudiante.en_riesgo).length;
-  const busqueda = filtros.buscar.trim().toLowerCase();
+  const busqueda = sinAcentos(filtros.buscar.trim());
   const visibles = estudiantes.filter((estudiante) => {
     if (filtros.ver === 'riesgo' && !estudiante.en_riesgo) return false;
     if (!busqueda) return true;
-    return estudiante.nombre.toLowerCase().includes(busqueda) || String(estudiante.cedula).includes(busqueda);
+    return sinAcentos(estudiante.nombre).includes(busqueda) || String(estudiante.cedula).includes(busqueda);
   });
   const hayFiltros = filtros.buscar !== '' || filtros.ver !== 'todos';
 

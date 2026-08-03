@@ -5,6 +5,7 @@ import { llamarApi, usuarioActual } from '../servicios/api.js';
 import { avisarError, toast } from '../servicios/avisos.js';
 import { contar, fecha, legible } from '../servicios/formato.js';
 import Modal from '../componentes/Modal.jsx';
+import Legales from '../componentes/Legales.jsx';
 
 const FORMULARIO_VACIO = { nombre: '', cedula: '', telefono: '', correo: '', consentimiento: false };
 
@@ -130,7 +131,7 @@ export default function PortalAliado() {
             onChange={(evento) => setFormulario({ ...formulario, consentimiento: evento.target.checked })}
           >
             <span className="ayuda">
-              {avisoConsentimiento} <a href="/privacidad" target="_blank" rel="noreferrer">Ver política de privacidad</a>
+              {avisoConsentimiento} <Legales variante="enlace" texto="Ver la política de privacidad" />
             </span>
           </Checkbox>
           {error && <p className="error">{error}</p>}

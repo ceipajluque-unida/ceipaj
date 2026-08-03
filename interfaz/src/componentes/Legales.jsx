@@ -4,7 +4,10 @@ import { Modal, Skeleton } from 'antd';
 import { llamarApi } from '../servicios/api.js';
 import { comoHtml } from '../servicios/markdownSimple.jsx';
 
-export default function Legales() {
+// 'pie' es el pie de las pantallas de acceso, con los dos documentos. 'enlace' es el que
+// va dentro de un formulario, al lado del consentimiento: abre el mismo visor sin sacar
+// a la persona de lo que está cargando.
+export default function Legales({ variante = 'pie', texto = 'Ver la política de privacidad' }) {
   const [abierto, setAbierto] = useState(null); // 'politica' o 'terminos'
   const [textos, setTextos] = useState(null);
 
@@ -18,11 +21,15 @@ export default function Legales() {
 
   return (
     <>
-      <footer className="pie-legal">
-        <button type="button" onClick={() => setAbierto('politica')}>Política de privacidad</button>
-        <span aria-hidden="true">·</span>
-        <button type="button" onClick={() => setAbierto('terminos')}>Términos y condiciones</button>
-      </footer>
+      {variante === 'pie' ? (
+        <footer className="pie-legal">
+          <button type="button" onClick={() => setAbierto('politica')}>Política de privacidad</button>
+          <span aria-hidden="true">·</span>
+          <button type="button" onClick={() => setAbierto('terminos')}>Términos y condiciones</button>
+        </footer>
+      ) : (
+        <button type="button" className="enlace" onClick={() => setAbierto('politica')}>{texto}</button>
+      )}
 
       <Modal
         open={Boolean(abierto)}
