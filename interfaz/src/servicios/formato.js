@@ -32,9 +32,10 @@ export function contar(cantidad, singular, plural) {
 
 const TEXTOS = {
   administrador: 'Administrador',
-  comercial: 'Comercial',
-  direccion: 'Dirección',
-  aliado: 'Aliado',
+  comercial: 'Personal administrativo-académico',
+  direccion: 'Gerencia institucional',
+  aliado: 'Aliado institucional',
+  superadministrador: 'Proveedor del servicio',
   nuevo: 'Nuevo',
   interesado: 'Interesado',
   matriculado: 'Matriculado',
