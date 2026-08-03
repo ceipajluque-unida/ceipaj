@@ -32,6 +32,7 @@ export default function Suscripciones() {
   async function cargar() {
     try {
       setDatos(await llamarApi('/api/suscripciones'));
+      setCargaError(null);
       window.dispatchEvent(new Event('plan'));
     } catch (excepcion) {
       setCargaError(excepcion.message);
@@ -147,6 +148,8 @@ export default function Suscripciones() {
 
   return (
     <>
+      {cargaError && <p className="error">{cargaError}</p>}
+
       <header className="encabezado-pagina"><h2>Suscripción a la plataforma</h2></header>
 
       {cobroEnCurso && (

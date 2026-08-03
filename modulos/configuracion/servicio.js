@@ -3,7 +3,7 @@ import { CATALOGO, CLAVES, CLAVES_SECRETAS } from '../../servidor/ajustesSistema
 import { validarAjuste } from '../../servidor/validarAjuste.js';
 import { registrarAuditoria } from '../../servidor/auditoria.js';
 import { enviarCorreo } from '../../servidor/correo.js';
-import { enviarSms } from '../../servidor/sms.js';
+import { enviarVerificacion } from '../../servidor/verify.js';
 import { ErrorVisible } from '../../servidor/errores.js';
 import { INSTITUCION, ROLES, COLORES_SISTEMA, LEGALES } from '../../configuracion/ajustes.js';
 import { AMBITO, ambitoDe } from '../../configuracion/ambitos.js';
@@ -84,7 +84,7 @@ export async function probarCorreo(para) {
 }
 
 export async function probarSms(para) {
-  const resultado = await enviarSms({ para, texto: 'Prueba de SMS del Sistema de Información Gerencial del CEIPAJ.' });
+  const resultado = await enviarVerificacion({ para });
   if (!resultado.enviado) throw new ErrorVisible(`No se pudo enviar: ${resultado.motivo}`, 502);
   return { enviado: true };
 }

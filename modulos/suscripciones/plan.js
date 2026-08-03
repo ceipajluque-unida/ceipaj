@@ -1,7 +1,7 @@
 import { bd } from '../../servidor/bd/conexion.js';
 import * as ajustes from '../../servidor/ajustesSistema.js';
 import { institucionActual } from '../../servidor/contexto.js';
-import { MODULOS_NUCLEO, SUSCRIPCION, ESTADOS_SUSCRIPCION } from '../../configuracion/ajustes.js';
+import { MODULOS_NUCLEO, SUSCRIPCION, ESTADOS_SUSCRIPCION, PLANES_SUSCRIPCION } from '../../configuracion/ajustes.js';
 import { buscar as buscarPlanActivo } from '../planes/servicio.js';
 
 const cache = new Map();
@@ -12,7 +12,7 @@ export function limpiarCachePlan(institucionId = institucionActual()) {
 }
 
 const PLAN_DEL_PROVEEDOR = {
-  clave: 'proveedor', texto: 'Proveedor', modulos: [], maxUsuarios: null,
+  clave: 'proveedor', texto: 'Proveedor', modulos: [], maxUsuarios: null, encontrado: true,
   vigente: true, fechaFin: null, diasRestantes: null,
 };
 
@@ -26,11 +26,13 @@ async function resolver(institucionId) {
   );
   const clave = vigente?.plan ?? ajustes.leer('PLAN_AL_VENCER', SUSCRIPCION.PLAN_AL_VENCER);
   const plan = await buscarPlanActivo(clave);
+  const minimo = PLANES_SUSCRIPCION[0];
   return {
     clave,
-    texto: plan?.texto ?? clave,
-    modulos: plan?.modulos ?? [],
-    maxUsuarios: plan?.maxUsuarios ?? null,
+    texto: plan?.texto ?? minimo.texto,
+    modulos: plan ? plan.modulos : minimo.modulos,
+    maxUsuarios: plan ? plan.maxUsuarios : minimo.maxUsuarios,
+    encontrado: Boolean(plan),
     vigente: Boolean(vigente),
     fechaFin: vigente?.fecha_fin ?? null,
     diasRestantes: vigente ? Number(vigente.dias_restantes) : null,
@@ -50,7 +52,8 @@ export async function planEnVigor() {
 
 export function moduloIncluido(plan, modulo) {
   if (MODULOS_NUCLEO.includes(modulo)) return true;
-  if (!plan || plan.modulos.length === 0) return true;
+  if (!plan) return true;
+  if (plan.modulos.length === 0) return plan.encontrado !== false;
   return plan.modulos.includes(modulo);
 }
 

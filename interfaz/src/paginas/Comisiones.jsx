@@ -16,6 +16,7 @@ export default function Comisiones() {
   async function cargar() {
     try {
       setDatos(await llamarApi('/api/comisiones'));
+      setCargaError(null);
     } catch (excepcion) {
       setCargaError(excepcion.message);
     }
@@ -43,6 +44,8 @@ export default function Comisiones() {
   if (datos.comisiones.length === 0) {
     return (
       <>
+        {cargaError && <p className="error">{cargaError}</p>}
+
         <header className="encabezado-pagina"><h2>Comisiones de aliados</h2></header>
         <section className="panel">
           <p className="nota">Todavía no hay comisiones.</p>

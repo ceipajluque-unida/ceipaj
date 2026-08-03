@@ -114,6 +114,8 @@ export default function Pagos() {
 
   return (
     <>
+      {cargaError && <p className="error">{cargaError}</p>}
+
       <header className="encabezado-pagina">
 
         <h2>Cobros de la institución</h2>

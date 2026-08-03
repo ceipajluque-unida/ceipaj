@@ -1,6 +1,7 @@
 import { bd } from '../../servidor/bd/conexion.js';
 import { registrarAuditoria } from '../../servidor/auditoria.js';
 import { ErrorVisible } from '../../servidor/errores.js';
+import { SUSCRIPCION } from '../../configuracion/ajustes.js';
 
 const aLista = (texto) => String(texto ?? '').split('\n').map((l) => l.trim()).filter(Boolean);
 
@@ -88,6 +89,22 @@ export async function editar(id, datos, usuario, ip) {
 }
 
 export async function apagar(id, usuario, ip) {
+  const [[plan]] = await bd.query('SELECT clave FROM planes WHERE id = ?', [id]);
+  if (!plan) throw new ErrorVisible('El plan no existe.', 404);
+  if (plan.clave === SUSCRIPCION.PLAN_AL_VENCER) {
+    throw new ErrorVisible('Ese plan es al que cae el sistema cuando vence una suscripción: no se puede dar de baja.', 409);
+  }
+  const [[{ enUso }]] = await bd.query(
+    `SELECT COUNT(*) AS enUso FROM suscripciones
+      WHERE plan = ? AND estado = 'activa' AND fecha_fin > NOW()`,
+    [plan.clave]
+  );
+  if (Number(enUso) > 0) {
+    throw new ErrorVisible(
+      `Hay ${enUso} suscripción(es) usando este plan. Esperá a que venzan o pasá esas instituciones a otro plan.`,
+      409
+    );
+  }
   const [resultado] = await bd.query('UPDATE planes SET activo = 0 WHERE id = ?', [id]);
   if (resultado.affectedRows === 0) throw new ErrorVisible('El plan no existe.', 404);
   await registrarAuditoria({ usuarioId: usuario.id, accion: 'plan_apagado', detalle: String(id), ip });

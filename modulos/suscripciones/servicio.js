@@ -51,13 +51,13 @@ export async function suscripcionVigente() {
   };
 }
 
-function creditoSinUsar(vigente) {
+function creditoSinUsar(vigente, precioDeLista) {
   if (!vigente) return 0;
   const totales = Number(vigente.dias_totales) || 0;
   if (totales <= 0) return 0;
-
   const restantes = Math.min(totales, Math.max(0, Number(vigente.dias_restantes) || 0));
-  return Math.floor((Number(vigente.monto) * restantes) / totales);
+  const base = Number(precioDeLista ?? vigente.monto);
+  return Math.floor((base * restantes) / totales);
 }
 
 export async function calcularCambio(claveDestino) {
@@ -69,9 +69,9 @@ export async function calcularCambio(claveDestino) {
     return { tipo: 'alta', plan: destino.valor, texto: destino.texto, precio: destino.precio, aPagar: destino.precio, credito: 0, desde: null };
   }
 
-  const credito = creditoSinUsar(vigente);
   const actual = await buscarPlan(vigente.plan);
   const precioActual = Number(actual?.precio ?? vigente.monto);
+  const credito = creditoSinUsar(vigente, precioActual);
 
   if (destino.valor === vigente.plan) {
     return {
