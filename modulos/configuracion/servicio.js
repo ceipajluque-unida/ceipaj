@@ -34,7 +34,7 @@ export async function obtenerConfiguracion(rol) {
       const base = {
         clave: ajuste.clave, etiqueta: ajuste.etiqueta, tipo: ajuste.tipo,
         opciones: ajuste.opciones, ayuda: ajuste.ayuda, depende: ajuste.depende,
-        min: ajuste.min, max: ajuste.max, generable: ajuste.generable,
+        min: ajuste.min, max: ajuste.max, generable: ajuste.generable, moneda: ajuste.moneda,
         ambito: ambitoDe(ajuste.clave),
       };
       if (ajuste.tipo === 'secreto') return { ...base, configurado: Boolean(ajustes.leer(ajuste.clave, '')) };

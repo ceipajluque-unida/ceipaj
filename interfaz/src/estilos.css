@@ -500,3 +500,6 @@ tbody tr:hover td { background: var(--panel-2); }
 
 /* los textos legales son largos: una sola columna a todo el ancho */
 .campos-anchos { grid-template-columns: 1fr; }
+
+/* dato secundario debajo del nombre en las tablas, para no gastar una columna en cada uno */
+.bajo-titulo { display: block; font-size: 0.78rem; margin-top: 0.1rem; }

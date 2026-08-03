@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Button, Input, InputNumber, Select, Switch } from 'antd';
 import { llamarApi } from '../servicios/api.js';
 import { avisarError, avisarExito, toast } from '../servicios/avisos.js';
-import { contar } from '../servicios/formato.js';
+import { contar, conMiles, sinMiles } from '../servicios/formato.js';
 import FondoIngreso from '../componentes/FondoIngreso.jsx';
 import { useTema } from '../contextos/tema.jsx';
 
@@ -105,7 +105,19 @@ export default function Configuracion() {
       return <Input.Password value={valor} placeholder={ajuste.configurado ? 'Ya configurado' : 'Sin configurar'} onChange={(e) => editar(ajuste.clave, e.target.value)} />;
     }
     if (ajuste.tipo === 'numero') {
-      return <InputNumber style={{ width: '100%' }} value={valor} onChange={(numero) => editar(ajuste.clave, numero === null || numero === undefined ? '' : String(numero))} />;
+      // los que son plata van con punto de miles: 100000 y 1000000 se confunden de un vistazo
+      return (
+        <InputNumber
+          style={{ width: '100%' }}
+          value={valor}
+          min={ajuste.min}
+          max={ajuste.max}
+          addonBefore={ajuste.moneda ? 'Gs.' : undefined}
+          formatter={ajuste.moneda ? conMiles : undefined}
+          parser={ajuste.moneda ? sinMiles : undefined}
+          onChange={(numero) => editar(ajuste.clave, numero === null || numero === undefined ? '' : String(numero))}
+        />
+      );
     }
     return <Input value={valor} onChange={(e) => editar(ajuste.clave, e.target.value)} />;
   };

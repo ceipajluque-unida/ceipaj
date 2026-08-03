@@ -127,7 +127,7 @@ export const CATALOGO = [
     { clave: 'DIAS_SIN_ACOMPANAMIENTO_RIESGO', etiqueta: 'Cuántos días sin acompañar a un estudiante para marcar como riesgo', tipo: 'numero', min: 1, max: 365, porDefecto: LIMITES.DIAS_SIN_ACOMPANAMIENTO_RIESGO },
     { clave: 'PUNTOS_POR_LEAD', etiqueta: 'Puntos que gana el aliado por cada interesado que trae', tipo: 'numero', min: 0, max: 10000, porDefecto: ALIADOS.PUNTOS_POR_LEAD },
     { clave: 'PUNTOS_POR_CONVERSION', etiqueta: 'Puntos que gana cuando ese interesado se matricula', tipo: 'numero', min: 0, max: 10000, porDefecto: ALIADOS.PUNTOS_POR_CONVERSION },
-    { clave: 'COMISION_POR_CONVERSION', etiqueta: 'Comisión en guaraníes por cada matriculado', tipo: 'numero', min: 0, max: 100000000, porDefecto: ALIADOS.COMISION_POR_CONVERSION },
+    { clave: 'COMISION_POR_CONVERSION', etiqueta: 'Comisión por cada matriculado', tipo: 'numero', moneda: true, min: 0, max: 100000000, porDefecto: ALIADOS.COMISION_POR_CONVERSION },
   ] },
   // cómo se cobra el servicio: es del proveedor, no de quien lo paga
   { categoria: 'Suscripción y cobros', ajustes: [

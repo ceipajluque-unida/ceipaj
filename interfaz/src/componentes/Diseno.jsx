@@ -1,11 +1,11 @@
 // estructura de las pantallas internas
 import { useEffect, useState } from 'react';
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { Navigate, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { Button } from 'antd';
 import { cerrarSesion, llamarApi, usuarioActual } from '../servicios/api.js';
 import MenuUsuario from './MenuUsuario.jsx';
 import MenuLateral, { MODULO_POR_RUTA } from './MenuLateral.jsx';
-import SinAcceso from './SinAcceso.jsx';
+import AvisoSinAcceso from './AvisoSinAcceso.jsx';
 import Icono from './iconos.jsx';
 import { useInstitucion } from '../contextos/institucion.jsx';
 
@@ -74,14 +74,19 @@ export default function Diseno() {
   }
   if (!modulos) return <p className="mensaje-centrado">Cargando…</p>;
 
-  // se corta acá y no en cada pantalla: escribir la dirección a mano de un módulo ajeno
-  // dibujaba la pantalla igual y encima el error del backend
+  // el módulo ajeno no se muestra de ninguna forma: ni la pantalla ni un cartel en su
+  // lugar. se vuelve al inicio y se avisa con un mensaje, que es lo que espera alguien
+  // que llegó ahí escribiendo la dirección o con un enlace viejo.
   const raiz = `/${ubicacion.pathname.split('/')[1] ?? ''}`;
   const moduloPedido = MODULO_POR_RUTA[raiz];
   const motivo = !moduloPedido ? null
     : !puedeVer(moduloPedido) ? 'rol'
     : bloqueados.includes(moduloPedido) ? 'plan'
     : null;
+
+  if (motivo) {
+    return <Navigate to={motivo === 'plan' ? '/suscripcion' : inicio} replace state={{ sinAcceso: { motivo, plan: plan?.texto } }} />;
+  }
 
   return (
     <div className={`app ${oculto ? 'oculto' : ''}`}>
@@ -121,9 +126,8 @@ export default function Diseno() {
           </div>
         </header>
         <main className="contenido">
-          {motivo
-            ? <SinAcceso inicio={inicio} motivo={motivo} plan={plan?.texto} />
-            : <Outlet context={{ usuario, modulos, bloqueados, inicio }} />}
+          <AvisoSinAcceso />
+          <Outlet context={{ usuario, modulos, bloqueados, inicio }} />
         </main>
       </div>
     </div>

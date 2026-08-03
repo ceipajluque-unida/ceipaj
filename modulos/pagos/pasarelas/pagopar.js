@@ -51,7 +51,13 @@ async function llamar(ruta, cuerpo) {
 export async function crearCobro({ concepto, monto, medio, comprador }) {
   const { publico, privado } = credenciales();
   if (!publico || !privado) {
-    throw new ErrorVisible('Faltan los tokens de Pagopar. Cargalos en Configuración.', 500);
+    // el mensaje no manda a Configuración: la pasarela la carga el proveedor del
+    // servicio, no el colegio, y mandarlo a una pantalla donde no puede hacer nada es peor
+    // que no decirle nada. es una falla del servicio, así que va como 503.
+    throw new ErrorVisible(
+      'El cobro en línea no está disponible en este momento. Avisale al proveedor del servicio para que termine de configurar la pasarela.',
+      503
+    );
   }
   const referencia = `CEIPAJ-${randomUUID().slice(0, 8).toUpperCase()}`;
   const montoEntero = Math.trunc(Number(monto));

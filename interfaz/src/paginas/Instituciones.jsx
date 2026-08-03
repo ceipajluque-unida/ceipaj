@@ -92,16 +92,27 @@ export default function Instituciones() {
     }
   }
 
+  // eran nueve columnas y no entraban: la tabla salía cortada y había que arrastrarla
+  // para llegar a los botones. la ciudad y el contacto van bajo el nombre, y las acciones
+  // quedan ancladas a la derecha.
   const columnas = [
-    { title: 'Institución', dataIndex: 'nombre', key: 'nombre' },
-    { title: 'Ciudad', dataIndex: 'ciudad', key: 'ciudad', render: (valor) => valor || '—' },
-    { title: 'Contacto', dataIndex: 'correo_contacto', key: 'correo_contacto', render: (valor) => valor || '—' },
+    {
+      title: 'Institución', dataIndex: 'nombre', key: 'nombre', width: 280,
+      render: (nombre, institucion) => (
+        <>
+          <strong>{nombre}</strong>
+          <span className="nota bajo-titulo">
+            {[institucion.ciudad, institucion.correo_contacto].filter(Boolean).join(' · ') || 'Sin datos de contacto'}
+          </span>
+        </>
+      ),
+    },
     {
       title: 'Plan vigente', dataIndex: 'plan_vigente', key: 'plan_vigente',
       render: (valor) => (valor ? legible(valor) : <span className="nota">Sin suscripción</span>),
     },
-    { title: 'Usuarios', dataIndex: 'usuarios', key: 'usuarios' },
-    { title: 'Interesados', dataIndex: 'interesados', key: 'interesados' },
+    { title: 'Usuarios', dataIndex: 'usuarios', key: 'usuarios', align: 'center' },
+    { title: 'Interesados', dataIndex: 'interesados', key: 'interesados', align: 'center' },
     {
       title: 'Estado', dataIndex: 'activo', key: 'activo',
       render: (valor) => <span className={`estado estado-${valor ? 'exitoso' : 'rechazado'}`}>{valor ? 'Activa' : 'Suspendida'}</span>,
@@ -110,10 +121,12 @@ export default function Instituciones() {
     {
       title: <span className="oculto-visual">Acciones</span>,
       key: 'acciones',
+      fixed: 'right',
+      width: 240,
       render: (_, institucion) => (
         <div className="acciones">
           <Button size="small" onClick={() => abrirEdicion(institucion)}>Editar</Button>
-          <Button size="small" onClick={() => setAdministrando(institucion)}>+ Administrador</Button>
+          <Button size="small" onClick={() => setAdministrando(institucion)}>Administrador</Button>
           <Button size="small" danger={institucion.activo} onClick={() => cambiarActivo(institucion)}>
             {institucion.activo ? 'Suspender' : 'Reactivar'}
           </Button>
@@ -133,7 +146,7 @@ export default function Instituciones() {
       <section className="panel">
         {instituciones.length > 0 ? (
           <div className="tabla-envoltura">
-            <Table columns={columnas} dataSource={instituciones} rowKey="id" size="small" pagination={false} />
+            <Table columns={columnas} dataSource={instituciones} rowKey="id" size="small" pagination={false} scroll={{ x: 900 }} />
           </div>
         ) : (
           <div className="vacio">
