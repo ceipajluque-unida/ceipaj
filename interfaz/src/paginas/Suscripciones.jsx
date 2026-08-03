@@ -32,6 +32,7 @@ export default function Suscripciones() {
   async function cargar() {
     try {
       setDatos(await llamarApi('/api/suscripciones'));
+      window.dispatchEvent(new Event('plan'));
     } catch (excepcion) {
       setCargaError(excepcion.message);
     }
@@ -42,10 +43,28 @@ export default function Suscripciones() {
     if (esAdministrador) llamarApi('/api/pagos/medios').then(setMedios).catch(() => setMedios([]));
   }, []);
 
-  function abrirPago(plan, cambio) {
+  async function abrirPago(plan, cambio) {
+    if (cambio?.tipo === 'reduccion') return bajarDePlan(plan, cambio);
     setPlanElegido({ ...plan, cambio });
     setMedio('');
     setError(null);
+  }
+
+  async function bajarDePlan(plan, cambio) {
+    const ok = await confirmar({
+      titulo: `¿Pasar al plan ${plan.texto}?`,
+      texto: `El saldo de ${guaranies(cambio.credito)} que te queda del plan ${cambio.planActual} se convierte en `
+        + `${contar(cambio.diasQueCubre, 'día', 'días')} del plan ${plan.texto}. El cambio es inmediato y no se cobra nada.`,
+      confirmar: 'Sí, cambiar',
+    });
+    if (!ok) return;
+    try {
+      const r = await llamarApi('/api/suscripciones/reducir', { metodo: 'POST', cuerpo: { plan: plan.valor } });
+      await cargar();
+      toast(`Ya estás en el plan ${plan.texto}, por ${contar(r.dias, 'día', 'días')}.`);
+    } catch (excepcion) {
+      avisarError(excepcion.message);
+    }
   }
 
   async function pagarPlan(evento) {

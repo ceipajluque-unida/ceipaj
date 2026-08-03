@@ -21,6 +21,11 @@ export async function resumen(req, res) {
   });
 }
 
+export async function reducir(req, res) {
+  const { plan } = req.body ?? {};
+  res.json(await servicio.aplicarReduccion(plan, req.usuario, req.ip));
+}
+
 export async function cancelar(req, res) {
   const id = Number(req.params.id);
   if (!Number.isInteger(id) || id <= 0) throw new ErrorVisible('Suscripción no válida.');

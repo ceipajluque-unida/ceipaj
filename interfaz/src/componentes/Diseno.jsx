@@ -37,15 +37,19 @@ export default function Diseno() {
   const inicio = INICIO_POR_ROL[usuario?.rol] ?? '/';
 
   useEffect(() => {
-    llamarApi('/api/autenticacion/perfil')
-      .then((respuesta) => {
-        setModulos(respuesta.modulos);
-        setBloqueados(respuesta.modulosBloqueados ?? []);
-        setPlan(respuesta.plan ?? null);
-      })
-      .catch((excepcion) => setError(excepcion.message));
-
-    if (!esProveedor) llamarApi('/api/resumen/badges').then(setBadges).catch(() => setBadges({}));
+    const traer = () => {
+      llamarApi('/api/autenticacion/perfil')
+        .then((respuesta) => {
+          setModulos(respuesta.modulos);
+          setBloqueados(respuesta.modulosBloqueados ?? []);
+          setPlan(respuesta.plan ?? null);
+        })
+        .catch((excepcion) => setError(excepcion.message));
+      if (!esProveedor) llamarApi('/api/resumen/badges').then(setBadges).catch(() => setBadges({}));
+    };
+    traer();
+    window.addEventListener('plan', traer);
+    return () => window.removeEventListener('plan', traer);
   }, []);
 
   function alternarMenu() {

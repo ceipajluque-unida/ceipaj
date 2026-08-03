@@ -15,12 +15,12 @@ export function smsConfigurado() {
 }
 
 const ERRORES = {
-  21608: 'Con una cuenta de prueba de Twilio solo se puede enviar a números verificados en su panel. Verificá ese número o usá el 2FA por app o por correo.',
-  21606: 'El número remitente no sirve para mandar SMS. Revisá el número que te dio Twilio.',
-  21612: 'Twilio no puede entregar SMS a ese número desde tu remitente.',
-  21614: 'El número de destino no es válido para SMS.',
-  21211: 'El número de destino está mal escrito. Va con código de país, por ejemplo +59598...',
-  20003: 'Twilio rechazó las credenciales. Revisá el Account SID y el Auth Token.',
+  21608: 'Ese número no está verificado en Twilio. En las cuentas de prueba solo llegan mensajes a números verificados.',
+  21606: 'El número remitente no puede enviar SMS.',
+  21612: 'Twilio no entrega SMS a ese número desde tu remitente.',
+  21614: 'El número de destino no recibe SMS.',
+  21211: 'Número mal escrito. Va con código de país: +595981123456.',
+  20003: 'Credenciales rechazadas. Revisá el Account SID y el Auth Token.',
 };
 
 function explicar(datos, estado) {
@@ -29,14 +29,14 @@ function explicar(datos, estado) {
 
 export async function verificarSms() {
   const { sid, token, desde } = credenciales();
-  if (!sid || !token) return { ok: false, motivo: 'Faltan el Account SID y el Auth Token de Twilio.' };
-  if (!desde) return { ok: false, motivo: 'Falta el número remitente que da Twilio.' };
+  if (!sid || !token) return { ok: false, motivo: 'Falta el Account SID o el Auth Token.' };
+  if (!desde) return { ok: false, motivo: 'Falta el número remitente.' };
   try {
     const respuesta = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}.json`, {
       headers: { Authorization: 'Basic ' + Buffer.from(`${sid}:${token}`).toString('base64') },
       signal: AbortSignal.timeout(10000),
     });
-    if (!respuesta.ok) return { ok: false, motivo: 'Twilio rechazó las credenciales. Revisá el Account SID y el Auth Token.' };
+    if (!respuesta.ok) return { ok: false, motivo: 'Credenciales rechazadas. Revisá el Account SID y el Auth Token.' };
     return { ok: true };
   } catch (error) {
     return { ok: false, motivo: `No se pudo contactar con Twilio: ${error.message}` };
@@ -45,9 +45,9 @@ export async function verificarSms() {
 
 export async function enviarSms({ para, texto }) {
   const { sid, token, desde } = credenciales();
-  if (!sid || !token) return { enviado: false, motivo: 'Faltan el Account SID y el Auth Token de Twilio.' };
+  if (!sid || !token) return { enviado: false, motivo: 'Falta el Account SID o el Auth Token.' };
   if (!desde) {
-    return { enviado: false, motivo: 'Falta el número remitente de Twilio. Con la cuenta gratuita a veces no hay números disponibles; mientras tanto usá la verificación por app o por correo.' };
+    return { enviado: false, motivo: 'Falta el número remitente.' };
   }
   if (!para) return { enviado: false, motivo: 'La cuenta no tiene un celular cargado para recibir el SMS.' };
   try {

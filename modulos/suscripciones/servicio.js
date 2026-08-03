@@ -88,11 +88,57 @@ export async function calcularCambio(claveDestino) {
     };
   }
 
+  const diasDelPeriodo = Math.max(1, Number(vigente.dias_totales) || 30);
+  const diasQueCubre = destino.precio > 0
+    ? Math.floor((credito * diasDelPeriodo) / destino.precio)
+    : diasDelPeriodo;
+
   return {
     tipo: 'reduccion', plan: destino.valor, texto: destino.texto, precio: destino.precio,
-    aPagar: destino.precio, credito: 0, desde: vigente.fecha_fin,
+    aPagar: 0, credito, desde: null, diasQueCubre,
     diasRestantes: vigente.dias_restantes, planActual: actual?.texto ?? vigente.plan,
   };
+}
+
+export async function aplicarReduccion(claveDestino, usuario, ip) {
+  const cambio = await calcularCambio(claveDestino);
+  if (cambio.tipo !== 'reduccion') {
+    throw new ErrorVisible('Ese plan no es una baja de categoría: se contrata pagando.', 409);
+  }
+  if (cambio.diasQueCubre < 1) {
+    throw new ErrorVisible('No queda saldo suficiente para cubrir un día del plan nuevo. Esperá al vencimiento o renová.', 409);
+  }
+  const institucionId = institucionDelPedido();
+  const vigente = await suscripcionVigente();
+
+  const conexion = await bd.getConnection();
+  try {
+    await conexion.beginTransaction();
+    await conexion.query(
+      'UPDATE suscripciones SET estado = ?, fecha_fin = NOW() WHERE id = ? AND institucion_id = ?',
+      [ESTADOS_SUSCRIPCION.VENCIDA, vigente.id, institucionId]
+    );
+    await conexion.query(
+      `INSERT INTO suscripciones (institucion_id, plan, estado, monto, fecha_inicio, fecha_fin, creado_por)
+       VALUES (?, ?, ?, ?, NOW(), DATE_ADD(NOW(), INTERVAL ? DAY), ?)`,
+      [institucionId, cambio.plan, ESTADOS_SUSCRIPCION.ACTIVA, cambio.credito, cambio.diasQueCubre, usuario.id]
+    );
+    await conexion.commit();
+  } catch (error) {
+    await conexion.rollback();
+    throw error;
+  } finally {
+    conexion.release();
+  }
+
+  await registrarAuditoria({
+    usuarioId: usuario.id,
+    accion: 'suscripcion_reducida',
+    detalle: `${vigente.plan} → ${cambio.plan}, saldo ${cambio.credito} por ${cambio.diasQueCubre} días`,
+    ip,
+  });
+  limpiarCachePlan(institucionId);
+  return { plan: cambio.plan, dias: cambio.diasQueCubre, credito: cambio.credito };
 }
 
 export async function listarSuscripciones() {

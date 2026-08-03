@@ -28,6 +28,7 @@ export default function Checkout() {
     setPagando(true);
     try {
       await llamarApi(`/api/pagos/simulada/${hash}/pagar`, { metodo: 'POST' });
+      window.dispatchEvent(new Event('plan'));
       setListo(true);
     } catch (excepcion) {
       setError(excepcion.message);

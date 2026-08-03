@@ -44,7 +44,9 @@ export default function TarjetasPlanes({ planes, vigente, cambios = {}, esAdmini
                   </p>
                 )}
                 {cambio?.tipo === 'reduccion' && (
-                  <p className="nota">Empieza el {fecha(cambio.desde)}, al terminar el período que ya pagaste.</p>
+                  <p className="nota">
+                    Tu saldo de {guaranies(cambio.credito)} cubre {contar(cambio.diasQueCubre, 'día', 'días')} de este plan.
+                  </p>
                 )}
                 <Button
                   type={esElActual ? 'default' : 'primary'}
@@ -52,7 +54,8 @@ export default function TarjetasPlanes({ planes, vigente, cambios = {}, esAdmini
                   onClick={() => alElegir(plan, cambio)}
                 >
                   {esElActual ? 'Renovar por otro período' : ETIQUETA_CAMBIO[cambio?.tipo] ?? 'Contratar'}
-                  {cambio && cambio.aPagar !== plan.precio && ` — ${guaranies(cambio.aPagar)}`}
+                  {cambio?.tipo === 'mejora' && ` — ${guaranies(cambio.aPagar)}`}
+                  {cambio?.tipo === 'reduccion' && ' — sin cargo'}
                 </Button>
               </>
             )}
