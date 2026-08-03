@@ -1,4 +1,4 @@
-// menú de la esquina superior derecha con el color, el perfil, la clave y salir
+// menú de la esquina superior derecha: perfil, cambio de clave y salir
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from 'antd';
@@ -48,12 +48,6 @@ export default function MenuUsuario({ usuario }) {
           <div className="menu-cabecera">
             <strong>{usuario?.nombre}</strong>
             <span className="rol-chip">{legible(usuario?.rol)}</span>
-          </div>
-
-          <div className="menu-seccion">
-            <div className="menu-fila">
-              <span id="titulo-colores">Color</span>
-            </div>
           </div>
 
           <div className="menu-seccion">

@@ -7,7 +7,6 @@ import { avisarError, toast } from '../servicios/avisos.js';
 import { contar, legible } from '../servicios/formato.js';
 import Modal from '../componentes/Modal.jsx';
 import TablaLeads from '../componentes/TablaLeads.jsx';
-import AvisoPrivacidad from '../componentes/AvisoPrivacidad.jsx';
 
 const FORMULARIO_VACIO = { nombre: '', cedula: '', telefono: '', correo: '', canal: '', consentimiento: false };
 const FILTROS_VACIOS = { estado: '', canal: '', buscar: '', incluirBajas: '' };
@@ -182,7 +181,6 @@ export default function Leads() {
           <p className="ayuda">
             {opciones.avisoConsentimiento} <a href="/privacidad" target="_blank" rel="noreferrer">Ver la política de privacidad</a>
           </p>
-          <AvisoPrivacidad />
           {error && <p className="error">{error}</p>}
           <div className="acciones">
             <Button type="primary" htmlType="submit" disabled={guardando}>{guardando ? 'Guardando…' : 'Registrar'}</Button>

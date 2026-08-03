@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Button, Table } from 'antd';
 import { llamarApi } from '../servicios/api.js';
 import { confirmar, avisarError, toast, mostrarClave } from '../servicios/avisos.js';
-import { fecha, contar, legible } from '../servicios/formato.js';
+import { fecha, legible } from '../servicios/formato.js';
 import FormularioInstitucion from '../componentes/FormularioInstitucion.jsx';
 import AltaAdministrador from '../componentes/AltaAdministrador.jsx';
 
@@ -122,7 +122,6 @@ export default function Instituciones() {
     },
   ];
 
-  const activas = instituciones.filter((i) => i.activo).length;
 
   return (
     <>
@@ -133,15 +132,9 @@ export default function Instituciones() {
 
       <section className="panel">
         {instituciones.length > 0 ? (
-          <>
-            <p className="nota">
-              {contar(instituciones.length, 'institución', 'instituciones')}, {contar(activas, 'activa', 'activas')}.
-              Cada una tiene sus propios usuarios, interesados y suscripción, y no ve los datos de las demás.
-            </p>
-            <div className="tabla-envoltura">
-              <Table columns={columnas} dataSource={instituciones} rowKey="id" size="small" pagination={false} />
-            </div>
-          </>
+          <div className="tabla-envoltura">
+            <Table columns={columnas} dataSource={instituciones} rowKey="id" size="small" pagination={false} />
+          </div>
         ) : (
           <div className="vacio">
             <p>Todavía no hay instituciones cargadas.</p>

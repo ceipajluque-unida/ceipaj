@@ -9,7 +9,7 @@ const VACIO = { nombre: '', correo: '', telefono: '', direccion: '', metodo2fa: 
 
 // el mismo catálogo del backend; acá se muestra en criollo
 const METODOS = [
-  { value: 'app', label: 'Aplicación de autenticación (Google Authenticator)' },
+  { value: 'app', label: 'Aplicación de autenticación' },
   { value: 'email', label: 'Código por correo electrónico' },
   { value: 'sms', label: 'Código por SMS' },
 ];

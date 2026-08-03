@@ -1,5 +1,6 @@
 // alta de un cobro suelto, fuera de los planes de suscripción
 import { Button, Input, Select } from 'antd';
+import { conMiles, sinMiles } from '../servicios/formato.js';
 import Modal from './Modal.jsx';
 
 export default function FormularioCobro({ abierto, medios, formulario, error, enviando, alCambiar, alEnviar, alCerrar }) {
@@ -17,7 +18,10 @@ export default function FormularioCobro({ abierto, medios, formulario, error, en
         </label>
         <div className="fila-formulario">
           <label>Monto en guaraníes
-            <Input value={formulario.monto} onChange={campo('monto')} inputMode="numeric" placeholder="250000" required />
+            {/* se muestra con punto de miles mientras se escribe; al enviar va el número pelado */}
+            <Input value={conMiles(formulario.monto)} inputMode="numeric" placeholder="250.000" required
+              addonBefore="Gs."
+              onChange={(evento) => alCambiar({ ...formulario, monto: sinMiles(evento.target.value) })} />
           </label>
           <label>Medio de pago
             <Select

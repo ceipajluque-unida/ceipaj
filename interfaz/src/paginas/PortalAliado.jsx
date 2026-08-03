@@ -5,7 +5,6 @@ import { llamarApi, usuarioActual } from '../servicios/api.js';
 import { avisarError, toast } from '../servicios/avisos.js';
 import { contar, fecha, legible } from '../servicios/formato.js';
 import Modal from '../componentes/Modal.jsx';
-import AvisoPrivacidad from '../componentes/AvisoPrivacidad.jsx';
 
 const FORMULARIO_VACIO = { nombre: '', cedula: '', telefono: '', correo: '', consentimiento: false };
 
@@ -134,7 +133,6 @@ export default function PortalAliado() {
               {avisoConsentimiento} <a href="/privacidad" target="_blank" rel="noreferrer">Ver política de privacidad</a>
             </span>
           </Checkbox>
-          <AvisoPrivacidad />
           {error && <p className="error">{error}</p>}
           <div className="acciones">
             <Button type="primary" htmlType="submit" disabled={enviando}>{enviando ? 'Registrando…' : 'Registrar'}</Button>

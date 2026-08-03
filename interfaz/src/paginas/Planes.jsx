@@ -5,7 +5,7 @@ import { Button, Table } from 'antd';
 import { llamarApi } from '../servicios/api.js';
 import { confirmar, avisarError, toast } from '../servicios/avisos.js';
 import { guaranies, legible, contar } from '../servicios/formato.js';
-import ImagenPlan, { AYUDA_IMAGEN } from '../componentes/ImagenPlan.jsx';
+import ImagenPlan from '../componentes/ImagenPlan.jsx';
 import FormularioPlan from '../componentes/FormularioPlan.jsx';
 
 const FORMULARIO_VACIO = {
@@ -118,11 +118,6 @@ export default function Planes() {
       </header>
 
       <section className="panel">
-        <p className="nota">
-          Lo que se marque acá es lo que el sistema habilita de verdad: los módulos sin tildar
-          aparecen con candado y el tope de usuarios se aplica al crear cuentas.
-        </p>
-        <p className="nota">Imagen del plan: {AYUDA_IMAGEN}.</p>
         <div className="tabla-envoltura">
           <Table columns={columnas} dataSource={planes} rowKey="id" size="small" pagination={false} />
         </div>

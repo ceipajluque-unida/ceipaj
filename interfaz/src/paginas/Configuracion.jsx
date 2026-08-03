@@ -5,14 +5,17 @@ import { llamarApi } from '../servicios/api.js';
 import { avisarError, avisarExito, toast } from '../servicios/avisos.js';
 import { contar } from '../servicios/formato.js';
 import FondoIngreso from '../componentes/FondoIngreso.jsx';
+import { useTema } from '../contextos/tema.jsx';
 
 export default function Configuracion() {
+  const { previsualizar } = useTema();
   const [config, setConfig] = useState(null);
   const [valores, setValores] = useState({});
   const [sucios, setSucios] = useState(new Set()); // claves que el admin tocó
   const [pestana, setPestana] = useState(0);
   const [guardando, setGuardando] = useState(false);
-  const [destino, setDestino] = useState('');
+  const [destinoCorreo, setDestinoCorreo] = useState('');
+  const [destinoSms, setDestinoSms] = useState('');
   const [enviando, setEnviando] = useState(null);
 
   async function cargar() {
@@ -29,6 +32,8 @@ export default function Configuracion() {
   function editar(clave, valor) {
     setValores((previo) => ({ ...previo, [clave]: valor }));
     setSucios((previo) => new Set(previo).add(clave));
+    // el color se ve en el momento, sin esperar a guardar: elegirlo a ciegas no sirve
+    if (clave === 'COLOR_ACENTO') previsualizar(valor);
   }
 
   async function guardar() {
@@ -49,8 +54,8 @@ export default function Configuracion() {
     }
   }
 
-  async function probar(ruta) {
-    if (!destino.trim()) return avisarError('Escribí un correo o número de destino para la prueba.');
+  async function probar(ruta, destino) {
+    if (!String(destino ?? '').trim()) return avisarError('Escribí un correo o número de destino para la prueba.');
     setEnviando(ruta);
     try {
       await llamarApi(`/api/configuracion/${ruta}`, { metodo: 'POST', cuerpo: { para: destino.trim() } });
@@ -153,28 +158,32 @@ export default function Configuracion() {
           ))}
         </div>
 
-        {grupo.categoria === 'Comunicación' && (
+        {/* cada prueba con su propio campo: antes compartían el mismo estado, así que
+            escribir el correo cambiaba también el número del SMS */}
+        {grupo.categoria === 'Correo' && (
           <section className="prueba-envio">
             <h3>Probar el envío</h3>
+            <p className="nota">Se manda un correo real, para comprobar que la cuenta quedó bien configurada.</p>
             <div className="fila-formulario">
               <label>Mandar un correo de prueba a
-                <Input value={destino} onChange={(e) => setDestino(e.target.value)} placeholder="correo@ejemplo.com" />
+                <Input type="email" value={destinoCorreo} onChange={(e) => setDestinoCorreo(e.target.value)} placeholder="correo@ejemplo.com" />
               </label>
-              <Button disabled={enviando === 'probar-correo'} onClick={() => probar('probar-correo')}>
+              <Button disabled={enviando === 'probar-correo' || !destinoCorreo} onClick={() => probar('probar-correo', destinoCorreo)}>
                 {enviando === 'probar-correo' ? 'Enviando…' : 'Enviar prueba'}
               </Button>
             </div>
           </section>
         )}
 
-        {grupo.categoria === 'Comunicación' && (
+        {grupo.categoria === 'SMS' && (
           <section className="prueba-envio">
             <h3>Probar el envío</h3>
+            <p className="nota">Con una cuenta gratuita de Twilio solo llegan mensajes a números verificados en su panel.</p>
             <div className="fila-formulario">
               <label>Mandar un SMS de prueba a
-                <Input value={destino} onChange={(e) => setDestino(e.target.value)} placeholder="+59598..." />
+                <Input value={destinoSms} onChange={(e) => setDestinoSms(e.target.value)} placeholder="+595981123456" />
               </label>
-              <Button disabled={enviando === 'probar-sms'} onClick={() => probar('probar-sms')}>
+              <Button disabled={enviando === 'probar-sms' || !destinoSms} onClick={() => probar('probar-sms', destinoSms)}>
                 {enviando === 'probar-sms' ? 'Enviando…' : 'Enviar prueba'}
               </Button>
             </div>

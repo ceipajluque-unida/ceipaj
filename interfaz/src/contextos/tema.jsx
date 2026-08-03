@@ -31,11 +31,16 @@ export function ProveedorTema({ children }) {
   // el alto contraste cambia la paleta, y antd necesita el valor, no la variable css
   const [contraste, setContraste] = useState(() => document.documentElement.dataset.contraste === 'alto');
 
-  // se pide sin sesión a propósito: el ingreso también tiene que salir con el color
+  // se pide sin sesión a propósito: el ingreso también tiene que salir con el color.
+  // se vuelve a pedir cuando configuración avisa que guardó, si no había que recargar
+  // la página a mano para ver el cambio.
   useEffect(() => {
-    llamarApi('/api/configuracion/legales')
+    const traer = () => llamarApi('/api/configuracion/legales')
       .then((t) => t.color && setAcento(t.color))
       .catch(() => {});
+    traer();
+    window.addEventListener('institucion', traer);
+    return () => window.removeEventListener('institucion', traer);
   }, []);
 
   // el panel de accesibilidad toca el atributo del html; antd se entera por acá
@@ -53,8 +58,10 @@ export function ProveedorTema({ children }) {
 
   const color = contraste ? CONTRASTE_ALTO : acento;
 
+  // la pantalla de configuración la usa para mostrar el color elegido en el momento, sin
+  // esperar a guardar: elegir a ciegas y recién ver el resultado después no sirve
   return (
-    <Contexto.Provider value={{ acento }}>
+    <Contexto.Provider value={{ acento, previsualizar: setAcento }}>
       <ConfigProvider
         locale={esES}
         theme={{ algorithm: theme.defaultAlgorithm, token: fichas(color) }}

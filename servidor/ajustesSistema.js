@@ -77,7 +77,7 @@ export const CATALOGO = [
   // los del proveedor del servicio: son los que salen impresos en el recibo del cobro,
   // así que estaban mal puestos bajo "Institucional", donde parecían del colegio
   { categoria: 'Datos del proveedor', ajustes: [
-    { clave: 'RECIBO_EMISOR_NOMBRE', etiqueta: 'Razón social que sale impresa en el recibo', tipo: 'texto', porDefecto: RECIBO.EMISOR_NOMBRE },
+    { clave: 'RECIBO_EMISOR_NOMBRE', etiqueta: 'Razón social', tipo: 'texto', porDefecto: RECIBO.EMISOR_NOMBRE },
     { clave: 'RECIBO_EMISOR_DIRECCION', etiqueta: 'Dirección', tipo: 'texto', porDefecto: RECIBO.EMISOR_DIRECCION },
     { clave: 'RECIBO_EMISOR_TELEFONO', etiqueta: 'Teléfono', tipo: 'texto', porDefecto: RECIBO.EMISOR_TELEFONO },
     { clave: 'RECIBO_EMISOR_CORREO', etiqueta: 'Correo de contacto', tipo: 'texto', porDefecto: RECIBO.EMISOR_CORREO },
@@ -108,13 +108,17 @@ export const CATALOGO = [
     { clave: 'RECAPTCHA_CLAVE_SECRETA', etiqueta: 'Clave secreta', tipo: 'secreto', porDefecto: '',
       depende: { clave: 'RECAPTCHA_ACTIVO', valor: '1' } },
   ] },
-  { categoria: 'Comunicación', ajustes: [
+  // correo y sms se configuran por separado: son dos servicios distintos, con
+  // proveedores distintos, y mezclados en una sola lista no se entendía qué era de cuál
+  { categoria: 'Correo', ajustes: [
     { clave: 'SMTP_HOST', etiqueta: 'Servidor de correo saliente', tipo: 'texto', porDefecto: CORREO.SMTP_HOST },
     { clave: 'SMTP_PUERTO', etiqueta: 'Puerto', tipo: 'numero', min: 1, max: 65535, porDefecto: CORREO.SMTP_PUERTO },
     { clave: 'SMTP_USUARIO', etiqueta: 'Cuenta de correo', tipo: 'texto', porDefecto: CORREO.SMTP_USUARIO },
     { clave: 'SMTP_CLAVE', etiqueta: 'Contraseña de la cuenta', tipo: 'secreto', porDefecto: '' },
-    { clave: 'TWILIO_SID', etiqueta: 'Identificador de la cuenta de SMS', tipo: 'texto', porDefecto: SMS.TWILIO_SID },
-    { clave: 'TWILIO_TOKEN', etiqueta: 'Clave de la cuenta de SMS', tipo: 'secreto', porDefecto: '' },
+  ] },
+  { categoria: 'SMS', ajustes: [
+    { clave: 'TWILIO_SID', etiqueta: 'Identificador de la cuenta', tipo: 'texto', porDefecto: SMS.TWILIO_SID },
+    { clave: 'TWILIO_TOKEN', etiqueta: 'Clave de la cuenta', tipo: 'secreto', porDefecto: '' },
     { clave: 'TWILIO_VERIFY_SID', etiqueta: 'Identificador del servicio de verificación', tipo: 'texto', porDefecto: SMS.TWILIO_VERIFY_SID },
   ] },
   // las reglas con las que trabaja el colegio: las decide el colegio
@@ -127,13 +131,19 @@ export const CATALOGO = [
   ] },
   // cómo se cobra el servicio: es del proveedor, no de quien lo paga
   { categoria: 'Suscripción y cobros', ajustes: [
+    { clave: 'PASARELA_PROVEEDOR', etiqueta: 'Pasarela de pagos', tipo: 'opcion',
+      opciones: PASARELA.PROVEEDORES, porDefecto: PASARELA.PROVEEDOR,
+      ayuda: 'Con la simulada el cobro se completa dentro del sistema, sin salir a ningún servicio externo. Sirve para probar y para mostrar el recorrido mientras Pagopar no esté habilitado.' },
     { clave: 'MESES_SUSCRIPCION', etiqueta: 'Cuántos meses dura cada período de suscripción', tipo: 'numero', min: 1, max: 36, porDefecto: PLANES_SUSCRIPCION[0].meses },
     { clave: 'DIAS_AVISO_VENCIMIENTO', etiqueta: 'Con cuántos días de anticipación avisar que la suscripción vence', tipo: 'numero', min: 0, max: 90, porDefecto: SUSCRIPCION.DIAS_AVISO_VENCIMIENTO },
     // PLAN_AL_VENCER no se edita desde acá a propósito: quien contrata el plan no puede
     // decidir a qué plan cae cuando deja de pagar, o se queda con el más caro gratis.
     // Vive en configuracion/ajustes.js y lo cambia quien tiene acceso al servidor.
-    { clave: 'PAGOPAR_TOKEN_PUBLICO', etiqueta: 'Token público de la pasarela de pagos', tipo: 'texto', porDefecto: '' },
-    { clave: 'PAGOPAR_TOKEN_PRIVADO', etiqueta: 'Token privado de la pasarela de pagos', tipo: 'secreto', porDefecto: '' },
+    // solo tienen sentido con Pagopar elegida; con la simulada estorban
+    { clave: 'PAGOPAR_TOKEN_PUBLICO', etiqueta: 'Token público de Pagopar', tipo: 'texto', porDefecto: '',
+      depende: { clave: 'PASARELA_PROVEEDOR', valor: 'pagopar' } },
+    { clave: 'PAGOPAR_TOKEN_PRIVADO', etiqueta: 'Token privado de Pagopar', tipo: 'secreto', porDefecto: '',
+      depende: { clave: 'PASARELA_PROVEEDOR', valor: 'pagopar' } },
   ] },
   // la cara del sistema: la fija el proveedor y vale igual para todos los colegios
   { categoria: 'Apariencia', ajustes: [

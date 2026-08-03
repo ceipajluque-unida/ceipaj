@@ -1,6 +1,7 @@
 // urls del módulo de pagos
 import { Router } from 'express';
 import * as controlador from './controlador.js';
+import * as checkout from './checkoutSimulado.js';
 import { autenticar, permitirRoles } from '../../servidor/middleware/autenticar.js';
 import { PERMISOS, PERMISOS_ESCRITURA } from '../../configuracion/permisos.js';
 
@@ -24,3 +25,8 @@ rutasPagos.get('/:referencia/recibo', autenticar, permitirRoles(...PERMISOS.pago
 
 // la pasarela avisa por acá sin sesión, lo que protege es la firma del aviso
 rutasPagos.post('/notificacion', controlador.notificacion);
+
+// checkout de la pasarela de prueba. pide sesión igual que el resto del módulo: no es
+// una pasarela de verdad, es una pantalla más del sistema.
+rutasPagos.get('/simulada/:hash', autenticar, permitirRoles(...PERMISOS.pagos), checkout.verPedido);
+rutasPagos.post('/simulada/:hash/pagar', autenticar, permitirRoles(...PERMISOS_ESCRITURA.pagos), checkout.pagar);

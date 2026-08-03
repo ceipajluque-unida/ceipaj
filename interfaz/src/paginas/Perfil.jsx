@@ -1,4 +1,4 @@
-// perfil del usuario con sus datos, permisos, 2fa y color de la interfaz
+// perfil del usuario con sus datos, permisos y verificación en dos pasos
 import { useEffect, useState } from 'react';
 import { Button, Input, Select, Table } from 'antd';
 import { llamarApi, guardarSesion, tokenActual, usuarioActual } from '../servicios/api.js';
@@ -202,11 +202,6 @@ export default function Perfil() {
         </ul>
       </section>
 
-      <section className="panel">
-        <h3>Apariencia</h3>
-        <div className="menu-fila">
-        </div>
-      </section>
     </>
   );
 }

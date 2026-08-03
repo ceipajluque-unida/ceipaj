@@ -11,6 +11,9 @@ import { comoHtml } from '../servicios/markdownSimple.jsx';
 // velo sobre la foto de fondo: sin esto el texto blanco pierde el contraste medible
 const VELO = 'linear-gradient(rgba(20, 38, 58, 0.86), rgba(20, 38, 58, 0.86))';
 
+// el código es numérico; pegar uno con espacios o guiones no tiene que romperlo
+const soloNumeros = (texto) => texto.replace(/\D/g, '');
+
 export default function Ingreso() {
   const institucion = useInstitucion();
   const navegar = useNavigate();
@@ -197,9 +200,10 @@ export default function Ingreso() {
                 )}
               </div>
             )}
-            <label>Código de 6 dígitos
-              <Input value={codigo} onChange={(e) => setCodigo(e.target.value)} inputMode="numeric" pattern="[0-9]*" maxLength={6} placeholder="000000" autoFocus required />
-            </label>
+            <label htmlFor="codigo-2fa">Código de 6 dígitos</label>
+            {/* una casilla por dígito y salto solo: se lee el código del celular y se
+                tipea de corrido, sin contar caracteres en un campo largo */}
+            <Input.OTP id="codigo-2fa" length={6} value={codigo} onChange={setCodigo} formatter={soloNumeros} autoFocus />
             <Checkbox checked={confiarEquipo} onChange={(e) => setConfiarEquipo(e.target.checked)}>
               No volver a pedirme el código en este equipo
             </Checkbox>

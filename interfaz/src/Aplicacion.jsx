@@ -19,6 +19,7 @@ import PortalAliado from './paginas/PortalAliado.jsx';
 import Comisiones from './paginas/Comisiones.jsx';
 import Reportes from './paginas/Reportes.jsx';
 import Pagos from './paginas/Pagos.jsx';
+import Checkout from './paginas/Checkout.jsx';
 import Suscripciones from './paginas/Suscripciones.jsx';
 import Planes from './paginas/Planes.jsx';
 import Instituciones from './paginas/Instituciones.jsx';
@@ -30,6 +31,12 @@ import Perfil from './paginas/Perfil.jsx';
 // solo deja pasar con sesión iniciada; si no, manda al ingreso
 function RutaProtegida({ children }) {
   return haySesion() ? children : <Navigate to="/ingreso" replace />;
+}
+
+// al revés: con la sesión abierta, las pantallas de acceso no tienen sentido. escribir
+// /ingreso a mano mostraba el formulario de nuevo, como si el usuario no estuviera adentro.
+function RutaDeAcceso({ children }) {
+  return haySesion() ? <Navigate to="/" replace /> : children;
 }
 
 export default function Aplicacion() {
@@ -49,13 +56,17 @@ export default function Aplicacion() {
 
   return (
     <Routes>
-      <Route path="/configuracion-inicial" element={<ConfiguracionInicial />} />
+      <Route path="/configuracion-inicial" element={<RutaDeAcceso><ConfiguracionInicial /></RutaDeAcceso>} />
       <Route
         path="/ingreso"
-        element={estado.requiereConfiguracionInicial ? <Navigate to="/configuracion-inicial" replace /> : <Ingreso />}
+        element={
+          <RutaDeAcceso>
+            {estado.requiereConfiguracionInicial ? <Navigate to="/configuracion-inicial" replace /> : <Ingreso />}
+          </RutaDeAcceso>
+        }
       />
-      <Route path="/recuperar" element={<RecuperarClave />} />
-      <Route path="/restablecer" element={<RestablecerClave />} />
+      <Route path="/recuperar" element={<RutaDeAcceso><RecuperarClave /></RutaDeAcceso>} />
+      <Route path="/restablecer" element={<RutaDeAcceso><RestablecerClave /></RutaDeAcceso>} />
       <Route path="/privacidad" element={<Privacidad />} />
       <Route element={<RutaProtegida><Diseno /></RutaProtegida>}>
         <Route path="/" element={<PantallaPrincipal />} />
@@ -68,6 +79,7 @@ export default function Aplicacion() {
         <Route path="/comisiones" element={<Comisiones />} />
         <Route path="/reportes" element={<Reportes />} />
         <Route path="/pagos" element={<Pagos />} />
+        <Route path="/checkout/:hash" element={<Checkout />} />
         <Route path="/suscripcion" element={<Suscripciones />} />
         <Route path="/planes" element={<Planes />} />
         <Route path="/instituciones" element={<Instituciones />} />

@@ -104,18 +104,15 @@ export default function ConfiguracionInicial() {
           <form onSubmit={confirmarCodigo}>
             <p className="ayuda">Escaneá el código con tu app de autenticación.</p>
             <img className="qr" src={qr} alt="Código QR para la app de autenticación" />
-            <label>Código de 6 dígitos
-              <Input
-                value={codigo}
-                onChange={(evento) => setCodigo(evento.target.value)}
-                inputMode="numeric"
-                pattern="[0-9]*"
-                maxLength={6}
-                placeholder="000000"
-                autoFocus
-                required
-              />
-            </label>
+            <label htmlFor="codigo-inicial">Código de 6 dígitos</label>
+            <Input.OTP
+              id="codigo-inicial"
+              length={6}
+              value={codigo}
+              onChange={setCodigo}
+              formatter={(texto) => texto.replace(/\D/g, '')}
+              autoFocus
+            />
             {error && <p className="error">{error}</p>}
             <Button type="primary" htmlType="submit" disabled={cargando}>{cargando ? 'Verificando…' : 'Activar y entrar'}</Button>
           </form>

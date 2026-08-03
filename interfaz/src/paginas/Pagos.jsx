@@ -1,5 +1,6 @@
 // pagos de la plataforma: crear cobros, ver el historial y bajar el recibo
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button, Input, Select } from 'antd';
 import { llamarApi, usuarioActual } from '../servicios/api.js';
 import { avisarError, toast } from '../servicios/avisos.js';
@@ -18,6 +19,7 @@ const ESTADOS = [
 ];
 
 export default function Pagos() {
+  const navegar = useNavigate();
   // crear cobros es tarea del administrador; la dirección solo mira el historial
   const esAdministrador = usuarioActual()?.rol === 'administrador';
   const [pagos, setPagos] = useState(null);
@@ -62,6 +64,11 @@ export default function Pagos() {
       setAbierto(false);
       setFormulario(FORMULARIO_VACIO);
       await cargar();
+      // la pasarela de prueba tiene su checkout dentro del sistema: se abre como pantalla
+      // completa, no apretado adentro de un marco en esta misma vista
+      if (String(cobro.urlPago ?? '').includes('/checkout/')) {
+        return navegar(new URL(cobro.urlPago, window.location.origin).pathname);
+      }
       setCobroEnCurso(cobro);
     } catch (excepcion) {
       setError(excepcion.message);

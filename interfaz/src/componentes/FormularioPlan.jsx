@@ -1,6 +1,6 @@
 // alta y edición de un plan de suscripción: precio, duración, tope de usuarios y módulos
 import { Button, Input, InputNumber, Select, Switch } from 'antd';
-import { legible } from '../servicios/formato.js';
+import { legible, conMiles, sinMiles } from '../servicios/formato.js';
 import Modal from './Modal.jsx';
 
 export default function FormularioPlan({ abierto, editando, modulos, formulario, error, cargando, alCambiar, alEnviar, alCerrar }) {
@@ -13,7 +13,9 @@ export default function FormularioPlan({ abierto, editando, modulos, formulario,
         <label><span>Descripción</span><Input value={formulario.descripcion} onChange={campo('descripcion')} /></label>
         <div className="fila-campos">
           <label><span>Precio en guaraníes</span>
+            {/* con el punto de miles se lee de un vistazo si son 250.000 o 2.500.000 */}
             <InputNumber value={formulario.precio} min={1} step={50000} style={{ width: '100%' }}
+              formatter={conMiles} parser={sinMiles} addonBefore="Gs."
               onChange={(valor) => alCambiar({ ...formulario, precio: valor })} />
           </label>
           <label><span>Meses que dura</span>

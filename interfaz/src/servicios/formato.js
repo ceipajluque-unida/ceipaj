@@ -7,6 +7,17 @@ export function guaranies(monto) {
   return Number.isFinite(numero) ? GUARANIES.format(numero) : '—';
 }
 
+// para los campos donde se escribe plata: se ve con punto de miles mientras se tipea,
+// y al guardar vuelve a ser un número pelado. sin esto, 250000 y 2500000 se confunden.
+export function conMiles(valor) {
+  if (valor === null || valor === undefined || valor === '') return '';
+  return String(valor).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
+export function sinMiles(texto) {
+  return String(texto ?? '').replace(/\./g, '').replace(/\D/g, '');
+}
+
 export function fecha(valor) {
   if (!valor) return '—';
   const fecha = new Date(valor);

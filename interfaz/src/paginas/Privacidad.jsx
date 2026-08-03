@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Skeleton } from 'antd';
-import { llamarApi } from '../servicios/api.js';
+import { haySesion, llamarApi } from '../servicios/api.js';
 import { comoHtml } from '../servicios/markdownSimple.jsx';
 import { useInstitucion } from '../contextos/institucion.jsx';
 
@@ -29,7 +29,13 @@ export default function Privacidad() {
           {politica && <article className="documento-legal">{comoHtml(politica)}</article>}
         </div>
 
-        <p className="ayuda centrado sep-arriba"><Link to="/ingreso">Volver al ingreso</Link></p>
+        {/* con la sesión abierta, mandar al ingreso echaba al usuario de su propio
+            sistema: la política se abre desde adentro y desde afuera */}
+        <p className="ayuda centrado sep-arriba">
+          {haySesion()
+            ? <Link to="/">Volver al sistema</Link>
+            : <Link to="/ingreso">Volver al ingreso</Link>}
+        </p>
       </article>
     </main>
   );

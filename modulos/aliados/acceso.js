@@ -13,7 +13,7 @@ function textoCredenciales({ nombre, correo, claveTemporal }) {
     `Contraseña temporal: ${claveTemporal}\n\n` +
     'En tu primer ingreso el sistema te va a pedir cambiar esta contraseña y activar ' +
     'la verificación en dos pasos escaneando un código QR con tu app de autenticación ' +
-    '(Google Authenticator o similar).\n\n' +
+    '(Microsoft Authenticator, Google Authenticator o la que uses).\n\n' +
     'Vas a poder ingresar desde tu navegador, en la dirección del sistema que te va a ' +
     'compartir la institución. ¡Gracias por acompañarnos!'
   );

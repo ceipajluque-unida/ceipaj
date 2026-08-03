@@ -72,7 +72,7 @@ export const SEGURIDAD = {
 
 // métodos de verificación
 export const METODOS_2FA = [
-  { valor: 'app', texto: 'Aplicación de autenticación (Google Authenticator)' },
+  { valor: 'app', texto: 'Aplicación de autenticación' },
   { valor: 'email', texto: 'Código por correo electrónico' },
   { valor: 'sms', texto: 'Código por SMS' },
 ];
@@ -87,6 +87,13 @@ export const CORREO = {
 
 export const PASARELA = {
   MONEDA: 'PYG',
+  // 'simulada' para mostrar el recorrido completo sin depender de la habilitación del
+  // comercio; 'pagopar' para la pasarela de verdad. se cambia desde Configuración.
+  PROVEEDOR: process.env.PASARELA_PROVEEDOR ?? 'simulada',
+  PROVEEDORES: [
+    { valor: 'simulada', texto: 'Simulada (para pruebas y demostración)' },
+    { valor: 'pagopar', texto: 'Pagopar' },
+  ],
   // la conciliación consulta un pago por llamada, así que se limita cuánto y cada cuánto
   MINUTOS_ENTRE_CONCILIACIONES: 2,
   MAXIMO_POR_CONCILIACION: 20,

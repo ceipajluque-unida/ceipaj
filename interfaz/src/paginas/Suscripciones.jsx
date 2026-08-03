@@ -1,5 +1,6 @@
 // suscripción de la institución a la plataforma, con el plan vigente y el pago
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button, Select, Table } from 'antd';
 import { llamarApi, usuarioActual } from '../servicios/api.js';
 import { avisarError, confirmar, toast } from '../servicios/avisos.js';
@@ -17,6 +18,7 @@ function textoPeriodo(meses) {
 }
 
 export default function Suscripciones() {
+  const navegar = useNavigate();
   const esAdministrador = usuarioActual()?.rol === 'administrador';
   const [datos, setDatos] = useState(null);
   const [medios, setMedios] = useState([]);
@@ -56,6 +58,11 @@ export default function Suscripciones() {
       const cobro = await llamarApi('/api/pagos/plan', { metodo: 'POST', cuerpo: { plan: planElegido.valor, medio } });
       setPlanElegido(null);
       await cargar();
+      // la pasarela de prueba tiene su checkout dentro del sistema: se abre como pantalla
+      // completa, no apretado adentro de un marco en esta misma vista
+      if (String(cobro.urlPago ?? '').includes('/checkout/')) {
+        return navegar(new URL(cobro.urlPago, window.location.origin).pathname);
+      }
       setCobroEnCurso(cobro);
     } catch (excepcion) {
       setError(excepcion.message);
