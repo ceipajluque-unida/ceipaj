@@ -56,7 +56,17 @@ export default function Aplicacion() {
 
   return (
     <Routes>
-      <Route path="/configuracion-inicial" element={<RutaDeAcceso><ConfiguracionInicial /></RutaDeAcceso>} />
+      {/* la redirección va en los dos sentidos: con usuarios ya cargados esta pantalla no
+          tiene nada que hacer, y sin la guarda dejaba llenar el formulario entero para
+          recién avisar al enviarlo que la configuración inicial estaba cerrada */}
+      <Route
+        path="/configuracion-inicial"
+        element={
+          <RutaDeAcceso>
+            {estado.requiereConfiguracionInicial ? <ConfiguracionInicial /> : <Navigate to="/ingreso" replace />}
+          </RutaDeAcceso>
+        }
+      />
       <Route
         path="/ingreso"
         element={
