@@ -13,9 +13,10 @@ const desdeLead = (lead) => ({
   telefono: lead.telefono ?? '',
   correo: lead.correo ?? '',
   canal: lead.canal,
+  aliadoId: lead.aliado_id ?? '',
 });
 
-export default function FormularioLead({ abierto, lead, canales, alCerrar, alGuardar }) {
+export default function FormularioLead({ abierto, lead, canales, aliados = [], alCerrar, alGuardar }) {
   const [datos, setDatos] = useState(() => desdeLead(lead));
   const [error, setError] = useState(null);
   const [guardando, setGuardando] = useState(false);
@@ -59,6 +60,24 @@ export default function FormularioLead({ abierto, lead, canales, alCerrar, alGua
             <Select value={datos.canal} options={opcionesCanal} onChange={(valor) => setDatos({ ...datos, canal: valor })} />
           </label>
         </div>
+        {/* se puede corregir después: un aliado recomienda por teléfono y el interesado
+            lo carga el personal, y sin esto nunca cobraba su comisión */}
+        {aliados.length > 0 && (
+          <label>¿Lo recomendó un aliado?
+            <Select
+              allowClear
+              showSearch
+              optionFilterProp="label"
+              placeholder="Ninguno"
+              value={datos.aliadoId || undefined}
+              options={aliados.map((a) => ({ value: a.id, label: a.nombre }))}
+              onChange={(valor) => setDatos({ ...datos, aliadoId: valor ?? '' })}
+            />
+            {lead.estado === 'matriculado' && (
+              <span className="nota">Ya está matriculado: su comisión se generó y el aliado no se cambia.</span>
+            )}
+          </label>
+        )}
         {error && <p className="error">{error}</p>}
         <div className="acciones">
           <Button type="primary" htmlType="submit" disabled={guardando}>{guardando ? 'Guardando…' : 'Guardar cambios'}</Button>

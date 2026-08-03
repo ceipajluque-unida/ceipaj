@@ -22,6 +22,24 @@ function validarDatosContacto({ nombre, telefono, correo, canal }) {
   if (!CANALES_CAPTACION.includes(canal)) throw new ErrorVisible('Canal de captación no reconocido.');
 }
 
+// el aliado que recomendó al interesado define comisiones y puntos, o sea plata: no puede
+// venir del navegador sin comprobar que existe, que está activo y que es de la misma
+// institución. sin esta comprobación se le podía atribuir un interesado a un aliado de
+// otro colegio mandando su id a mano.
+async function aliadoValido(aliadoId, institucionId) {
+  if (aliadoId === null || aliadoId === undefined || aliadoId === '') return null;
+  const numero = Number(aliadoId);
+  if (!Number.isInteger(numero) || numero <= 0) throw new ErrorVisible('Aliado no válido.');
+  // el aliado no tiene estado propio: su alta y su baja son las de su cuenta de usuario
+  const [[aliado]] = await bd.query(
+    `SELECT a.id FROM aliados a JOIN usuarios u ON u.id = a.usuario_id
+      WHERE a.id = ? AND a.institucion_id = ? AND u.activo = 1`,
+    [numero, institucionId]
+  );
+  if (!aliado) throw new ErrorVisible('Ese aliado no existe o no está activo en esta institución.');
+  return numero;
+}
+
 // registra un interesado. también la usa el portal, por eso aliadoId y creadoPor son opcionales
 export async function crearLead({ nombre, cedula, telefono, correo, canal, consentimiento, aliadoId = null, creadoPor = null }, ip) {
   validarDatosContacto({ nombre, telefono, correo, canal });
@@ -32,6 +50,7 @@ export async function crearLead({ nombre, cedula, telefono, correo, canal, conse
   const cedulaNormalizada = normalizarCedula(cedula);
   // el alta también entra por el portal del aliado, que corre con su propia sesión
   const institucionId = institucionDelPedido();
+  const aliado = await aliadoValido(aliadoId, institucionId);
   let resultado;
   try {
     // se guarda contra qué versión de los textos legales se prestó el consentimiento,
@@ -40,7 +59,7 @@ export async function crearLead({ nombre, cedula, telefono, correo, canal, conse
       `INSERT INTO leads (nombre, cedula, telefono, correo, canal, aliado_id, institucion_id,
                           consentimiento_datos, consentimiento_fecha, consentimiento_version, creado_por)
        VALUES (?, ?, ?, ?, ?, ?, ?, 1, NOW(), ?, ?)`,
-      [nombre.trim(), cedulaNormalizada, telefono || null, correo || null, canal, aliadoId,
+      [nombre.trim(), cedulaNormalizada, telefono || null, correo || null, canal, aliado,
         institucionId, VERSION_LEGALES, creadoPor]
     );
   } catch (error) {
@@ -91,16 +110,38 @@ export async function concretarMatricula(leadId, fecha, usuarioId, ip) {
   return { id: lead.id, estado: ESTADOS_LEAD.MATRICULADO };
 }
 
-// la cédula no se edita porque identifica al lead en la conversión
-export async function editarLead(id, { nombre, telefono, correo, canal }, usuarioId, ip) {
+// la cédula no se edita porque identifica al lead en la conversión.
+// el aliado sí, y hace falta: un interesado que recomienda un aliado por teléfono lo carga
+// el personal, y antes no había forma de atribuírselo, así que al matricularse no generaba
+// ni comisión ni puntos y quedaba así para siempre.
+export async function editarLead(id, { nombre, telefono, correo, canal, aliadoId }, usuarioId, ip) {
   validarDatosContacto({ nombre, telefono, correo, canal });
-  const [resultado] = await bd.query(
-    'UPDATE leads SET nombre = ?, telefono = ?, correo = ?, canal = ? WHERE id = ? AND institucion_id = ?',
-    [nombre.trim(), telefono || null, correo || null, canal, id, institucionDelPedido()]
+  const institucionId = institucionDelPedido();
+  const [[antes]] = await bd.query(
+    'SELECT aliado_id, estado FROM leads WHERE id = ? AND institucion_id = ?',
+    [id, institucionId]
   );
-  if (resultado.affectedRows === 0) throw new ErrorVisible('Interesado no encontrado.', 404);
-  await registrarAuditoria({ usuarioId, accion: 'lead_editado', detalle: `lead ${id}`, ip });
-  return { id: Number(id), nombre: nombre.trim(), telefono, correo, canal };
+  if (!antes) throw new ErrorVisible('Interesado no encontrado.', 404);
+  // ya matriculado la comisión está liquidada: cambiar el aliado ahí dejaría el pago
+  // hecho a nombre de uno y el crédito a nombre de otro
+  const cambiaAliado = aliadoId !== undefined && Number(aliadoId ?? 0) !== Number(antes.aliado_id ?? 0);
+  if (cambiaAliado && antes.estado === ESTADOS_LEAD.MATRICULADO) {
+    throw new ErrorVisible('No se puede cambiar el aliado de un interesado ya matriculado: su comisión ya se generó.', 409);
+  }
+  const aliado = cambiaAliado ? await aliadoValido(aliadoId, institucionId) : antes.aliado_id;
+
+  await bd.query(
+    'UPDATE leads SET nombre = ?, telefono = ?, correo = ?, canal = ?, aliado_id = ? WHERE id = ? AND institucion_id = ?',
+    [nombre.trim(), telefono || null, correo || null, canal, aliado, id, institucionId]
+  );
+  await registrarAuditoria({
+    usuarioId,
+    accion: 'lead_editado',
+    // el cambio de aliado va detallado porque define comisiones y puntos
+    detalle: cambiaAliado ? `lead ${id} · aliado ${antes.aliado_id ?? '—'} → ${aliado ?? '—'}` : `lead ${id}`,
+    ip,
+  });
+  return { id: Number(id), nombre: nombre.trim(), telefono, correo, canal, aliado_id: aliado };
 }
 
 // cambio de estado validado contra las transiciones del negocio

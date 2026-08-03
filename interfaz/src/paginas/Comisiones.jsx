@@ -58,11 +58,13 @@ export default function Comisiones() {
     { pendiente: 0, pagada: 0 }
   );
   const pendientes = datos.comisiones.filter((comision) => comision.estado === 'pendiente').length;
-  const nombresAliados = [...new Set(datos.resumen.map((fila) => fila.aliado))];
+  // por id y no por nombre: el backend agrupa por aliado_id justamente para no mezclar
+  // homónimos, y filtrar por el nombre volvía a juntarlos en una sola opción
+  const opcionesAliado = datos.resumen.map((fila) => ({ value: fila.aliado_id, label: fila.aliado }));
 
   const hayFiltros = Boolean(filtros.aliado || filtros.estado);
   const visibles = datos.comisiones.filter((comision) => {
-    if (filtros.aliado && comision.aliado !== filtros.aliado) return false;
+    if (filtros.aliado && comision.aliado_id !== filtros.aliado) return false;
     if (filtros.estado && comision.estado !== filtros.estado) return false;
     return true;
   });
@@ -148,7 +150,7 @@ export default function Comisiones() {
             <label>Aliado
               <Select
                 value={filtros.aliado}
-                options={[{ value: '', label: 'Todos' }, ...nombresAliados.map((nombre) => ({ value: nombre, label: nombre }))]}
+                options={[{ value: '', label: 'Todos' }, ...opcionesAliado]}
                 onChange={filtrar('aliado')}
               />
             </label>

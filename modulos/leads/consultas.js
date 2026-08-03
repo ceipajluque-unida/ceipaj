@@ -89,3 +89,16 @@ export async function obtenerLead(id) {
   );
   return { ...lead, interacciones, transiciones: transicionesPosibles(lead.estado) };
 }
+
+// lista mínima de aliados activos para el selector del alta y de la edición. no expone
+// datos de contacto: solo hace falta saber a quién atribuirle el interesado.
+export async function listarAliadosParaElegir() {
+  const [filas] = await bd.query(
+    `SELECT a.id, u.nombre
+       FROM aliados a JOIN usuarios u ON u.id = a.usuario_id
+      WHERE a.institucion_id = ? AND u.activo = 1
+      ORDER BY u.nombre`,
+    [institucionDelPedido()]
+  );
+  return filas;
+}

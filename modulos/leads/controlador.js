@@ -13,6 +13,9 @@ export async function opciones(req, res) {
     avisoConsentimiento: ajustes.leer('TEXTO_CONSENTIMIENTO', LEGALES.AVISO_CONSENTIMIENTO),
     // se lee de la tabla, no del archivo: si no, el título decía 7 días y la lista usaba 15
     diasAlerta: ajustes.leerNumero('DIAS_SIN_SEGUIMIENTO_PARA_ALERTA', LIMITES.DIAS_SIN_SEGUIMIENTO_PARA_ALERTA),
+    // para el selector "¿lo trajo un aliado?" del alta y de la edición. solo id y nombre:
+    // no hace falta el padrón entero para elegir uno.
+    aliados: await consultas.listarAliadosParaElegir(),
   });
 }
 
@@ -30,18 +33,18 @@ export async function detalle(req, res) {
 }
 
 export async function crear(req, res) {
-  const { nombre, cedula, telefono, correo, canal, consentimiento } = req.body ?? {};
+  const { nombre, cedula, telefono, correo, canal, consentimiento, aliadoId } = req.body ?? {};
   res.status(201).json(
     await servicio.crearLead(
-      { nombre, cedula, telefono, correo, canal, consentimiento, creadoPor: req.usuario.id },
+      { nombre, cedula, telefono, correo, canal, consentimiento, aliadoId, creadoPor: req.usuario.id },
       req.ip
     )
   );
 }
 
 export async function editar(req, res) {
-  const { nombre, telefono, correo, canal } = req.body ?? {};
-  res.json(await servicio.editarLead(req.params.id, { nombre, telefono, correo, canal }, req.usuario.id, req.ip));
+  const { nombre, telefono, correo, canal, aliadoId } = req.body ?? {};
+  res.json(await servicio.editarLead(req.params.id, { nombre, telefono, correo, canal, aliadoId }, req.usuario.id, req.ip));
 }
 
 export async function cambiarEstado(req, res) {

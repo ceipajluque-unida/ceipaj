@@ -1,17 +1,20 @@
 // reportes gerenciales con rendimiento por aliado y exportación a excel, pdf o csv
 import { useEffect, useState } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { Button, Table } from 'antd';
-import { llamarApi, tokenActual, usuarioActual } from '../servicios/api.js';
+import { llamarApi, tokenActual } from '../servicios/api.js';
 import { toast, avisarError } from '../servicios/avisos.js';
 
-// tablas que se pueden bajar; la auditoría queda reservada al administrador
+// tablas que se pueden bajar. cada una declara de qué módulo son sus datos, para
+// ofrecer solo las que el rol puede pedir de verdad: antes la lista era fija y al
+// comercial le mostraba nueve botones que el backend le contestaba con 403.
 const TABLAS = [
-  { clave: 'leads', titulo: 'Interesados' },
-  { clave: 'interacciones', titulo: 'Interacciones' },
-  { clave: 'comisiones', titulo: 'Comisiones' },
-  { clave: 'pagos', titulo: 'Pagos' },
-  { clave: 'suscripciones', titulo: 'Suscripciones' },
-  { clave: 'auditoria', titulo: 'Auditoría', soloAdministrador: true },
+  { clave: 'leads', titulo: 'Interesados', modulo: 'leads' },
+  { clave: 'interacciones', titulo: 'Interacciones', modulo: 'leads' },
+  { clave: 'comisiones', titulo: 'Comisiones', modulo: 'comisiones' },
+  { clave: 'pagos', titulo: 'Pagos', modulo: 'pagos' },
+  { clave: 'suscripciones', titulo: 'Suscripciones', modulo: 'suscripcion' },
+  { clave: 'auditoria', titulo: 'Auditoría', modulo: 'auditoria' },
 ];
 
 const FORMATOS = [
@@ -21,7 +24,8 @@ const FORMATOS = [
 ];
 
 export default function Reportes() {
-  const esAdministrador = usuarioActual()?.rol === 'administrador';
+  // los módulos del rol llegan del diseño, que ya los pidió al entrar
+  const { modulos = [] } = useOutletContext() ?? {};
   const [datos, setDatos] = useState(null);
   const [error, setError] = useState(null);
   const [bajando, setBajando] = useState(null); // qué archivo se está generando
@@ -135,7 +139,7 @@ export default function Reportes() {
         <div className="tabla-envoltura">
           <Table
             columns={columnasDescargas}
-            dataSource={TABLAS.filter((tabla) => !tabla.soloAdministrador || esAdministrador)}
+            dataSource={TABLAS.filter((tabla) => modulos.includes(tabla.modulo))}
             rowKey="clave"
             size="small"
             pagination={false}

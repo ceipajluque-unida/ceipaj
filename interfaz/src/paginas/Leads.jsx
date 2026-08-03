@@ -8,7 +8,7 @@ import { contar, legible } from '../servicios/formato.js';
 import Modal from '../componentes/Modal.jsx';
 import TablaLeads from '../componentes/TablaLeads.jsx';
 
-const FORMULARIO_VACIO = { nombre: '', cedula: '', telefono: '', correo: '', canal: '', consentimiento: false };
+const FORMULARIO_VACIO = { nombre: '', cedula: '', telefono: '', correo: '', canal: '', aliadoId: '', consentimiento: false };
 const FILTROS_VACIOS = { estado: '', canal: '', buscar: '', incluirBajas: '' };
 
 export default function Leads() {
@@ -171,6 +171,23 @@ export default function Leads() {
               onChange={(valor) => setFormulario({ ...formulario, canal: valor })}
             />
           </label>
+          {/* sin esto, un interesado que recomienda un aliado por teléfono y carga la
+              secretaria no le generaba ni comisión ni puntos, y no había forma de
+              corregirlo después */}
+          {opciones.aliados?.length > 0 && (
+            <label>¿Lo recomendó un aliado?
+              <Select
+                allowClear
+                showSearch
+                optionFilterProp="label"
+                placeholder="Ninguno"
+                value={formulario.aliadoId || undefined}
+                options={opciones.aliados.map((a) => ({ value: a.id, label: a.nombre }))}
+                onChange={(valor) => setFormulario({ ...formulario, aliadoId: valor ?? '' })}
+              />
+              <span className="nota">Le suma sus puntos y, si se matricula, su comisión.</span>
+            </label>
+          )}
           <Checkbox
             className="consentimiento"
             checked={formulario.consentimiento}

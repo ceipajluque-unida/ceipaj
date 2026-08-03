@@ -146,6 +146,7 @@ export default function LeadDetalle() {
         abierto={modalDatos}
         lead={lead}
         canales={opciones.canales}
+        aliados={opciones.aliados ?? []}
         alCerrar={() => setModalDatos(false)}
         alGuardar={cargar}
       />
