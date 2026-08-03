@@ -3,6 +3,7 @@ import ExcelJS from 'exceljs';
 import PDFDocument from 'pdfkit';
 import { obtenerDatos } from './exportaciones.js';
 import { INSTITUCION } from '../../configuracion/ajustes.js';
+import * as ajustes from '../../servidor/ajustesSistema.js';
 
 // título legible por tabla, para la hoja de excel y el encabezado del pdf
 const TITULOS = {
@@ -13,7 +14,7 @@ const TITULOS = {
 export async function generarXlsx(tabla) {
   const { encabezados, filas } = await obtenerDatos(tabla);
   const libro = new ExcelJS.Workbook();
-  libro.creator = INSTITUCION.NOMBRE;
+  libro.creator = ajustes.leer('INSTITUCION_NOMBRE', INSTITUCION.NOMBRE);
   const hoja = libro.addWorksheet(TITULOS[tabla] ?? tabla);
 
   const cabecera = hoja.addRow(encabezados);
@@ -48,7 +49,7 @@ export async function generarPdf(tabla) {
     doc.on('error', rechazar);
 
     doc.fontSize(15).font('Helvetica-Bold').fillColor('#1f2430')
-      .text(`${INSTITUCION.NOMBRE} — ${titulo}`);
+      .text(`${ajustes.leer('INSTITUCION_NOMBRE', INSTITUCION.NOMBRE)} — ${titulo}`);
     doc.moveDown(0.2).fontSize(8).font('Helvetica').fillColor('#666')
       .text(`Generado el ${new Date().toLocaleString('es-PY')} · ${filas.length} registro(s)`);
     doc.moveDown(0.6).fillColor('#000');

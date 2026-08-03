@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS auditoria (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   usuario_id INT UNSIGNED NULL,
   accion VARCHAR(80) NOT NULL,
-  detalle VARCHAR(500) NULL,
+  detalle TEXT NULL,
   direccion_ip VARCHAR(45) NULL,
   institucion_id INT UNSIGNED NULL, -- null: acción del proveedor o sin sesión
   fecha DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,

@@ -86,7 +86,7 @@ export default function Instituciones() {
     setAdministrando(null);
     await cargar();
     if (respuesta.claveTemporal) {
-      mostrarClave(respuesta.claveTemporal, `Administrador de <strong>${administrando.nombre}</strong> creado. El correo no está configurado, así que anotá su clave temporal:`);
+      mostrarClave(respuesta.claveTemporal, 'Administrador creado en', administrando.nombre);
     } else {
       toast('Administrador creado. Sus credenciales se enviaron por correo.');
     }

@@ -25,7 +25,7 @@ export async function listarEstudiantes() {
             ${ULTIMA_ACCION} AS ultima_accion,
             DATEDIFF(NOW(), COALESCE(${ULTIMA_ACCION}, l.fecha_conversion)) AS dias_sin_accion
        FROM leads l
-       WHERE l.estado = ? AND l.institucion_id = ?
+       WHERE l.estado = ? AND l.institucion_id = ? AND l.activo = 1
        ORDER BY dias_sin_accion DESC`,
     [ESTADOS_LEAD.MATRICULADO, institucionDelPedido()]
   );
@@ -39,7 +39,7 @@ export async function listarEstudiantes() {
 export async function listarAcciones(leadId) {
   // un id de otra institución cae acá como "no encontrado", que no confirma ni desmiente
   const [[lead]] = await bd.query(
-    'SELECT id FROM leads WHERE id = ? AND institucion_id = ?',
+    'SELECT id FROM leads WHERE id = ? AND institucion_id = ? AND activo = 1',
     [leadId, institucionDelPedido()]
   );
   if (!lead) throw new ErrorVisible('Estudiante no encontrado.', 404);
@@ -60,7 +60,7 @@ export async function registrarAccion(leadId, { tipo, detalle }, usuarioId, ip) 
   const limpio = detalle?.trim() || null;
   if (limpio && !validarLargo(limpio, LARGOS.detalle)) throw new ErrorVisible(`El detalle no puede pasar de ${LARGOS.detalle} caracteres.`);
   const [[lead]] = await bd.query(
-    'SELECT id, estado FROM leads WHERE id = ? AND institucion_id = ?',
+    'SELECT id, estado FROM leads WHERE id = ? AND institucion_id = ? AND activo = 1',
     [leadId, institucionDelPedido()]
   );
   if (!lead) throw new ErrorVisible('Estudiante no encontrado.', 404);

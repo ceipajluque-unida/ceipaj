@@ -19,7 +19,7 @@ const EXPORTACIONES = {
             FROM leads l
             LEFT JOIN aliados a ON a.id = l.aliado_id
             LEFT JOIN usuarios u ON u.id = a.usuario_id
-            WHERE l.institucion_id = ?
+            WHERE l.institucion_id = ? AND l.activo = 1
             ORDER BY l.creado_en DESC`,
   },
   interacciones: {

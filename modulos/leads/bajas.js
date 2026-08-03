@@ -19,12 +19,22 @@ export async function darDeBaja(id, motivo, usuarioId, ip) {
   return { id: Number(id), activo: false, motivo_baja: texto };
 }
 
+// reactivar sirve para deshacer una baja administrativa. NO alcanza para volver a
+// contactar a quien revocó su consentimiento: para eso hace falta que lo dé de nuevo,
+// así que esos quedan afuera del update y el mensaje lo explica.
 export async function reactivar(id, usuarioId, ip) {
   const [resultado] = await bd.query(
-    'UPDATE leads SET activo = 1, motivo_baja = NULL WHERE id = ? AND activo = 0 AND institucion_id = ?',
+    `UPDATE leads SET activo = 1, motivo_baja = NULL
+      WHERE id = ? AND activo = 0 AND institucion_id = ? AND consentimiento_revocado_en IS NULL`,
     [id, institucionDelPedido()]
   );
-  if (resultado.affectedRows === 0) throw new ErrorVisible('El interesado no existe o ya estaba activo.', 404);
+  if (resultado.affectedRows === 0) {
+    throw new ErrorVisible(
+      'No se puede reactivar: el interesado no existe, ya estaba activo, o revocó su consentimiento y '
+      + 'hay que registrarlo de nuevo con su autorización.',
+      409
+    );
+  }
   await registrarAuditoria({ usuarioId, accion: 'lead_reactivado', detalle: `lead ${id}`, ip });
   return { id: Number(id), activo: true };
 }

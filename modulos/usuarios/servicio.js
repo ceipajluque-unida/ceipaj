@@ -11,22 +11,30 @@ import * as ajustes from '../../servidor/ajustesSistema.js';
 import { generarClaveTemporal } from '../../comun/claves.js';
 import { despacharCredenciales, renovarClave } from './credenciales.js';
 import { revisarCupo, exigirOtroAdministrador } from './guardas.js';
+import { institucionActual } from '../../servidor/contexto.js';
 
 const CAMPOS = 'id, nombre, correo, telefono, direccion, rol, activo, activado_2fa, creado_en, actualizado_en';
 
 // solo cuentas internas de la institución: los aliados van en su módulo y el
 // superadministrador es del proveedor. lo que no se lista, tampoco se edita ni se le
 // restablece la clave, porque toda la cadena cuelga de buscarInterno.
+//
+// el filtro por institución es lo que separa a un colegio de otro: sin él, el
+// administrador de uno veía las cuentas del resto y podía restablecerles la clave.
 export async function listarUsuarios() {
   const [filas] = await bd.query(
-    `SELECT ${CAMPOS} FROM usuarios WHERE rol NOT IN (?, ?) ORDER BY creado_en DESC`,
-    ROLES_AJENOS
+    `SELECT ${CAMPOS} FROM usuarios
+      WHERE rol NOT IN (?, ?) AND institucion_id <=> ? ORDER BY creado_en DESC`,
+    [...ROLES_AJENOS, institucionActual()]
   );
   return filas;
 }
 
 async function buscarInterno(id) {
-  const [[fila]] = await bd.query(`SELECT ${CAMPOS} FROM usuarios WHERE id = ? AND rol NOT IN (?, ?)`, [id, ...ROLES_AJENOS]);
+  const [[fila]] = await bd.query(
+    `SELECT ${CAMPOS} FROM usuarios WHERE id = ? AND rol NOT IN (?, ?) AND institucion_id <=> ?`,
+    [id, ...ROLES_AJENOS, institucionActual()]
+  );
   if (!fila) throw new ErrorVisible('Usuario no encontrado.', 404);
   return fila;
 }
@@ -64,8 +72,8 @@ export async function editarUsuario(id, { nombre, correo, telefono, direccion },
   const antes = await buscarInterno(id);
   try {
     await bd.query(
-      'UPDATE usuarios SET nombre = ?, correo = ?, telefono = ?, direccion = ? WHERE id = ?',
-      [nombre, correo, telefono || null, direccion || null, id]
+      'UPDATE usuarios SET nombre = ?, correo = ?, telefono = ?, direccion = ? WHERE id = ? AND institucion_id <=> ?',
+      [nombre, correo, telefono || null, direccion || null, id, institucionActual()]
     );
   } catch (error) {
     if (error.code === 'ER_DUP_ENTRY') throw new ErrorVisible('Ya existe un usuario con ese correo.', 409);
@@ -94,7 +102,10 @@ export async function cambiarRol(id, rol, solicitante, ip) {
   if (antes.rol === rol) return antes;
   if (antes.rol === ROLES.ADMINISTRADOR && rol !== ROLES.ADMINISTRADOR) await exigirOtroAdministrador(id);
   // sube la versión de sesión: el token viejo lleva el rol viejo y deja de valer ya
-  await bd.query('UPDATE usuarios SET rol = ?, sesion_version = sesion_version + 1 WHERE id = ?', [rol, id]);
+  await bd.query(
+    'UPDATE usuarios SET rol = ?, sesion_version = sesion_version + 1 WHERE id = ? AND institucion_id <=> ?',
+    [rol, id, institucionActual()]
+  );
   await registrarAuditoria({
     usuarioId: solicitante.id,
     accion: 'usuario_rol_cambiado',
@@ -110,7 +121,10 @@ export async function cambiarActivo({ id, activo }, solicitante, ip) {
   const usuario = await buscarInterno(id);
   if (!activo && usuario.rol === ROLES.ADMINISTRADOR) await exigirOtroAdministrador(id);
   if (activo) await revisarCupo();
-  await bd.query('UPDATE usuarios SET activo = ? WHERE id = ?', [activo ? 1 : 0, id]);
+  await bd.query(
+    'UPDATE usuarios SET activo = ? WHERE id = ? AND institucion_id <=> ?',
+    [activo ? 1 : 0, id, institucionActual()]
+  );
   await registrarAuditoria({
     usuarioId: solicitante.id,
     accion: activo ? 'usuario_activado' : 'usuario_desactivado',

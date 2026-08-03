@@ -27,11 +27,15 @@ export async function revisarCupo() {
 }
 
 // sin esto, el único administrador podría degradarse o desactivarse y dejar el
-// sistema sin nadie que pueda administrarlo
+// sistema sin nadie que pueda administrarlo.
+//
+// el conteo va por institución: el invariante es "cada colegio tiene su administrador",
+// y contando de más el administrador de otro colegio servía de aval para dejar a este
+// sin ninguno.
 export async function exigirOtroAdministrador(id) {
   const [[{ total }]] = await bd.query(
-    'SELECT COUNT(*) AS total FROM usuarios WHERE rol = ? AND activo = 1 AND id <> ?',
-    [ROLES.ADMINISTRADOR, id]
+    'SELECT COUNT(*) AS total FROM usuarios WHERE rol = ? AND activo = 1 AND id <> ? AND institucion_id <=> ?',
+    [ROLES.ADMINISTRADOR, id, institucionActual()]
   );
   if (Number(total) === 0) throw new ErrorVisible('Tiene que quedar al menos un administrador activo.');
 }

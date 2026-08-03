@@ -170,6 +170,9 @@ async function migrar() {
   // los textos legales pasan los 5.000 caracteres y la columna nació con 255:
   // sin modo estricto mysql los cortaba en silencio al guardarlos
   await asegurarTipo(conexion, 'ajustes_sistema', 'valor', 'mediumtext', 'MEDIUMTEXT NULL');
+  // guardar toda la configuración de una vez manda más de 500 caracteres de claves y el
+  // registro se cortaba a la mitad de un nombre, justo lo que el rnf-13 pide conservar
+  await asegurarTipo(conexion, 'auditoria', 'detalle', 'text', 'TEXT NULL');
   // el rol del proveedor: sin este alter, en una base ya creada el insert corta con
   // "data truncated for column rol"
   await asegurarTipo(conexion, 'usuarios', 'rol',

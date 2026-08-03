@@ -8,8 +8,10 @@ export function validarCedula(cedula) {
   return /^\d{6,8}$/.test(normalizarCedula(cedula));
 }
 
+// los caracteres de marcado quedan afuera a propósito: el correo se muestra en avisos
+// de pantalla, y con < y > se podía guardar html dentro de una dirección válida
 export function validarCorreo(correo) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(correo ?? '').trim());
+  return /^[^\s@<>"'&/\\]+@[^\s@<>"'&/\\]+\.[^\s@<>"'&/\\]+$/.test(String(correo ?? '').trim());
 }
 
 export function validarTelefono(telefono) {

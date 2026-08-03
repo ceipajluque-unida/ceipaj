@@ -62,7 +62,7 @@ export default function Aliados() {
         setAbierto(false);
         await cargar();
         if (respuesta.claveTemporal) {
-          mostrarClave(respuesta.claveTemporal, `No pudimos enviarle el correo a <strong>${respuesta.aliado.correo}</strong>. Anotá esta clave y entregásela, no se vuelve a mostrar:`);
+          mostrarClave(respuesta.claveTemporal, 'No pudimos enviarle el correo a', respuesta.aliado.correo);
         } else {
           toast('Aliado creado. Ya le enviamos sus datos de acceso por correo.');
         }
@@ -85,7 +85,7 @@ export default function Aliados() {
     try {
       const respuesta = await llamarApi(`/api/aliados/${aliado.id}/reenviar-acceso`, { metodo: 'PUT' });
       if (respuesta.claveTemporal) {
-        mostrarClave(respuesta.claveTemporal, `No pudimos enviarle el correo a <strong>${aliado.correo}</strong>. Anotá esta clave y entregásela, no se vuelve a mostrar:`);
+        mostrarClave(respuesta.claveTemporal, 'No pudimos enviarle el correo a', aliado.correo);
       } else {
         toast('Listo, le reenviamos el acceso por correo.');
       }

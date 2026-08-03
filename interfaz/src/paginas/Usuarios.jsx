@@ -58,7 +58,7 @@ export default function Usuarios() {
         setAbierto(false);
         await cargar();
         if (respuesta.claveTemporal) {
-          mostrarClave(respuesta.claveTemporal, `Usuario <strong>${respuesta.usuario.correo}</strong> creado. El correo no está configurado, así que anotá su clave temporal:`);
+          mostrarClave(respuesta.claveTemporal, 'Usuario creado:', respuesta.usuario.correo);
         } else {
           toast('Usuario creado. Las credenciales se enviaron por correo.');
         }
@@ -106,7 +106,7 @@ export default function Usuarios() {
     try {
       const respuesta = await llamarApi(`/api/usuarios/${usuario.id}/restablecer-clave`, { metodo: 'PUT' });
       if (respuesta.claveTemporal) {
-        mostrarClave(respuesta.claveTemporal, `Clave de <strong>${usuario.correo}</strong> restablecida. Anotá la nueva clave temporal:`);
+        mostrarClave(respuesta.claveTemporal, 'Clave restablecida de', usuario.correo);
       } else {
         toast('Clave restablecida. Se envió por correo.');
       }

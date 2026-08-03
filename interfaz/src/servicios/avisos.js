@@ -43,12 +43,21 @@ export function toast(texto, icono = 'success') {
 }
 
 // la clave se ve una sola vez, por eso se ofrece copiarla
-export function mostrarClave(clave, texto) {
+// el texto lo arma quien llama y puede traer datos cargados por un usuario (un correo,
+// un nombre), así que va escapado: acá se inyecta como html y no como texto
+const escapar = (valor) => String(valor ?? '').replace(/[&<>"']/g, (caracter) => ({
+  '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+}[caracter]));
+
+export function mostrarClave(clave, texto, resaltado = '') {
+  const encabezado = resaltado
+    ? `${escapar(texto)} <strong>${escapar(resaltado)}</strong>`
+    : escapar(texto);
   return Swal.fire({
     ...base(),
     icon: 'info',
     title: 'Clave temporal',
-    html: `${texto}<br><br><code style="font-size:1.3rem;letter-spacing:1px">${clave}</code>`,
+    html: `${encabezado}<br><br><code style="font-size:1.3rem;letter-spacing:1px">${escapar(clave)}</code>`,
     confirmButtonText: 'Copiar y cerrar',
   }).then(() => navigator.clipboard?.writeText(clave).catch(() => {}));
 }

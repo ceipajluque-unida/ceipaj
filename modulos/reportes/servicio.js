@@ -15,18 +15,18 @@ export async function obtenerIndicadores() {
   if (institucionId === null) throw new ErrorVisible('Esta operación es de una institución.', 403);
 
   const [[totales]] = await bd.query(
-    'SELECT COUNT(*) AS totalLeads, COALESCE(SUM(estado = ?), 0) AS conversiones FROM leads WHERE institucion_id = ?',
+    'SELECT COUNT(*) AS totalLeads, COALESCE(SUM(estado = ?), 0) AS conversiones FROM leads WHERE institucion_id = ? AND activo = 1',
     [ESTADOS_LEAD.MATRICULADO, institucionId]
   );
   const totalLeads = Number(totales.totalLeads);
   const conversiones = Number(totales.conversiones);
 
   const [leadsPorCanal] = await bd.query(
-    'SELECT canal, COUNT(*) AS total FROM leads WHERE institucion_id = ? GROUP BY canal ORDER BY total DESC',
+    'SELECT canal, COUNT(*) AS total FROM leads WHERE institucion_id = ? AND activo = 1 GROUP BY canal ORDER BY total DESC',
     [institucionId]
   );
   const [leadsPorEstado] = await bd.query(
-    'SELECT estado, COUNT(*) AS total FROM leads WHERE institucion_id = ? GROUP BY estado ORDER BY total DESC',
+    'SELECT estado, COUNT(*) AS total FROM leads WHERE institucion_id = ? AND activo = 1 GROUP BY estado ORDER BY total DESC',
     [institucionId]
   );
 

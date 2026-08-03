@@ -31,17 +31,32 @@ export async function exigirClave(req, res, siguiente) {
   }
   // se recorren todas siempre, para que el tiempo de respuesta no delate cuál acertó
   let acerto = coincide(recibida, porDefecto);
-  let institucionId = null;
+  const dueñas = [];
   for (const fila of claves) {
     if (coincide(recibida, fila.valor)) {
       acerto = true;
-      institucionId = fila.institucion_id;
+      dueñas.push(fila.institucion_id);
     }
   }
   if (!acerto) return siguiente(new ErrorVisible('Clave de API incorrecta.', 401));
 
+  // dos instituciones con la misma clave: no se puede saber de quién son los datos, y
+  // guardarlos en cualquiera de las dos mezclaría los matriculados de dos colegios
+  if (dueñas.length > 1) {
+    return siguiente(new ErrorVisible('Esa clave está repetida en más de una institución: pedí que la cambien.', 409));
+  }
+  // sin institución dueña no hay dónde guardar: con el contexto en nulo los registros
+  // quedaban con institucion_id NULL, invisibles para el cruce y duplicándose en cada
+  // envío, porque el índice único no ve iguales a dos NULL
+  if (dueñas.length === 0) {
+    return siguiente(new ErrorVisible(
+      'La API de matriculados está cerrada: falta cargar su clave en la Configuración de la institución.',
+      503
+    ));
+  }
+
   // el resto del pedido corre dentro de la institución dueña de esa clave
-  return conInstitucion(institucionId, siguiente);
+  return conInstitucion(dueñas[0], siguiente);
 }
 
 // guarda lo que manda el académico. una fila mala no tumba el envío, se informa aparte

@@ -6,6 +6,7 @@ import { cerrarSesion, llamarApi, usuarioActual } from '../servicios/api.js';
 import MenuUsuario from './MenuUsuario.jsx';
 import MenuLateral, { MODULO_POR_RUTA, NOMBRE_MODULO } from './MenuLateral.jsx';
 import AvisoSinAcceso from './AvisoSinAcceso.jsx';
+import SinSalida from './SinSalida.jsx';
 import Icono from './iconos.jsx';
 import { useInstitucion } from '../contextos/institucion.jsx';
 
@@ -90,7 +91,23 @@ export default function Diseno() {
     : null;
 
   if (motivo) {
-    return <Navigate to={motivo === 'plan' ? '/suscripcion' : inicio} replace state={{ sinAcceso: { motivo, plan: plan?.texto, modulo: NOMBRE_MODULO[moduloPedido] } }} />;
+    // a dónde mandarlo: a Suscripción solo si tiene ese módulo, porque si no rebota de
+    // vuelta y quedan los dos redirigiéndose entre sí. el aliado con un plan que no
+    // incluye su portal caía justo ahí y la pantalla quedaba en blanco.
+    const destino = motivo === 'plan' && modulos.includes('suscripcion') ? '/suscripcion' : inicio;
+    const seRepite = destino === ubicacion.pathname || destino === raiz;
+    if (!seRepite) {
+      return <Navigate to={destino} replace state={{ sinAcceso: { motivo, plan: plan?.texto, modulo: NOMBRE_MODULO[moduloPedido] } }} />;
+    }
+    // no hay a dónde ir: es su propia pantalla de inicio la que está trabada
+    return (
+      <SinSalida
+        motivo={motivo}
+        plan={plan?.texto}
+        modulo={NOMBRE_MODULO[moduloPedido]}
+        institucion={esProveedor ? 'Panel del proveedor' : institucion.nombre}
+      />
+    );
   }
 
   return (

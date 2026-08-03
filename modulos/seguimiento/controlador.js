@@ -1,12 +1,15 @@
 // capa http del seguimiento estratégico
 import * as servicio from './servicio.js';
 import { TIPOS_ACCION_SEGUIMIENTO, LIMITES } from '../../configuracion/ajustes.js';
+import * as ajustes from '../../servidor/ajustesSistema.js';
 
 // opciones que necesita la interfaz, así no las duplica
 export async function opciones(req, res) {
   res.json({
     tiposAccion: TIPOS_ACCION_SEGUIMIENTO,
-    diasRiesgo: LIMITES.DIAS_SIN_ACOMPANAMIENTO_RIESGO,
+    // se lee de la tabla y no del archivo: si no, el título decía 30 días y la lista
+    // marcaba riesgo a los 15
+    diasRiesgo: ajustes.leerNumero('DIAS_SIN_ACOMPANAMIENTO_RIESGO', LIMITES.DIAS_SIN_ACOMPANAMIENTO_RIESGO),
   });
 }
 
