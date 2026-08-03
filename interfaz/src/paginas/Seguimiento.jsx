@@ -184,7 +184,7 @@ export default function Seguimiento() {
         {elegido && (
           <>
             <p className="nota">
-              Cédula {elegido.cedula} · teléfono {elegido.telefono || 'sin cargar'} · {dias(elegido.dias_sin_accion)} sin acompañamiento
+              Cédula {elegido.cedula} — teléfono {elegido.telefono || 'sin cargar'} — {dias(elegido.dias_sin_accion)} sin acompañamiento
             </p>
             <form onSubmit={registrarAccion}>
               <div className="fila-formulario">

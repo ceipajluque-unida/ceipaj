@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button, Checkbox, Input } from 'antd';
-import { guardarSesion, llamarApi, tokenDispositivo, guardarDispositivo, olvidarDispositivo } from '../servicios/api.js';
+import { guardarSesion, llamarApi, tokenDispositivo, guardarDispositivo, olvidarDispositivo, motivoDeSalida } from '../servicios/api.js';
 import Captcha from '../componentes/Captcha.jsx';
 import Legales from '../componentes/Legales.jsx';
 import { useInstitucion } from '../contextos/institucion.jsx';
@@ -33,6 +33,8 @@ export default function Ingreso() {
   const [presentacion, setPresentacion] = useState('');
   const [fondo, setFondo] = useState('');
   const [mostrarTextos, setMostrarTextos] = useState(true);
+  // si llegó acá porque lo echaron, se lo explica en vez de dejarlo adivinando
+  const [salida] = useState(motivoDeSalida);
 
   useEffect(() => {
     llamarApi('/api/autenticacion/estado')
@@ -156,6 +158,7 @@ export default function Ingreso() {
               Recordarme en este equipo
             </Checkbox>
             {captcha.activo && <Captcha claveSitio={captcha.claveSitio} alResolver={setCaptchaRespuesta} />}
+            {!error && salida && <p className="aviso-sesion">{salida}</p>}
             {error && <p className="error">{error}</p>}
             <Button type="primary" htmlType="submit" disabled={cargando || (captcha.activo && !captchaRespuesta)}>
               {cargando ? 'Verificando…' : 'Continuar'}

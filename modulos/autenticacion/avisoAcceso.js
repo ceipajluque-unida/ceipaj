@@ -18,7 +18,7 @@ export async function avisarIngresoDesdeEquipoNuevo(usuario, { equipo, ip }) {
       `Fecha: ${momento()}\n` +
       `IP: ${ip || 'desconocida'}\n\n` +
       `Si no fuiste vos, cambiá tu contraseña cuanto antes.`;
-    const envio = await enviarCorreo({ para: usuario.correo, asunto: `Nuevo inicio de sesión · ${INSTITUCION.NOMBRE}`, texto });
+    const envio = await enviarCorreo({ para: usuario.correo, asunto: `Nuevo inicio de sesión — ${INSTITUCION.NOMBRE}`, texto });
     return { enviado: envio.enviado };
   } catch {
     return { enviado: false };

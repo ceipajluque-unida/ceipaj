@@ -86,7 +86,7 @@ export async function guardarConfiguracion(cambios, solicitante, ip) {
 export async function probarCorreo(para) {
   const resultado = await enviarCorreo({
     para,
-    asunto: `Prueba de correo · ${INSTITUCION.NOMBRE}`,
+    asunto: `Prueba de correo — ${INSTITUCION.NOMBRE}`,
     texto: 'Este es un correo de prueba del Sistema de Información Gerencial. Si lo recibiste, el SMTP está bien configurado.',
   });
   if (!resultado.enviado) throw new ErrorVisible(`No se pudo enviar: ${resultado.motivo}`, 502);

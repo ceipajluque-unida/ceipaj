@@ -1,5 +1,15 @@
 const CLAVE_TOKEN = 'ceipaj_token';
 const CLAVE_USUARIO = 'ceipaj_usuario';
+// por qué se cortó la sesión, para poder decirlo en el ingreso. va en sessionStorage
+// porque solo tiene que sobrevivir a la recarga que hace el redirect.
+const CLAVE_MOTIVO_SALIDA = 'ceipaj_motivo_salida';
+
+// lo lee el ingreso una sola vez: si quedara, saldría también en el próximo login normal
+export function motivoDeSalida() {
+  const motivo = sessionStorage.getItem(CLAVE_MOTIVO_SALIDA);
+  if (motivo) sessionStorage.removeItem(CLAVE_MOTIVO_SALIDA);
+  return motivo;
+}
 
 // sin recordarme la sesión vive en sessionStorage y se pierde al cerrar la pestaña
 function leer(clave) {
@@ -73,9 +83,11 @@ export async function llamarApi(ruta, { metodo = 'GET', cuerpo } = {}) {
 
   const datos = await respuesta.json().catch(() => ({}));
   if (!respuesta.ok) {
-    // sesión vencida...se limpia y vuelve al login
+    // sesión vencida...se limpia y vuelve al login. se deja dicho por qué: antes echaba
+    // sin explicación y parecía que el sistema se hubiera roto solo
     if (respuesta.status === 401 && haySesion()) {
       cerrarSesion();
+      sessionStorage.setItem(CLAVE_MOTIVO_SALIDA, datos.error ?? 'Tu sesión venció. Volvé a ingresar.');
       window.location.assign('/ingreso');
     }
     throw new Error(datos.error ?? `Error ${respuesta.status} del servidor`);

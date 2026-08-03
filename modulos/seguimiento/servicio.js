@@ -71,6 +71,6 @@ export async function registrarAccion(leadId, { tipo, detalle }, usuarioId, ip) 
     'INSERT INTO acciones_seguimiento (lead_id, usuario_id, tipo, detalle) VALUES (?, ?, ?, ?)',
     [leadId, usuarioId, tipo, limpio]
   );
-  await registrarAuditoria({ usuarioId, accion: 'accion_seguimiento_registrada', detalle: `lead ${lead.id} · ${tipo}`, ip });
+  await registrarAuditoria({ usuarioId, accion: 'accion_seguimiento_registrada', detalle: `lead ${lead.id} — ${tipo}`, ip });
   return { id: resultado.insertId, leadId: lead.id, tipo, detalle: limpio };
 }

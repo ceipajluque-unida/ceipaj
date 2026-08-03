@@ -102,7 +102,7 @@ export default function Instituciones() {
         <>
           <strong>{nombre}</strong>
           <span className="nota bajo-titulo">
-            {[institucion.ciudad, institucion.correo_contacto].filter(Boolean).join(' · ') || 'Sin datos de contacto'}
+            {[institucion.ciudad, institucion.correo_contacto].filter(Boolean).join(' — ') || 'Sin datos de contacto'}
           </span>
         </>
       ),

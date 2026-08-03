@@ -503,3 +503,9 @@ tbody tr:hover td { background: var(--panel-2); }
 
 /* dato secundario debajo del nombre en las tablas, para no gastar una columna en cada uno */
 .bajo-titulo { display: block; font-size: 0.78rem; margin-top: 0.1rem; }
+
+/* por qué se cortó la sesión, arriba del formulario de ingreso */
+.aviso-sesion {
+  background: var(--ambar-fondo); color: var(--ambar); border-radius: var(--radio);
+  padding: 0.6rem 0.8rem; font-size: 0.85rem; margin: 0 0 0.6rem;
+}

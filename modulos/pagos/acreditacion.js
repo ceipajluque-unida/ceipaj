@@ -102,7 +102,7 @@ export async function procesarNotificacion(cuerpo, ip) {
   }
 
   const datos = await aplicarResultado({ referencia: pago.referencia, estado: aviso.estado, usuarioId: null, aviso }, ip);
-  await registrarAuditoria({ accion: `pago_${aviso.estado}`, detalle: `${pago.referencia} · aviso del proveedor`, ip });
+  await registrarAuditoria({ accion: `pago_${aviso.estado}`, detalle: `${pago.referencia} — aviso del proveedor`, ip });
   return datos;
 }
 

@@ -28,7 +28,7 @@ export async function emitirCodigo(usuario, metodo = usuario.metodo_2fa) {
   const configurado = correoConfigurado();
   let enviado = false;
   if (configurado) {
-    const envio = await enviarCorreo({ para: usuario.correo, asunto: `Código de verificación · ${INSTITUCION.NOMBRE}`, texto });
+    const envio = await enviarCorreo({ para: usuario.correo, asunto: `Código de verificación — ${INSTITUCION.NOMBRE}`, texto });
     enviado = envio.enviado;
   }
   const codigoPrueba = revelar(codigo, configurado);

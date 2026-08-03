@@ -5,7 +5,7 @@ import { Button } from 'antd';
 import { llamarApi } from '../servicios/api.js';
 import { avisarError, toast } from '../servicios/avisos.js';
 
-export const AYUDA_FONDO = 'JPG, PNG o WEBP · hasta 2 MB · se recomienda 1920 × 1080 px';
+export const AYUDA_FONDO = 'JPG, PNG o WEBP, hasta 2 MB, se recomienda 1920 × 1080 px';
 
 export default function FondoIngreso({ actual, alCambiar }) {
   const [subiendo, setSubiendo] = useState(false);

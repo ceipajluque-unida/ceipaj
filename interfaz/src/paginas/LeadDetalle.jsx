@@ -76,7 +76,7 @@ export default function LeadDetalle() {
             {lead.nombre} <span className={`estado estado-${lead.estado}`}>{legible(lead.estado)}</span>
             {!lead.activo && <span className="etiqueta">dado de baja</span>}
           </h2>
-          <p className="nota">Cédula {lead.cedula} · llegó por {legible(lead.canal)}</p>
+          <p className="nota">Cédula {lead.cedula} — llegó por {legible(lead.canal)}</p>
         </div>
         <div className="acciones">
           <Button onClick={() => navegar('/leads')}>Volver al listado</Button>

@@ -6,7 +6,7 @@ import { avisarError, toast } from '../servicios/avisos.js';
 
 // los 400 KB los aplica el backend (modulos/planes/imagen.js); los píxeles salen del
 // tamaño en que se muestra la tarjeta del plan en la pantalla de Suscripción
-export const AYUDA_IMAGEN = 'PNG, JPG o WEBP · hasta 400 KB · se recomienda 800 × 450 px (16:9)';
+export const AYUDA_IMAGEN = 'PNG, JPG o WEBP, hasta 400 KB, se recomienda 800 × 450 px (16:9)';
 
 export default function ImagenPlan({ plan, alSubir }) {
   const [subiendo, setSubiendo] = useState(false);

@@ -105,6 +105,6 @@ export async function apagar(id, usuario, ip) {
 export async function guardarImagen(id, archivo, usuario, ip) {
   const [resultado] = await bd.query('UPDATE planes SET imagen = ? WHERE id = ?', [archivo, id]);
   if (resultado.affectedRows === 0) throw new ErrorVisible('El plan no existe.', 404);
-  await registrarAuditoria({ usuarioId: usuario.id, accion: 'plan_imagen', detalle: `${id} · ${archivo}`, ip });
+  await registrarAuditoria({ usuarioId: usuario.id, accion: 'plan_imagen', detalle: `${id} — ${archivo}`, ip });
   return { id, imagen: archivo };
 }

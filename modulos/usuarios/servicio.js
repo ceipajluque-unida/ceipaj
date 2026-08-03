@@ -62,7 +62,7 @@ export async function crearUsuario({ nombre, correo, telefono, direccion, rol },
     if (error.code === 'ER_DUP_ENTRY') throw new ErrorVisible('Ya existe un usuario con ese correo.', 409);
     throw error;
   }
-  await registrarAuditoria({ usuarioId: solicitante.id, accion: 'usuario_creado', detalle: `${correo} · rol ${rol}`, ip });
+  await registrarAuditoria({ usuarioId: solicitante.id, accion: 'usuario_creado', detalle: `${correo} — rol ${rol}`, ip });
   const envio = await despacharCredenciales({ nombre, correo, claveTemporal, asunto: 'Tu acceso al SIG del CEIPAJ' });
   // se relee la fila para devolver lo que quedó guardado, no lo que llegó en el pedido
   return { usuario: await buscarInterno(resultado.insertId), ...envio };
@@ -88,7 +88,7 @@ export async function editarUsuario(id, { nombre, correo, telefono, direccion },
   await registrarAuditoria({
     usuarioId: solicitante.id,
     accion: 'usuario_actualizado',
-    detalle: `${antes.correo} · ${cambios.length ? cambios.join(', ') : 'sin cambios'}`,
+    detalle: `${antes.correo} — ${cambios.length ? cambios.join(', ') : 'sin cambios'}`,
     ip,
   });
   return buscarInterno(id);
@@ -109,7 +109,7 @@ export async function cambiarRol(id, rol, solicitante, ip) {
   await registrarAuditoria({
     usuarioId: solicitante.id,
     accion: 'usuario_rol_cambiado',
-    detalle: `${antes.correo} · ${antes.rol} → ${rol}`,
+    detalle: `${antes.correo} — ${antes.rol} → ${rol}`,
     ip,
   });
   return buscarInterno(id);

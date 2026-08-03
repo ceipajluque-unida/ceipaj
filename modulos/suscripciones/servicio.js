@@ -166,7 +166,7 @@ export async function activarPorPago({ pagoId, institucionId, plan, monto, usuar
   // el aviso de la pasarela viene sin institución en el contexto: se la damos, si no
   // el movimiento queda fuera de la auditoría del colegio que pagó
   await conInstitucion(institucionId, () => registrarAuditoria({
-    usuarioId, accion: 'suscripcion_activada', detalle: `${plan} · ${meses} mes(es)`, ip,
+    usuarioId, accion: 'suscripcion_activada', detalle: `${plan} — ${meses} mes(es)`, ip,
   }));
   limpiarCachePlan(institucionId); // el plan nuevo tiene que habilitar sus módulos en el acto
   return { id: resultado.insertId };

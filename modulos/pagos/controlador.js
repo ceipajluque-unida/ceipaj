@@ -102,7 +102,7 @@ export async function recibo(req, res) {
   await registrarAuditoria({
     usuarioId: req.usuario.id,
     accion: 'recibo_descargado',
-    detalle: `${pago.referencia} · recibo ${numeroDeRecibo(pago)}`,
+    detalle: `${pago.referencia} — recibo ${numeroDeRecibo(pago)}`,
     ip: req.ip,
   });
   // los headers van después de generar, si falla el pdf el error sale como json

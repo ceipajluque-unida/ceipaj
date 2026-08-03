@@ -15,7 +15,7 @@ export async function darDeBaja(id, motivo, usuarioId, ip) {
     [texto, id, institucionDelPedido()]
   );
   if (resultado.affectedRows === 0) throw new ErrorVisible('El interesado no existe o ya estaba dado de baja.', 404);
-  await registrarAuditoria({ usuarioId, accion: 'lead_dado_de_baja', detalle: `lead ${id} · ${texto}`, ip });
+  await registrarAuditoria({ usuarioId, accion: 'lead_dado_de_baja', detalle: `lead ${id} — ${texto}`, ip });
   return { id: Number(id), activo: false, motivo_baja: texto };
 }
 

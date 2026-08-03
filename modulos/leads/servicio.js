@@ -66,7 +66,7 @@ export async function crearLead({ nombre, cedula, telefono, correo, canal, conse
     if (error.code === 'ER_DUP_ENTRY') throw new ErrorVisible('Ya existe un interesado con esa cédula.', 409);
     throw error;
   }
-  await registrarAuditoria({ usuarioId: creadoPor, accion: 'lead_creado', detalle: `cédula ${cedulaNormalizada} · canal ${canal}`, ip });
+  await registrarAuditoria({ usuarioId: creadoPor, accion: 'lead_creado', detalle: `cédula ${cedulaNormalizada} — canal ${canal}`, ip });
   const [[lead]] = await bd.query('SELECT * FROM leads WHERE id = ? AND institucion_id = ?', [resultado.insertId, institucionId]);
   return lead;
 }
@@ -138,7 +138,7 @@ export async function editarLead(id, { nombre, telefono, correo, canal, aliadoId
     usuarioId,
     accion: 'lead_editado',
     // el cambio de aliado va detallado porque define comisiones y puntos
-    detalle: cambiaAliado ? `lead ${id} · aliado ${antes.aliado_id ?? '—'} → ${aliado ?? '—'}` : `lead ${id}`,
+    detalle: cambiaAliado ? `lead ${id} — aliado ${antes.aliado_id ?? '—'} → ${aliado ?? '—'}` : `lead ${id}`,
     ip,
   });
   return { id: Number(id), nombre: nombre.trim(), telefono, correo, canal, aliado_id: aliado };
@@ -175,7 +175,7 @@ export async function registrarInteraccion(leadId, { tipo, detalle }, usuarioId,
     'INSERT INTO interacciones (lead_id, usuario_id, tipo, detalle) VALUES (?, ?, ?, ?)',
     [leadId, usuarioId, tipo, limpio]
   );
-  await registrarAuditoria({ usuarioId, accion: 'interaccion_registrada', detalle: `lead ${lead.id} · ${tipo}`, ip });
+  await registrarAuditoria({ usuarioId, accion: 'interaccion_registrada', detalle: `lead ${lead.id} — ${tipo}`, ip });
   return { id: resultado.insertId, leadId: lead.id, tipo, detalle: limpio };
 }
 

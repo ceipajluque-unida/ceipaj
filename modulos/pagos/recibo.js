@@ -57,7 +57,7 @@ function encabezado(doc, datos, pago) {
   doc.font('Helvetica').fontSize(8.5).fillColor('#555');
   const lineas = [
     datos.direccion,
-    [datos.telefono, datos.correo].filter(Boolean).join(' · '),
+    [datos.telefono, datos.correo].filter(Boolean).join(' — '),
   ].filter(Boolean);
   lineas.forEach((linea) => doc.text(linea, izq, doc.y, { width: anchoIzq }));
   const finIzquierda = doc.y;

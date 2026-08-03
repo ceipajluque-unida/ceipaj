@@ -37,7 +37,7 @@ export async function crearCobro({ concepto, monto, medio, plan }, usuario, ip) 
   await registrarAuditoria({
     usuarioId: usuario.id,
     accion: 'pago_creado',
-    detalle: `${cobro.referencia} · ${concepto} · ${monto} ${PASARELA.MONEDA} · ${medio}`,
+    detalle: `${cobro.referencia} — ${concepto} — ${monto} ${PASARELA.MONEDA} — ${medio}`,
     ip,
   });
   return { ...cobro, id: resultado.insertId, concepto, monto, medio, plan, moneda: PASARELA.MONEDA };
