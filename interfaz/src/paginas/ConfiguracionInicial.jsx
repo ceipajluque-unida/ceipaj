@@ -1,4 +1,6 @@
-// primer arranque del sistema, crea el administrador y activa su 2fa
+// primer arranque del sistema. la primera cuenta es la del proveedor del servicio, no la
+// de ningún colegio: es quien configura la apariencia, la pasarela y los planes, y recién
+// después da de alta las instituciones con su administrador.
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button, Input } from 'antd';
@@ -25,13 +27,13 @@ export default function ConfiguracionInicial() {
     setDatos({ ...datos, [evento.target.name]: evento.target.value });
   }
 
-  async function crearAdministrador(evento) {
+  async function crearProveedor(evento) {
     evento.preventDefault();
     setError(null);
     if (datos.clave !== datos.repetir) return setError('Las contraseñas no coinciden.');
     setCargando(true);
     try {
-      const respuesta = await llamarApi('/api/autenticacion/primer-administrador', {
+      const respuesta = await llamarApi('/api/autenticacion/primer-usuario', {
         metodo: 'POST',
         cuerpo: { nombre: datos.nombre, correo: datos.correo, clave: datos.clave },
       });
@@ -70,11 +72,16 @@ export default function ConfiguracionInicial() {
   return (
     <main className="pantalla-auth">
       <section className="tarjeta-auth">
-        <h1>{institucion.nombre}</h1>
+        <h1>{institucion.plataforma}</h1>
         <h2>Configuración inicial</h2>
 
         {paso === 1 && (
-          <form onSubmit={crearAdministrador}>
+          <form onSubmit={crearProveedor}>
+            <p className="ayuda">
+              Esta primera cuenta es la del <strong>proveedor del servicio</strong>: desde
+              ella se configuran la apariencia, la pasarela de pagos y los planes, y se dan
+              de alta las instituciones con su administrador.
+            </p>
             <label>Nombre completo
               <Input name="nombre" value={datos.nombre} onChange={cambiar} required />
             </label>
@@ -89,7 +96,7 @@ export default function ConfiguracionInicial() {
             </label>
             {requisitos && <p className="ayuda">{requisitos}</p>}
             {error && <p className="error">{error}</p>}
-            <Button type="primary" htmlType="submit" disabled={cargando}>{cargando ? 'Creando…' : 'Crear administrador'}</Button>
+            <Button type="primary" htmlType="submit" disabled={cargando}>{cargando ? 'Creando…' : 'Crear la cuenta del proveedor'}</Button>
           </form>
         )}
 

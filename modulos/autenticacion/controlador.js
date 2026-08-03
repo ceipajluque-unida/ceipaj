@@ -4,7 +4,7 @@ import * as servicio from './servicio.js';
 import { bd } from '../../servidor/bd/conexion.js';
 import { validarCorreo, validarTelefono } from '../../comun/validar.js';
 import { modulosDelRol } from '../../configuracion/permisos.js';
-import { METODOS_2FA, INSTITUCION } from '../../configuracion/ajustes.js';
+import { METODOS_2FA, INSTITUCION, PLATAFORMA } from '../../configuracion/ajustes.js';
 import * as ajustes from '../../servidor/ajustesSistema.js';
 import * as recuperacion from './recuperacion.js';
 import * as bloqueos from './bloqueos.js';
@@ -16,6 +16,9 @@ import { planEnVigor, moduloIncluido } from '../suscripciones/plan.js';
 export async function estado(req, res) {
   res.json({
     requiereConfiguracionInicial: await servicio.haceFaltaConfiguracionInicial(),
+    // el nombre del producto, que es lo único que se puede mostrar antes de entrar:
+    // sin sesión todavía no se sabe de qué institución es quien está del otro lado
+    plataforma: { nombre: ajustes.leer('PLATAFORMA_NOMBRE', PLATAFORMA.NOMBRE) },
     institucion: {
       nombre: ajustes.leer('INSTITUCION_NOMBRE', INSTITUCION.NOMBRE),
       ciudad: ajustes.leer('INSTITUCION_CIUDAD', INSTITUCION.CIUDAD),
@@ -25,12 +28,12 @@ export async function estado(req, res) {
   });
 }
 
-export async function primerAdministrador(req, res) {
+export async function primerUsuario(req, res) {
   const { nombre, correo, clave } = req.body ?? {};
   if (!nombre?.trim()) throw new ErrorVisible('El nombre es obligatorio.');
   if (!validarCorreo(correo)) throw new ErrorVisible('El correo no es válido.');
   // la política de contraseñas la valida el servicio (una sola fuente de verdad)
-  const { otpauth } = await servicio.crearPrimerAdministrador(
+  const { otpauth } = await servicio.crearPrimerProveedor(
     { nombre: nombre.trim(), correo: correo.trim().toLowerCase(), clave },
     req.ip
   );

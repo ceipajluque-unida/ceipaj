@@ -1,15 +1,22 @@
-// el nombre de la institución sale de configuración, no va escrito en las pantallas
+// los nombres salen de configuración, no van escritos en las pantallas. son dos y no uno:
+// el del sistema (el producto, lo que se ve en el ingreso) y el del colegio que contrató,
+// que recién se sabe cuando hay sesión.
 import { createContext, useContext, useEffect, useState } from 'react';
 import { llamarApi } from '../servicios/api.js';
 
-const Contexto = createContext({ nombre: '', ciudad: '' });
+const VACIO = { nombre: '', ciudad: '', plataforma: '' };
+const Contexto = createContext(VACIO);
 
 export function ProveedorInstitucion({ children }) {
-  const [datos, setDatos] = useState({ nombre: '', ciudad: '' });
+  const [datos, setDatos] = useState(VACIO);
 
   useEffect(() => {
     const traer = () => llamarApi('/api/autenticacion/estado')
-      .then((estado) => estado.institucion && setDatos(estado.institucion))
+      .then((estado) => setDatos({
+        nombre: estado.institucion?.nombre ?? '',
+        ciudad: estado.institucion?.ciudad ?? '',
+        plataforma: estado.plataforma?.nombre ?? '',
+      }))
       .catch(() => {});
     traer();
     // al guardar configuración se avisa por acá, para no tener que recargar la página

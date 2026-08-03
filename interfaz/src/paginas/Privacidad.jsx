@@ -20,7 +20,7 @@ export default function Privacidad() {
   return (
     <main className="pantalla-auth">
       <article className="tarjeta-auth tarjeta-ancha">
-        <h1>{institucion.nombre}</h1>
+        <h1>{institucion.plataforma}</h1>
         <h2>Política de privacidad</h2>
 
         <div className="sep-arriba">

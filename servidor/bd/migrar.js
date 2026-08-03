@@ -64,11 +64,19 @@ async function asegurarUnico(conexion, tabla, nombre, columnas, indiceViejo) {
   console.log(`índice único nuevo: ${tabla} (${columnas})`);
 }
 
-// la institución del sistema pasa a ser una fila, y todo lo que ya existía es de ella.
-// antes era un texto en los ajustes, así que sin este traspaso los datos quedarían huérfanos.
+// adopta los datos de una instalación anterior, de cuando el sistema era de una sola
+// institución: crea su fila y le pasa todo lo que quedó suelto.
+//
+// en un sistema nuevo NO crea nada. las instituciones las da de alta el proveedor desde
+// su pantalla, que es el recorrido real del producto; sembrar un colegio de ejemplo
+// dejaba una institución fantasma que nadie pidió y confundía el primer arranque.
 async function sembrarInstitucion(conexion) {
   const [[{ total }]] = await conexion.query('SELECT COUNT(*) AS total FROM instituciones');
   if (Number(total) > 0) return;
+  const [[{ heredados }]] = await conexion.query(
+    'SELECT (SELECT COUNT(*) FROM usuarios) + (SELECT COUNT(*) FROM leads) AS heredados'
+  );
+  if (Number(heredados) === 0) return;
   const [[ajuste]] = await conexion.query("SELECT valor FROM ajustes_sistema WHERE clave = 'INSTITUCION_NOMBRE' LIMIT 1");
   const [[ciudad]] = await conexion.query("SELECT valor FROM ajustes_sistema WHERE clave = 'INSTITUCION_CIUDAD' LIMIT 1");
   const [resultado] = await conexion.query(

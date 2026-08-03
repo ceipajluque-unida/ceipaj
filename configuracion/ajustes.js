@@ -29,6 +29,12 @@ export const BASE_DATOS = {
   NOMBRE: process.env.BD_NOMBRE ?? 'ceipaj_sig',
 };
 
+// el producto en sí, que es de quien lo provee y no de ningún colegio. es lo que se ve
+// en el ingreso, donde todavía no se sabe de qué institución es quien está entrando.
+export const PLATAFORMA = {
+  NOMBRE: process.env.PLATAFORMA_NOMBRE ?? 'Sistema de Información Gerencial',
+};
+
 //datos de la institución...editable
 export const INSTITUCION = {
   NOMBRE: process.env.INSTITUCION_NOMBRE ?? 'Centro Educativo Integral para Adultos y Jóvenes',

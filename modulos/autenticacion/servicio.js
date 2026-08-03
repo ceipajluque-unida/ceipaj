@@ -55,8 +55,11 @@ export async function haceFaltaConfiguracionInicial() {
   return Number(filas[0].total) === 0;
 }
 
-// el primer administrador arranca con 2fa por app
-export async function crearPrimerAdministrador({ nombre, correo, clave }, ip) {
+// la primera cuenta del sistema es la del proveedor del servicio, no la de ningún
+// colegio: es quien configura la apariencia, la pasarela y los planes, y recién después
+// da de alta las instituciones con su administrador. va con institucion_id en null
+// porque el proveedor está por encima de todas y no pertenece a ninguna.
+export async function crearPrimerProveedor({ nombre, correo, clave }, ip) {
   if (!(await haceFaltaConfiguracionInicial())) {
     throw new ErrorVisible('El sistema ya tiene usuarios: la configuración inicial está cerrada.', 409);
   }
@@ -64,13 +67,11 @@ export async function crearPrimerAdministrador({ nombre, correo, clave }, ip) {
   if (!revision.valido) throw new ErrorVisible(revision.motivo);
   const claveHash = await bcrypt.hash(clave, SEGURIDAD.RONDAS_BCRYPT);
   const secreto = authenticator.generateSecret();
-  // el primer administrador es de la institución que sembró la migración
-  const [[institucion]] = await bd.query('SELECT id FROM instituciones ORDER BY id LIMIT 1');
   const [resultado] = await bd.query(
-    "INSERT INTO usuarios (nombre, correo, clave_hash, rol, secreto_2fa, metodo_2fa, clave_actualizada_en, institucion_id) VALUES (?, ?, ?, ?, ?, 'app', NOW(), ?)",
-    [nombre, correo, claveHash, ROLES.ADMINISTRADOR, secreto, institucion?.id ?? null]
+    "INSERT INTO usuarios (nombre, correo, clave_hash, rol, secreto_2fa, metodo_2fa, clave_actualizada_en, institucion_id) VALUES (?, ?, ?, ?, ?, 'app', NOW(), NULL)",
+    [nombre, correo, claveHash, ROLES.SUPERADMINISTRADOR, secreto]
   );
-  await registrarAuditoria({ usuarioId: resultado.insertId, accion: 'configuracion_inicial', detalle: `primer administrador: ${correo}`, ip });
+  await registrarAuditoria({ usuarioId: resultado.insertId, accion: 'configuracion_inicial', detalle: `proveedor del servicio: ${correo}`, ip });
   return { otpauth: authenticator.keyuri(correo, SEGURIDAD.EMISOR_2FA, secreto) };
 }
 

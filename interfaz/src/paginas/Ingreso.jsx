@@ -135,14 +135,14 @@ export default function Ingreso() {
     <main className={`pantalla-auth ${conPanel ? 'con-marca' : ''}`}>
       {conPanel && (
         <aside className={`marca-auth ${mostrarTextos ? '' : 'solo-imagen'}`} style={fondoPanel}>
-          {mostrarTextos && <h1>{institucion.nombre}</h1>}
+          {mostrarTextos && <h1>{institucion.plataforma}</h1>}
           {mostrarTextos && presentacion && <div className="presentacion">{comoHtml(presentacion)}</div>}
         </aside>
       )}
 
       <div className="caja-auth">
       <section className="tarjeta-auth">
-        <h1>{institucion.nombre}</h1>
+        <h1>{institucion.plataforma}</h1>
         <h2>Ingreso al sistema</h2>
 
         {paso === 1 && (

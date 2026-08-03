@@ -43,7 +43,7 @@ export default function RecuperarClave() {
   return (
     <main className="pantalla-auth">
       <section className="tarjeta-auth">
-        <h1>{institucion.nombre}</h1>
+        <h1>{institucion.plataforma}</h1>
         <h2>Recuperar contraseña</h2>
 
         {!enviado && (

@@ -40,7 +40,7 @@ export default function RestablecerClave() {
   return (
     <main className="pantalla-auth">
       <section className="tarjeta-auth">
-        <h1>{institucion.nombre}</h1>
+        <h1>{institucion.plataforma}</h1>
         <h2>Nueva contraseña</h2>
         {!token && (
           <>

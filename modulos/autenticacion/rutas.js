@@ -10,7 +10,7 @@ export const rutasAutenticacion = Router();
 // usuario, así que no frenan a quien cambia el correo en cada intento
 rutasAutenticacion.get('/estado', controlador.estado);
 rutasAutenticacion.get('/politica', controlador.politicaClave);
-rutasAutenticacion.post('/primer-administrador', frenoIngreso, controlador.primerAdministrador);
+rutasAutenticacion.post('/primer-usuario', frenoIngreso, controlador.primerUsuario);
 rutasAutenticacion.post('/ingresar', frenoIngreso, controlador.ingresar);
 rutasAutenticacion.post('/verificar-codigo', frenoIngreso, controlador.verificarCodigo);
 rutasAutenticacion.post('/codigo-alternativo', frenoIngreso, controlador.codigoAlternativo); // 2fa por otro medio si no hay acceso a la app
