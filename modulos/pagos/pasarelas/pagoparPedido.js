@@ -1,10 +1,7 @@
-// arma el cuerpo del pedido que espera pagopar en iniciar-transaccion
 import { PAGOPAR, INSTITUCION } from '../../../configuracion/ajustes.js';
 
-// medios del sistema llevados a los identificadores de pagopar
 const FORMAS_PAGO = { tarjeta: 9, transferencia: 11, billetera: 12, deposito: 11 };
 
-// pagopar pide la fecha límite en hora local y con este formato exacto
 function fechaMaximaPago() {
   const fecha = new Date(Date.now() + PAGOPAR.DIAS_PARA_PAGAR * 86400000);
   const dos = (n) => String(n).padStart(2, '0');
@@ -16,8 +13,6 @@ export function formaDePago(medio) {
   return FORMAS_PAGO[medio] ?? FORMAS_PAGO.tarjeta;
 }
 
-// estos son los campos del ejemplo oficial de la 2.0, ni uno más: mandar "moneda"
-// hacía que pagopar rechazara el pedido entero con un error de cantidad de campos.
 export function armarPedido({ referencia, concepto, monto, medio, comprador, publico, token }) {
   return {
     token,
@@ -46,7 +41,7 @@ export function armarPedido({ referencia, concepto, monto, medio, comprador, pub
     comprador: {
       nombre: comprador?.nombre || INSTITUCION.NOMBRE,
       email: comprador?.correo || '',
-      // solo números, pagopar rechaza letras y símbolos
+
       documento: String(comprador?.documento || '0000000').replace(/\D/g, ''),
       tipo_documento: 'CI',
       telefono: comprador?.telefono || '',

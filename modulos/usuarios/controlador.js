@@ -1,18 +1,15 @@
-// capa http de usuarios, valida entradas y llama al servicio
 import * as servicio from './servicio.js';
 import { ErrorVisible } from '../../servidor/errores.js';
 import { validarCorreo, validarTelefono, validarLargo, LARGOS } from '../../comun/validar.js';
 import { ROLES } from '../../configuracion/ajustes.js';
 import { ROLES_ASIGNABLES } from '../../configuracion/permisos.js';
 
-// convierte el :id de la url en un entero válido o corta con error claro
 function idDeRuta(req) {
   const id = Number(req.params.id);
   if (!Number.isInteger(id) || id <= 0) throw new ErrorVisible('Identificador de usuario inválido.');
   return id;
 }
 
-// mismas reglas para el alta y la edición, así no se separan con el tiempo
 function datosValidados(cuerpo) {
   const nombre = String(cuerpo?.nombre ?? '').trim();
   const correo = String(cuerpo?.correo ?? '').trim().toLowerCase();
@@ -28,9 +25,8 @@ function datosValidados(cuerpo) {
 }
 
 function rolValidado(rol) {
-  // los aliados llevan datos extra (institución, puntaje) y se dan de alta en su módulo
   if (rol === ROLES.ALIADO) throw new ErrorVisible('Los aliados se registran desde el módulo de Aliados.');
-  // contra la lista blanca: el superadministrador es del proveedor y no se asigna desde acá
+
   if (!ROLES_ASIGNABLES.includes(rol)) throw new ErrorVisible('El rol no es válido.');
   return rol;
 }

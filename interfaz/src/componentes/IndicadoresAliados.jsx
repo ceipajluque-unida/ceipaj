@@ -1,4 +1,3 @@
-// tarjetas de arriba del padrón: activos, cuántos recomendaron y cuántos llegaron a matricularse
 import { contar } from '../servicios/formato.js';
 
 export default function IndicadoresAliados({ aliados }) {

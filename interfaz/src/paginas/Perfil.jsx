@@ -1,4 +1,3 @@
-// perfil del usuario con sus datos, permisos y verificación en dos pasos
 import { useEffect, useState } from 'react';
 import { Button, Input, Select, Table } from 'antd';
 import { llamarApi, guardarSesion, tokenActual, usuarioActual } from '../servicios/api.js';
@@ -15,7 +14,7 @@ export default function Perfil() {
   const [perfil, setPerfil] = useState(null);
   const [datos, setDatos] = useState({ nombre: '', correo: '', telefono: '', direccion: '' });
   const [metodo, setMetodo] = useState('app');
-  const [qr, setQr] = useState(null); // qr nuevo cuando se cambia a método app
+  const [qr, setQr] = useState(null);
   const [guardando, setGuardando] = useState(false);
   const [validando, setValidando] = useState(false);
   const [error, setError] = useState(null);
@@ -63,7 +62,7 @@ export default function Perfil() {
     setGuardando(true);
     try {
       const r = await llamarApi('/api/autenticacion/perfil', { metodo: 'PUT', cuerpo: datos });
-      // refresca el nombre y el correo guardados en la sesión
+
       guardarSesion(tokenActual(), { ...usuarioActual(), nombre: r.nombre, correo: r.correo });
       toast('Datos del perfil actualizados.');
       await cargar();

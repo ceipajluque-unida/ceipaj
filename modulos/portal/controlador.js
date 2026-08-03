@@ -1,4 +1,3 @@
-// capa http del portal, las validaciones fuertes viven en el servicio
 import * as servicio from './servicio.js';
 
 export async function resumen(req, res) {

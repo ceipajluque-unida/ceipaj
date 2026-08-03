@@ -1,4 +1,3 @@
-// seguimiento de estudiantes activos, riesgo de deserción y acompañamiento
 import { useEffect, useState } from 'react';
 import { Button, Input, Select, Table } from 'antd';
 import { llamarApi } from '../servicios/api.js';
@@ -9,7 +8,6 @@ import Modal from '../componentes/Modal.jsx';
 const ACCION_VACIA = { tipo: '', detalle: '' };
 const FILTROS_VACIOS = { buscar: '', ver: 'todos' };
 
-// sin fecha de matrícula ni acciones no hay días que contar
 function dias(cantidad) {
   return cantidad === null || cantidad === undefined ? '—' : contar(cantidad, 'día', 'días');
 }
@@ -18,7 +16,7 @@ export default function Seguimiento() {
   const [opciones, setOpciones] = useState(null);
   const [estudiantes, setEstudiantes] = useState(null);
   const [filtros, setFiltros] = useState(FILTROS_VACIOS);
-  const [elegido, setElegido] = useState(null); // estudiante abierto en la ventana
+  const [elegido, setElegido] = useState(null);
   const [acciones, setAcciones] = useState([]);
   const [formulario, setFormulario] = useState(ACCION_VACIA);
   const [guardando, setGuardando] = useState(false);
@@ -54,7 +52,7 @@ export default function Seguimiento() {
       await llamarApi('/api/seguimiento/acciones', { metodo: 'POST', cuerpo: { leadId: elegido.id, ...formulario } });
       setFormulario(ACCION_VACIA);
       setAcciones(await llamarApi(`/api/seguimiento/acciones/${elegido.id}`));
-      await cargarEstudiantes(); // los días sin acción del listado cambian
+      await cargarEstudiantes();
       toast('Acción registrada.');
     } catch (excepcion) {
       setError(excepcion.message);

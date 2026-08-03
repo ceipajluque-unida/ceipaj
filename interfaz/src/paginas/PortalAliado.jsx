@@ -1,4 +1,3 @@
-// portal del aliado con sus indicadores, sus interesados y el alta de recomendados
 import { useEffect, useState } from 'react';
 import { Button, Checkbox, Input, Table } from 'antd';
 import { llamarApi, usuarioActual } from '../servicios/api.js';
@@ -9,7 +8,6 @@ import Legales from '../componentes/Legales.jsx';
 
 const FORMULARIO_VACIO = { nombre: '', cedula: '', telefono: '', correo: '', consentimiento: false };
 
-// el aliado es de afuera, conviene un texto que se entienda solo
 const TEXTO_ESTADO = {
   nuevo: 'Recibido',
   interesado: 'Contactado',
@@ -34,7 +32,7 @@ export default function PortalAliado() {
 
   useEffect(() => {
     cargar().catch((excepcion) => avisarError(excepcion.message));
-    // el texto legal del consentimiento viene del backend para no duplicarlo acá
+
     llamarApi('/api/leads/opciones')
       .then((opciones) => setAvisoConsentimiento(opciones.avisoConsentimiento))
       .catch(() => setAvisoConsentimiento(''));

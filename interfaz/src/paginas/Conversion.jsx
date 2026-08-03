@@ -1,4 +1,3 @@
-// conversión: cruza por cédula con el académico y matricula a los que coinciden
 import { useEffect, useState } from 'react';
 import { Button, Table } from 'antd';
 import { llamarApi } from '../servicios/api.js';
@@ -8,12 +7,10 @@ import { fecha, contar } from '../servicios/formato.js';
 import Modal from '../componentes/Modal.jsx';
 
 export default function Conversion() {
-  // arranca en null y no en []: con la lista vacía la pantalla afirmaba que el
-  // académico no informó a nadie antes de haber preguntado
   const [matriculados, setMatriculados] = useState(null);
   const [abierto, setAbierto] = useState(false);
   const [archivo, setArchivo] = useState(null);
-  const [resumen, setResumen] = useState(null); // qué trajo la última importación
+  const [resumen, setResumen] = useState(null);
   const [error, setError] = useState(null);
   const [sincronizando, setSincronizando] = useState(false);
   const [importando, setImportando] = useState(false);
@@ -23,7 +20,6 @@ export default function Conversion() {
   }
   useEffect(() => { cargarMatriculados(); }, []);
 
-  // sincronizar cambia leads a "matriculado", así que se confirma antes
   async function sincronizar() {
     const ok = await confirmar({
       titulo: '¿Sincronizar con el sistema académico?',
@@ -61,7 +57,6 @@ export default function Conversion() {
     }
   }
 
-  // el archivo se lee acá y viaja como texto, así el backend no necesita subida de archivos
   async function importar(evento) {
     evento.preventDefault();
     if (!archivo) return setError('Elegí un archivo CSV.');

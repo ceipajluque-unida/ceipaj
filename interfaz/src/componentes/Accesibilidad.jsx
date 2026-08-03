@@ -1,4 +1,3 @@
-// panel de accesibilidad flotante: contraste, tamaño de texto, daltonismo y lado
 import { useEffect, useState } from 'react';
 import { Badge, Button, Card, Flex, Segmented, Space, Switch, Tooltip, Typography } from 'antd';
 import { Accessibility, Minus, Plus, RotateCcw, X } from 'lucide-react';

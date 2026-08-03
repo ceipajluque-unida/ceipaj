@@ -1,4 +1,3 @@
-// listado de interesados con sus alertas, filtros y alta con consentimiento
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button, Checkbox, Input, Select } from 'antd';
@@ -21,7 +20,7 @@ export default function Leads() {
   const [formulario, setFormulario] = useState(FORMULARIO_VACIO);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState(null);
-  // descarta respuestas viejas del buscador
+
   const ultimaBusqueda = useRef(0);
 
   async function cargarLeads(filtrosActuales = filtros) {
@@ -172,9 +171,7 @@ export default function Leads() {
               onChange={(valor) => setFormulario({ ...formulario, canal: valor })}
             />
           </label>
-          {/* sin esto, un interesado que recomienda un aliado por teléfono y carga la
-              secretaria no le generaba ni comisión ni puntos, y no había forma de
-              corregirlo después */}
+
           {opciones.aliados?.length > 0 && (
             <label>¿Lo recomendó un aliado?
               <Select

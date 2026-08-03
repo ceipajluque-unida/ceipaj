@@ -1,9 +1,6 @@
-// aviso previo que va debajo de los formularios donde se cargan datos de personas.
-// el texto se edita desde Configuración, así que se pide a la api en vez de quemarlo.
 import { useEffect, useState } from 'react';
 import { llamarApi } from '../servicios/api.js';
 
-// un solo pedido compartido por todos los formularios de la pantalla
 let pendiente = null;
 
 export default function AvisoPrivacidad() {

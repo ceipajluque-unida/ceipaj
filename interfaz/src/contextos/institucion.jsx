@@ -1,6 +1,3 @@
-// los nombres salen de configuración, no van escritos en las pantallas. son dos y no uno:
-// el del sistema (el producto, lo que se ve en el ingreso) y el del colegio que contrató,
-// que recién se sabe cuando hay sesión.
 import { createContext, useContext, useEffect, useState } from 'react';
 import { llamarApi } from '../servicios/api.js';
 
@@ -19,7 +16,7 @@ export function ProveedorInstitucion({ children }) {
       }))
       .catch(() => {});
     traer();
-    // al guardar configuración se avisa por acá, para no tener que recargar la página
+
     window.addEventListener('institucion', traer);
     return () => window.removeEventListener('institucion', traer);
   }, []);

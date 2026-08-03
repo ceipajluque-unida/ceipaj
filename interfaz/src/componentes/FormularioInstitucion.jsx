@@ -1,4 +1,3 @@
-// alta y edición de una institución cliente
 import { Button, Input } from 'antd';
 import Modal from './Modal.jsx';
 

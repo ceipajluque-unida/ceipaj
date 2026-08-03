@@ -1,5 +1,3 @@
-// frenos de fuerza bruta: por correo para la clave, por usuario para el 2fa y por correo
-// para la recuperación (con contador aparte, si no pedir el enlace bloquearía el ingreso)
 import { ErrorVisible } from '../../servidor/errores.js';
 import * as ajustes from '../../servidor/ajustesSistema.js';
 import { SEGURIDAD } from '../../configuracion/ajustes.js';
@@ -8,7 +6,6 @@ const porClave = new Map();
 const porCodigo = new Map();
 const porRecuperacion = new Map();
 
-// mysql ignora los acentos al comparar, sin normalizar se tendrían intentos infinitos
 function normalizar(correo) {
   return String(correo ?? '').trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 }
@@ -51,8 +48,6 @@ export const codigo2fa = {
   limpiar: (usuarioId) => porCodigo.delete(usuarioId),
 };
 
-// acá cada pedido cuenta, no solo los fallidos: lo que se limita es cuántos correos de
-// recuperación se pueden disparar hacia una misma casilla
 export const recuperacion = {
   revisar: (correo) => revisar(porRecuperacion, normalizar(correo), 'Ya pediste el enlace varias veces.'),
   anotar: (correo) => anotar(porRecuperacion, normalizar(correo)),

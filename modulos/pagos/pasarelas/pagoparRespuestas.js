@@ -1,19 +1,15 @@
-// cómo se lee lo que contesta pagopar: el estado, los datos del recibo y sus errores
 import { ESTADOS_PAGO } from '../../../configuracion/ajustes.js';
 
-// pagopar no es parejo con los booleanos, según el caso manda true, 1 o "true"
 function esVerdadero(valor) {
   return valor === true || valor === 1 || String(valor).toLowerCase() === 'true';
 }
 
-// ante la duda queda pendiente, que se puede recuperar, y nunca rechazado
 export function estadoDePedido(datos) {
   if (esVerdadero(datos?.pagado)) return ESTADOS_PAGO.EXITOSO;
   if (esVerdadero(datos?.cancelado)) return ESTADOS_PAGO.RECHAZADO;
   return ESTADOS_PAGO.PENDIENTE;
 }
 
-// lo que hace falta para el recibo: cuándo pagó, con qué y contra qué comprobante
 export function datosDelPago(datos) {
   return {
     fechaPago: datos?.fecha_pago || null,
@@ -24,7 +20,6 @@ export function datosDelPago(datos) {
   };
 }
 
-// los rechazos de pagopar son crípticos y varios se arreglan fuera del sistema
 export function explicar(motivo) {
   if (/no se encuentra habilitado para ofrecer servicios/i.test(motivo)) {
     return 'Pagopar todavía no habilitó tu comercio para vender servicios o productos virtuales. '

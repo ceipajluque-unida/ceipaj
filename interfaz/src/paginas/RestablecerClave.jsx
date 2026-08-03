@@ -1,4 +1,3 @@
-// olvido de contraseña, paso 2. con el token del enlace se elige la clave nueva
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button, Input } from 'antd';

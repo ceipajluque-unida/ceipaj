@@ -1,4 +1,3 @@
-// pool de conexiones a mysql; siempre con parámetros ? para frenar inyecciones
 import mysql from 'mysql2/promise';
 import { BASE_DATOS } from '../../configuracion/ajustes.js';
 

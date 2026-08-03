@@ -1,4 +1,3 @@
-// pagos de la plataforma: crear cobros, ver el historial y bajar el recibo
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Input, Select } from 'antd';
@@ -20,18 +19,18 @@ const ESTADOS = [
 
 export default function Pagos() {
   const navegar = useNavigate();
-  // crear cobros es tarea del administrador; la dirección solo mira el historial
+
   const esAdministrador = usuarioActual()?.rol === 'administrador';
   const [pagos, setPagos] = useState(null);
-  const [medios, setMedios] = useState([]); // medios de pago que ofrece la pasarela
+  const [medios, setMedios] = useState([]);
   const [filtros, setFiltros] = useState(FILTROS_VACIOS);
   const [abierto, setAbierto] = useState(false);
   const [formulario, setFormulario] = useState(FORMULARIO_VACIO);
-  const [error, setError] = useState(null); // error del formulario dentro del modal
-  const [cargaError, setCargaError] = useState(null); // error al traer el historial
-  const [enviando, setEnviando] = useState(false); // evita cobros duplicados por doble clic
-  const [cobroEnCurso, setCobroEnCurso] = useState(null); // checkout abierto dentro de la pantalla
-  const [bajando, setBajando] = useState(null); // referencia del recibo que se está bajando
+  const [error, setError] = useState(null);
+  const [cargaError, setCargaError] = useState(null);
+  const [enviando, setEnviando] = useState(false);
+  const [cobroEnCurso, setCobroEnCurso] = useState(null);
+  const [bajando, setBajando] = useState(null);
   const [conciliando, setConciliando] = useState(false);
 
   async function cargar() {
@@ -44,18 +43,17 @@ export default function Pagos() {
 
   useEffect(() => {
     cargar();
-    // solo el admin crea cobros, así que solo él necesita los medios
+
     if (esAdministrador) llamarApi('/api/pagos/medios').then(setMedios).catch(() => setMedios([]));
   }, []);
 
-  // texto lindo del medio de pago
   const textoMedio = (valor) => medios.find((m) => m.valor === valor)?.texto ?? valor ?? '—';
 
   const cambiarFiltro = (clave, valor) => setFiltros({ ...filtros, [clave]: valor });
 
   async function crearCobro(evento) {
     evento.preventDefault();
-    if (enviando) return; // ya hay un cobro en curso
+    if (enviando) return;
     setError(null);
     if (!formulario.medio) return setError('Elegí un medio de pago.');
     setEnviando(true);
@@ -64,8 +62,7 @@ export default function Pagos() {
       setAbierto(false);
       setFormulario(FORMULARIO_VACIO);
       await cargar();
-      // la pasarela de prueba tiene su checkout dentro del sistema: se abre como pantalla
-      // completa, no apretado adentro de un marco en esta misma vista
+
       if (String(cobro.urlPago ?? '').includes('/checkout/')) {
         return navegar(new URL(cobro.urlPago, window.location.origin).pathname);
       }
@@ -77,7 +74,6 @@ export default function Pagos() {
     }
   }
 
-  // le pregunta a la pasarela el estado real de los pagos que quedaron colgados
   async function conciliar() {
     setConciliando(true);
     try {
@@ -119,8 +115,7 @@ export default function Pagos() {
   return (
     <>
       <header className="encabezado-pagina">
-        {/* los de la suscripción no van acá: son lo que la institución paga POR el
-            sistema, y viven en Suscripción con su historial de períodos */}
+
         <h2>Cobros de la institución</h2>
         {esAdministrador && (
           <div className="acciones">

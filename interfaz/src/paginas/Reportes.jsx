@@ -1,13 +1,9 @@
-// reportes gerenciales con rendimiento por aliado y exportación a excel, pdf o csv
 import { useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { Button, Table } from 'antd';
 import { llamarApi, tokenActual } from '../servicios/api.js';
 import { toast, avisarError } from '../servicios/avisos.js';
 
-// tablas que se pueden bajar. cada una declara de qué módulo son sus datos, para
-// ofrecer solo las que el rol puede pedir de verdad: antes la lista era fija y al
-// comercial le mostraba nueve botones que el backend le contestaba con 403.
 const TABLAS = [
   { clave: 'leads', titulo: 'Interesados', modulo: 'leads' },
   { clave: 'interacciones', titulo: 'Interacciones', modulo: 'leads' },
@@ -24,11 +20,10 @@ const FORMATOS = [
 ];
 
 export default function Reportes() {
-  // los módulos del rol llegan del diseño, que ya los pidió al entrar
   const { modulos = [] } = useOutletContext() ?? {};
   const [datos, setDatos] = useState(null);
   const [error, setError] = useState(null);
-  const [bajando, setBajando] = useState(null); // qué archivo se está generando
+  const [bajando, setBajando] = useState(null);
 
   useEffect(() => {
     llamarApi('/api/reportes/indicadores')
@@ -39,7 +34,6 @@ export default function Reportes() {
   async function descargar(tabla, formato) {
     setBajando(`${tabla}-${formato}`);
     try {
-      // se descarga a mano porque el token tiene que ir en el encabezado
       const respuesta = await fetch(`/api/reportes/exportar/${tabla}?formato=${formato}`, {
         headers: { Authorization: `Bearer ${tokenActual()}` },
       });

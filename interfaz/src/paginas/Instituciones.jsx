@@ -1,5 +1,3 @@
-// alta y administración de las instituciones cliente. es la pantalla del proveedor del
-// servicio: cada alta abre un colegio nuevo con sus propios datos y su administrador.
 import { useEffect, useState } from 'react';
 import { Button, Table } from 'antd';
 import { llamarApi } from '../servicios/api.js';
@@ -25,6 +23,10 @@ export default function Instituciones() {
   useEffect(() => { cargar(); }, []);
 
   function abrirAlta() {
+    if (instituciones.length > 0) {
+      avisarError('Ya existe una institución registrada. Solo se permite una institución.');
+      return;
+    }
     setError(null);
     setEditando(null);
     setFormulario(FORMULARIO_VACIO);
@@ -92,9 +94,6 @@ export default function Instituciones() {
     }
   }
 
-  // eran nueve columnas y no entraban: la tabla salía cortada y había que arrastrarla
-  // para llegar a los botones. la ciudad y el contacto van bajo el nombre, y las acciones
-  // quedan ancladas a la derecha.
   const columnas = [
     {
       title: 'Institución', dataIndex: 'nombre', key: 'nombre', width: 240,
@@ -134,7 +133,6 @@ export default function Instituciones() {
       ),
     },
   ];
-
 
   return (
     <>

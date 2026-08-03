@@ -1,4 +1,3 @@
-// verificación del captcha contra google. se activa desde configuración
 import { SEGURIDAD } from '../configuracion/ajustes.js';
 import * as ajustes from './ajustesSistema.js';
 
@@ -12,7 +11,6 @@ function claveSecreta() {
   return ajustes.leer('RECAPTCHA_CLAVE_SECRETA', SEGURIDAD.RECAPTCHA_CLAVE_SECRETA);
 }
 
-// sin las dos claves cargadas no se puede exigir, así nadie queda encerrado afuera
 export function activo() {
   return ajustes.leerBooleano('RECAPTCHA_ACTIVO', SEGURIDAD.RECAPTCHA_ACTIVO)
     && Boolean(claveSitio() && claveSecreta());
@@ -41,7 +39,6 @@ export async function verificar(respuesta, ip) {
     const codigo = datos['error-codes']?.[0];
     return { ok: false, motivo: ERRORES[codigo] ?? 'No se pudo validar el captcha.' };
   } catch {
-    // si google no responde no se traba el ingreso, pero queda anotado
     console.error('recaptcha: no se pudo contactar con google');
     return { ok: true };
   }

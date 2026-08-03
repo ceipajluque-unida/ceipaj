@@ -1,5 +1,3 @@
-// abm de usuarios internos: alta con clave temporal, edición, cambio de rol,
-// activar/desactivar y restablecer clave. todo queda auditado.
 import bcrypt from 'bcryptjs';
 import { authenticator } from 'otplib';
 import { bd } from '../../servidor/bd/conexion.js';
@@ -15,12 +13,6 @@ import { institucionActual } from '../../servidor/contexto.js';
 
 const CAMPOS = 'id, nombre, correo, telefono, direccion, rol, activo, activado_2fa, creado_en, actualizado_en';
 
-// solo cuentas internas de la institución: los aliados van en su módulo y el
-// superadministrador es del proveedor. lo que no se lista, tampoco se edita ni se le
-// restablece la clave, porque toda la cadena cuelga de buscarInterno.
-//
-// el filtro por institución es lo que separa a un colegio de otro: sin él, el
-// administrador de uno veía las cuentas del resto y podía restablecerles la clave.
 export async function listarUsuarios() {
   const [filas] = await bd.query(
     `SELECT ${CAMPOS} FROM usuarios
@@ -48,11 +40,10 @@ export async function crearUsuario({ nombre, correo, telefono, direccion, rol },
   const claveTemporal = generarClaveTemporal();
   const claveHash = await bcrypt.hash(claveTemporal, SEGURIDAD.RONDAS_BCRYPT);
   const secreto = authenticator.generateSecret();
-  // el usuario nuevo hereda el método de verificación por defecto del sistema
+
   const metodo = ajustes.leer('METODO_2FA_DEFECTO', SEGURIDAD.METODO_2FA_DEFECTO);
   let resultado;
   try {
-    // la cuenta nace en la institución de quien la crea, no en la que diga el navegador
     [resultado] = await bd.query(
       `INSERT INTO usuarios (nombre, correo, telefono, direccion, clave_hash, rol, secreto_2fa, metodo_2fa, debe_cambiar_clave, institucion_id)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?)`,
@@ -64,7 +55,7 @@ export async function crearUsuario({ nombre, correo, telefono, direccion, rol },
   }
   await registrarAuditoria({ usuarioId: solicitante.id, accion: 'usuario_creado', detalle: `${correo} — rol ${rol}`, ip });
   const envio = await despacharCredenciales({ nombre, correo, claveTemporal, asunto: 'Tu acceso al SIG del CEIPAJ' });
-  // se relee la fila para devolver lo que quedó guardado, no lo que llegó en el pedido
+
   return { usuario: await buscarInterno(resultado.insertId), ...envio };
 }
 
@@ -94,14 +85,12 @@ export async function editarUsuario(id, { nombre, correo, telefono, direccion },
   return buscarInterno(id);
 }
 
-// el rnf-13 pide auditar los cambios de rol, así que se guarda el anterior y el nuevo
 export async function cambiarRol(id, rol, solicitante, ip) {
-  // mismo freno que cambiarActivo: sin esto uno se cambia el rol a sí mismo con un put
   if (id === solicitante.id) throw new ErrorVisible('No podés cambiarte el rol a vos mismo.');
   const antes = await buscarInterno(id);
   if (antes.rol === rol) return antes;
   if (antes.rol === ROLES.ADMINISTRADOR && rol !== ROLES.ADMINISTRADOR) await exigirOtroAdministrador(id);
-  // sube la versión de sesión: el token viejo lleva el rol viejo y deja de valer ya
+
   await bd.query(
     'UPDATE usuarios SET rol = ?, sesion_version = sesion_version + 1 WHERE id = ? AND institucion_id <=> ?',
     [rol, id, institucionActual()]
@@ -116,7 +105,6 @@ export async function cambiarRol(id, rol, solicitante, ip) {
 }
 
 export async function cambiarActivo({ id, activo }, solicitante, ip) {
-  // nadie puede cortarse el acceso a sí mismo
   if (!activo && id === solicitante.id) throw new ErrorVisible('No podés desactivar tu propia cuenta.');
   const usuario = await buscarInterno(id);
   if (!activo && usuario.rol === ROLES.ADMINISTRADOR) await exigirOtroAdministrador(id);

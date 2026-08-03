@@ -1,4 +1,3 @@
-// cómo se muestran en la pantalla de auditoría las acciones guardadas
 export const TEXTO_ACCION = {
   configuracion_inicial: 'Configuración inicial del sistema',
   ingreso_exitoso: 'Ingreso al sistema',

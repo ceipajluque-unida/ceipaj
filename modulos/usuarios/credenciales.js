@@ -1,5 +1,3 @@
-// armado y envío de las claves temporales. vive aparte porque lo usan tanto el alta
-// de usuarios internos como la de aliados y el reenvío de accesos.
 import bcrypt from 'bcryptjs';
 import { bd } from '../../servidor/bd/conexion.js';
 import { enviarCorreo } from '../../servidor/correo.js';
@@ -18,7 +16,6 @@ function textoCredenciales({ nombre, correo, claveTemporal }) {
   );
 }
 
-// manda las credenciales; sin smtp, la clave vuelve para mostrarse una sola vez
 export async function despacharCredenciales({ nombre, correo, claveTemporal, asunto }) {
   const { enviado } = await enviarCorreo({
     para: correo,
@@ -28,7 +25,6 @@ export async function despacharCredenciales({ nombre, correo, claveTemporal, asu
   return enviado ? { correoEnviado: true } : { correoEnviado: false, claveTemporal };
 }
 
-// genera una clave nueva, la guarda y corta las sesiones abiertas de esa cuenta
 export async function renovarClave(id) {
   const claveTemporal = generarClaveTemporal();
   const claveHash = await bcrypt.hash(claveTemporal, SEGURIDAD.RONDAS_BCRYPT);

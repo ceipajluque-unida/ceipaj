@@ -1,5 +1,3 @@
-// alta del administrador de una institución. la hace el proveedor al dar de alta al
-// cliente, porque una institución sin administrador no se puede usar.
 import bcrypt from 'bcryptjs';
 import { authenticator } from 'otplib';
 import { bd } from '../../servidor/bd/conexion.js';
@@ -16,8 +14,7 @@ export async function crearAdministrador(institucionId, cuerpo, solicitante, ip)
   const correo = String(cuerpo?.correo ?? '').trim().toLowerCase();
   const telefono = String(cuerpo?.telefono ?? '').trim();
   const direccion = String(cuerpo?.direccion ?? '').trim();
-  // el método del segundo paso se elige acá: si el colegio no tiene smtp ni sms andando,
-  // mandarlo por correo dejaría a su administrador sin poder entrar la primera vez
+
   const metodo2fa = METODOS_2FA.some((m) => m.valor === cuerpo?.metodo2fa) ? cuerpo.metodo2fa : 'app';
   if (!nombre) throw new ErrorVisible('El nombre es obligatorio.');
   if (!validarLargo(nombre, LARGOS.nombre)) throw new ErrorVisible(`El nombre no puede pasar de ${LARGOS.nombre} caracteres.`);
@@ -46,7 +43,6 @@ export async function crearAdministrador(institucionId, cuerpo, solicitante, ip)
     throw error;
   }
 
-  // el correo sale con el smtp de la institución nueva, no con el del proveedor
   const envio = await conInstitucion(institucionId, () =>
     despacharCredenciales({ nombre, correo, claveTemporal, asunto: `Tu acceso al SIG de ${institucion.nombre}` })
   );

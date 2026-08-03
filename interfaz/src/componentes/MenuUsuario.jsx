@@ -1,11 +1,9 @@
-// menú de la esquina superior derecha: perfil, cambio de clave y salir
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from 'antd';
 import { salir } from './Diseno.jsx';
 import { legible } from '../servicios/formato.js';
 
-// antd centra el texto de sus botones y en una lista desplegable queda desprolijo
 const ESTILO_ENLACE = { textAlign: 'left' };
 
 function iniciales(nombre = '') {
@@ -17,7 +15,6 @@ export default function MenuUsuario({ usuario }) {
   const [abierto, setAbierto] = useState(false);
   const caja = useRef(null);
 
-  // cierra el menú al tocar fuera de él
   useEffect(() => {
     const alClic = (evento) => { if (caja.current && !caja.current.contains(evento.target)) setAbierto(false); };
     document.addEventListener('mousedown', alClic);

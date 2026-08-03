@@ -1,5 +1,3 @@
-// abm de las instituciones cliente. lo usa solo el proveedor del servicio: cada alta
-// abre un inquilino nuevo con su propio administrador, sus datos y su suscripción.
 import { bd } from '../../servidor/bd/conexion.js';
 import { registrarAuditoria } from '../../servidor/auditoria.js';
 import { ErrorVisible } from '../../servidor/errores.js';
@@ -8,9 +6,6 @@ import * as ajustes from '../../servidor/ajustesSistema.js';
 
 const CAMPOS = 'id, nombre, ciudad, correo_contacto, telefono, direccion, activo, creado_en';
 
-// el nombre vive en esta tabla, pero el resto del sistema (la barra, los correos, el
-// recibo) lo lee de los ajustes de la institución. si solo se guardara acá, renombrar un
-// colegio no cambiaba nada en ninguna pantalla: se copia para que no haya dos verdades.
 async function copiarAAjustes(institucionId, datos) {
   await ajustes.guardar(
     { INSTITUCION_NOMBRE: datos.nombre, INSTITUCION_CIUDAD: datos.ciudad ?? '' },
@@ -54,6 +49,10 @@ export async function obtener(id) {
 
 export async function crear(cuerpo, solicitante, ip) {
   const datos = datosValidados(cuerpo);
+  const [[{ total }]] = await bd.query('SELECT COUNT(*) AS total FROM instituciones');
+  if (Number(total) > 0) {
+    throw new ErrorVisible('Ya existe una institución registrada. Solo se permite una institución.', 409);
+  }
   const [resultado] = await bd.query(
     'INSERT INTO instituciones (nombre, ciudad, correo_contacto, telefono, direccion) VALUES (?, ?, ?, ?, ?)',
     [datos.nombre, datos.ciudad, datos.correo, datos.telefono, datos.direccion]
@@ -75,8 +74,6 @@ export async function editar(id, cuerpo, solicitante, ip) {
   return obtener(id);
 }
 
-// no se borra: tiene usuarios, interesados y pagos colgando. al desactivarla, su gente
-// deja de poder entrar (lo corta el middleware de autenticación).
 export async function cambiarActivo(id, activo, solicitante, ip) {
   const institucion = await obtener(id);
   await bd.query('UPDATE instituciones SET activo = ? WHERE id = ?', [activo ? 1 : 0, id]);
@@ -88,4 +85,3 @@ export async function cambiarActivo(id, activo, solicitante, ip) {
   });
   return { id: Number(id), activo: Boolean(activo) };
 }
-

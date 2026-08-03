@@ -1,12 +1,8 @@
-// control de frecuencia por dirección ip, con ventana deslizante en memoria. los frenos
-// de bloqueos.js son por correo y por usuario: este cubre el hueco de quien martilla una
-// ruta pública variando el correo en cada intento.
 import * as ajustes from '../ajustesSistema.js';
 import { SEGURIDAD } from '../../configuracion/ajustes.js';
 
 const registros = new Map();
 
-// limpieza perezosa: se barre al pasar el umbral, así no hace falta un temporizador
 const MAXIMO_EN_MEMORIA = 5000;
 
 function barrer(ahora) {
@@ -18,7 +14,7 @@ function barrer(ahora) {
 export function frenoPorIp({ nombre, pedidos, segundos }) {
   return (req, res, siguiente) => {
     const tope = ajustes.leerNumero(`FRECUENCIA_${nombre.toUpperCase()}_PEDIDOS`, pedidos);
-    if (tope <= 0) return siguiente(); // en 0 queda apagado
+    if (tope <= 0) return siguiente();
     const ventana = segundos * 1000;
     const ahora = Date.now();
     const clave = `${nombre}:${req.ip}`;
@@ -39,7 +35,6 @@ export function frenoPorIp({ nombre, pedidos, segundos }) {
   };
 }
 
-// topes por defecto de las rutas públicas, configurables desde ajustes
 export const frenoIngreso = frenoPorIp({ nombre: 'ingreso', ...SEGURIDAD.FRECUENCIA_INGRESO });
 export const frenoRecuperacion = frenoPorIp({ nombre: 'recuperacion', ...SEGURIDAD.FRECUENCIA_RECUPERACION });
 export const frenoGeneral = frenoPorIp({ nombre: 'general', ...SEGURIDAD.FRECUENCIA_GENERAL });

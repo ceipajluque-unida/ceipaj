@@ -1,5 +1,3 @@
-// baja lógica del interesado y revocación del consentimiento. no hay borrado físico:
-// se llevaría por delante las interacciones, las acciones de seguimiento y las comisiones.
 import { bd } from '../../servidor/bd/conexion.js';
 import { registrarAuditoria } from '../../servidor/auditoria.js';
 import { ErrorVisible } from '../../servidor/errores.js';
@@ -19,9 +17,6 @@ export async function darDeBaja(id, motivo, usuarioId, ip) {
   return { id: Number(id), activo: false, motivo_baja: texto };
 }
 
-// reactivar sirve para deshacer una baja administrativa. NO alcanza para volver a
-// contactar a quien revocó su consentimiento: para eso hace falta que lo dé de nuevo,
-// así que esos quedan afuera del update y el mensaje lo explica.
 export async function reactivar(id, usuarioId, ip) {
   const [resultado] = await bd.query(
     `UPDATE leads SET activo = 1, motivo_baja = NULL
@@ -39,8 +34,6 @@ export async function reactivar(id, usuarioId, ip) {
   return { id: Number(id), activo: true };
 }
 
-// la ley 7593 y la propia política del sistema le dan al titular el derecho a revocar.
-// al revocar se da de baja el registro: sin consentimiento no se lo puede seguir contactando.
 export async function revocarConsentimiento(id, usuarioId, ip) {
   const [resultado] = await bd.query(
     `UPDATE leads SET consentimiento_datos = 0, consentimiento_revocado_en = NOW(),

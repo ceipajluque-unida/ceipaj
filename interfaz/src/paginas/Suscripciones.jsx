@@ -1,4 +1,3 @@
-// suscripción de la institución a la plataforma, con el plan vigente y el pago
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Select, Table } from 'antd';
@@ -27,8 +26,8 @@ export default function Suscripciones() {
   const [error, setError] = useState(null);
   const [cargaError, setCargaError] = useState(null);
   const [pagando, setPagando] = useState(false);
-  const [cobroEnCurso, setCobroEnCurso] = useState(null); // checkout abierto dentro de la pantalla
-  const [bajando, setBajando] = useState(null); // referencia del recibo que se está bajando
+  const [cobroEnCurso, setCobroEnCurso] = useState(null);
+  const [bajando, setBajando] = useState(null);
 
   async function cargar() {
     try {
@@ -59,8 +58,7 @@ export default function Suscripciones() {
       const cobro = await llamarApi('/api/pagos/plan', { metodo: 'POST', cuerpo: { plan: planElegido.valor, medio } });
       setPlanElegido(null);
       await cargar();
-      // la pasarela de prueba tiene su checkout dentro del sistema: se abre como pantalla
-      // completa, no apretado adentro de un marco en esta misma vista
+
       if (String(cobro.urlPago ?? '').includes('/checkout/')) {
         return navegar(new URL(cobro.urlPago, window.location.origin).pathname);
       }
@@ -72,8 +70,6 @@ export default function Suscripciones() {
     }
   }
 
-  // dar de baja no corta el servicio: el período está pagado y no hay reembolso, así que
-  // se usa hasta el final y lo único que se pierde es la renovación automática
   async function cancelar(vigente) {
     const ok = await confirmar({
       titulo: '¿Dar de baja la renovación?',
@@ -109,7 +105,6 @@ export default function Suscripciones() {
 
   const { vigente, planes, historial } = datos;
 
-  // el historial guarda la clave del plan; un plan apagado ya no viene en la lista
   const tituloPlan = (clave) => planes.find((plan) => plan.valor === clave)?.texto ?? legible(clave);
 
   const columnas = [
@@ -204,7 +199,6 @@ export default function Suscripciones() {
         )}
       </section>
 
-      {/* los cobros de la plataforma van acá y no en Pagos, que es de los cobros del colegio */}
       <section className="panel">
         <h3>Pagos de la plataforma</h3>
         {(datos.pagos ?? []).length === 0 ? (

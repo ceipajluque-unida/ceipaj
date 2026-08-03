@@ -1,4 +1,3 @@
-// textos legales de arranque. se editan desde configuración y quedan guardados en la base
 export const VERSION_LEGALES = '1.0';
 
 export const AVISO_PRIVACIDAD =
@@ -149,9 +148,6 @@ Para consultas relacionadas con el funcionamiento del sistema podrán comunicars
 
 Estos Términos y Condiciones constituyen un modelo de referencia para el sistema desarrollado como Trabajo Final de Grado de la carrera de Ingeniería en Sistemas de la Universidad de la Integración de las Américas (UNIDA). En caso de que la solución sea implementada en un entorno operativo, deberán ser revisados y adecuados por la organización responsable, atendiendo a las características del servicio, la normativa vigente y las obligaciones jurídicas que resulten aplicables.`;
 
-// presentación del ingreso. cada frase sale de los pdf de la tesis (documento de alcance
-// pág. 6 y Tesis V1 págs. 8-9); la trazabilidad frase por frase está en el capítulo iv.
-// los párrafos se separan con una línea en blanco, que es por donde parte el visor.
 export const PRESENTACION_LOGIN = `Sistema de Información Gerencial con enfoque CRM educativo. Reúne en un solo lugar la información de captación y seguimiento que hoy queda repartida entre redes sociales, llamadas telefónicas, mensajería y consultas presenciales.
 
 Registra a cada interesado con su canal de origen y el historial de sus interacciones, avisa cuando alguien queda sin seguimiento, marca como matriculado al que confirma su inscripción en el sistema académico y muestra los indicadores de captación, conversión y permanencia que la dirección necesita para decidir.

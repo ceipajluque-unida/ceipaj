@@ -1,4 +1,3 @@
-// búsqueda y estado del padrón de aliados, junto con la regla de filtrado que aplica la página
 import { Button, Input, Select } from 'antd';
 import { sinAcentos } from '../servicios/formato.js';
 

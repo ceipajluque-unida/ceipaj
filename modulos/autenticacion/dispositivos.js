@@ -1,4 +1,3 @@
-// equipos de confianza donde no se vuelve a pedir el código, se guarda solo el hash del token
 import crypto from 'node:crypto';
 import { bd } from '../../servidor/bd/conexion.js';
 import * as ajustes from '../../servidor/ajustesSistema.js';
@@ -10,7 +9,6 @@ function diasDeVigencia() {
   return ajustes.leerNumero('DIAS_DISPOSITIVO_CONFIANZA', SEGURIDAD.DIAS_DISPOSITIVO_CONFIANZA);
 }
 
-// del user-agent sale un nombre reconocible para que el usuario sepa cuál borrar
 export function nombrarEquipo(userAgent = '') {
   const navegador = /Edg/i.test(userAgent) ? 'Edge'
     : /OPR|Opera/i.test(userAgent) ? 'Opera'
@@ -36,7 +34,6 @@ export async function recordar(usuarioId, userAgent) {
   return token;
 }
 
-// devuelve true solo si el token es de ese usuario y no venció
 export async function esDeConfianza(usuarioId, token) {
   if (!token) return false;
   const [[fila]] = await bd.query(
@@ -65,7 +62,6 @@ export async function olvidar(usuarioId, id) {
   return resultado.affectedRows > 0;
 }
 
-// si la cuenta estuvo comprometida, los equipos recordados dejan de valer
 export async function olvidarTodos(usuarioId) {
   await bd.query('DELETE FROM dispositivos_confianza WHERE usuario_id = ?', [usuarioId]);
 }

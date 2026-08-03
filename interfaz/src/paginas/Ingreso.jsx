@@ -1,4 +1,3 @@
-// ingreso en dos pasos, primero la clave y después el código 2fa
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button, Checkbox, Input } from 'antd';
@@ -8,10 +7,8 @@ import Legales from '../componentes/Legales.jsx';
 import { useInstitucion } from '../contextos/institucion.jsx';
 import { comoHtml } from '../servicios/markdownSimple.jsx';
 
-// velo sobre la foto de fondo: sin esto el texto blanco pierde el contraste medible
 const VELO = 'linear-gradient(rgba(20, 38, 58, 0.86), rgba(20, 38, 58, 0.86))';
 
-// el código es numérico; pegar uno con espacios o guiones no tiene que romperlo
 const soloNumeros = (texto) => texto.replace(/\D/g, '');
 
 export default function Ingreso() {
@@ -22,18 +19,18 @@ export default function Ingreso() {
   const [clave, setClave] = useState('');
   const [codigo, setCodigo] = useState('');
   const [tokenPre2fa, setTokenPre2fa] = useState(null);
-  const [dos, setDos] = useState({}); // datos del segundo paso
+  const [dos, setDos] = useState({});
   const [error, setError] = useState(null);
   const [cargando, setCargando] = useState(false);
   const [recordar, setRecordar] = useState(false);
   const [confiarEquipo, setConfiarEquipo] = useState(false);
-  const [verAlternativas, setVerAlternativas] = useState(false); // "no tengo acceso a mi app"
+  const [verAlternativas, setVerAlternativas] = useState(false);
   const [captcha, setCaptcha] = useState({ activo: false, claveSitio: '' });
   const [captchaRespuesta, setCaptchaRespuesta] = useState('');
   const [presentacion, setPresentacion] = useState('');
   const [fondo, setFondo] = useState('');
   const [mostrarTextos, setMostrarTextos] = useState(true);
-  // si llegó acá porque lo echaron, se lo explica en vez de dejarlo adivinando
+
   const [salida] = useState(motivoDeSalida);
 
   useEffect(() => {
@@ -58,7 +55,7 @@ export default function Ingreso() {
         metodo: 'POST',
         cuerpo: { correo, clave, recordar, tokenDispositivo: tokenDispositivo(), captchaRespuesta },
       });
-      // en un equipo de confianza el backend ya devuelve la sesión, sin pedir código
+
       if (!r.requiereCodigo) {
         guardarSesion(r.token, r.usuario, r.recordar);
         return navegar(r.requiereCambioClave ? '/cambiar-clave' : '/');
@@ -84,10 +81,10 @@ export default function Ingreso() {
         cuerpo: { tokenPre2fa, codigo, confiarEquipo },
       });
       guardarSesion(r.token, r.usuario, r.recordar);
-      // si el token viejo ya no sirve, se descarta para no mandarlo de nuevo
+
       if (r.tokenDispositivo) guardarDispositivo(r.tokenDispositivo);
       else if (!confiarEquipo && tokenDispositivo()) olvidarDispositivo();
-      // si entró con una clave temporal, primero tiene que elegir la suya
+
       navegar(r.requiereCambioClave ? '/cambiar-clave' : '/');
     } catch (excepcion) {
       setError(excepcion.message);
@@ -96,7 +93,6 @@ export default function Ingreso() {
     }
   }
 
-  // vuelve al primer paso, por ejemplo si se equivocó de correo
   function volverAlPaso1() {
     setPaso(1);
     setCodigo('');
@@ -107,12 +103,10 @@ export default function Ingreso() {
     setVerAlternativas(false);
   }
 
-  // si no tiene a mano su método, cambia a otro medio de su cuenta
   async function pedirAlternativo(metodo) {
     setError(null);
     setCodigo('');
     if (metodo === 'app') {
-      // con la app no se envía nada, solo cambia el modo del paso 2
       setDos((previo) => ({ ...previo, metodo: 'app', qr: null, enviado: false }));
       setVerAlternativas(false);
       return;
@@ -126,16 +120,12 @@ export default function Ingreso() {
     }
   }
 
-  // sin textos y sin imagen el panel sería un rectángulo de color vacío, así que en ese
-  // caso se cae a la pantalla centrada de siempre
   const conPanel = mostrarTextos || Boolean(fondo);
-  // el velo solo hace falta cuando hay texto encima; con la imagen sola la taparía al pedo
+
   const fondoPanel = fondo
     ? { backgroundImage: `${mostrarTextos ? `${VELO}, ` : ''}url(${fondo})` }
     : undefined;
 
-  // la clase extra acota a esta pantalla las reglas de dos columnas: sin ella el media
-  // query también le borraba el nombre a recuperar, restablecer y configuración inicial
   return (
     <main className={`pantalla-auth ${conPanel ? 'con-marca' : ''}`}>
       {conPanel && (
@@ -204,8 +194,7 @@ export default function Ingreso() {
               </div>
             )}
             <label htmlFor="codigo-2fa">Código de 6 dígitos</label>
-            {/* una casilla por dígito y salto solo: se lee el código del celular y se
-                tipea de corrido, sin contar caracteres en un campo largo */}
+
             <Input.OTP id="codigo-2fa" length={6} value={codigo} onChange={setCodigo} formatter={soloNumeros} autoFocus />
             <Checkbox checked={confiarEquipo} onChange={(e) => setConfiarEquipo(e.target.checked)}>
               No volver a pedirme el código en este equipo

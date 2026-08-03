@@ -1,4 +1,3 @@
-// envío de correos para credenciales de aliados y códigos 2fa
 import nodemailer from 'nodemailer';
 import { promises as dns } from 'node:dns';
 import { CORREO, INSTITUCION } from '../configuracion/ajustes.js';
@@ -10,7 +9,7 @@ function configuracionSmtp() {
     puerto: ajustes.leerNumero('SMTP_PUERTO', CORREO.SMTP_PUERTO),
     usuario: ajustes.leer('SMTP_USUARIO', CORREO.SMTP_USUARIO),
     clave: ajustes.leer('SMTP_CLAVE', CORREO.SMTP_CLAVE),
-    // el remitente se arma solo: gmail reescribe el correo con la cuenta autenticada igual
+
     remitente: `${ajustes.leer('INSTITUCION_NOMBRE', INSTITUCION.NOMBRE)} <${ajustes.leer('SMTP_USUARIO', CORREO.SMTP_USUARIO)}>`,
   };
 }
@@ -19,7 +18,6 @@ export function correoConfigurado() {
   return Boolean(configuracionSmtp().host);
 }
 
-// los errores de smtp vienen en inglés y con códigos, así que se explican en criollo
 function explicar(error, smtp) {
   const texto = String(error?.message ?? '');
   if (error?.code === 'ETIMEDOUT' || /timeout/i.test(texto)) {
@@ -37,18 +35,17 @@ function explicar(error, smtp) {
   return texto || 'No se pudo enviar el correo.';
 }
 
-// el family 4 de nodemailer no alcanza y el IPv6 daba ENETUNREACH, por eso resolvemos la ip
 async function crearTransporte(smtp) {
   let host = smtp.host;
   let servername;
   try {
     const [ipv4] = await dns.resolve4(smtp.host);
-    if (ipv4) { servername = smtp.host; host = ipv4; } // servername conserva el cert TLS del dominio
-  } catch { /* si no resuelve A (ej. localhost), usamos el host tal cual */ }
+    if (ipv4) { servername = smtp.host; host = ipv4; }
+  } catch { }
   return nodemailer.createTransport({
     host,
     port: smtp.puerto,
-    secure: smtp.puerto === 465, // 465 va cifrado directo; 587 arranca plano y sube a tls
+    secure: smtp.puerto === 465,
     auth: smtp.usuario ? { user: smtp.usuario, pass: smtp.clave } : undefined,
     ...(servername ? { tls: { servername } } : {}),
     connectionTimeout: 10000,
@@ -57,7 +54,6 @@ async function crearTransporte(smtp) {
   });
 }
 
-// prueba la conexión y el login sin mandar nada
 export async function verificarSmtp() {
   const smtp = configuracionSmtp();
   if (!smtp.host) return { ok: false, motivo: 'El correo (SMTP) no está configurado.' };
@@ -78,7 +74,6 @@ export async function enviarCorreo({ para, asunto, texto }) {
     await transporte.sendMail({ from: smtp.remitente, to: para, subject: asunto, text: texto });
     return { enviado: true };
   } catch (error) {
-    // que un correo caído no tumbe la operación principal
     return { enviado: false, motivo: explicar(error, smtp) };
   }
 }

@@ -1,4 +1,3 @@
-// urls de los planes de suscripción
 import { Router } from 'express';
 import express from 'express';
 import * as servicio from './servicio.js';
@@ -9,16 +8,12 @@ import { MODULOS_NUCLEO } from '../../configuracion/ajustes.js';
 
 export const rutasPlanes = Router();
 
-// las imágenes son públicas: se muestran en el ingreso junto con los planes
 rutasPlanes.use('/imagenes', express.static(CARPETA, { maxAge: '1d' }));
 
-// el listado de lo que se ofrece va sin sesión, para poder mostrarlo en el ingreso
 rutasPlanes.get('/', async (req, res) => res.json(await servicio.listarActivos()));
 
-// una sola fuente de verdad de quién administra los planes: la matriz de permisos
 rutasPlanes.use(autenticar, permitirRoles(...PERMISOS.planes));
 
-// qué módulos se pueden habilitar o bloquear por plan; el núcleo nunca entra acá
 rutasPlanes.get('/modulos', (req, res) =>
   res.json(Object.keys(PERMISOS).filter((clave) => !MODULOS_NUCLEO.includes(clave)))
 );

@@ -1,4 +1,3 @@
-// urls del módulo de usuarios internos.
 import { Router } from 'express';
 import * as controlador from './controlador.js';
 import { autenticar, permitirRoles } from '../../servidor/middleware/autenticar.js';
@@ -6,7 +5,6 @@ import { PERMISOS } from '../../configuracion/permisos.js';
 
 export const rutasUsuarios = Router();
 
-// todo el módulo es solo para quien administra el sistema
 rutasUsuarios.use(autenticar, permitirRoles(...PERMISOS.usuarios));
 
 rutasUsuarios.get('/', controlador.listar);

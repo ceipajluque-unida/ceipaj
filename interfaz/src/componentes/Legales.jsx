@@ -1,14 +1,10 @@
-// pie con los enlaces a los textos legales, que se abren en una ventana grande
 import { useEffect, useState } from 'react';
 import { Modal, Skeleton } from 'antd';
 import { llamarApi } from '../servicios/api.js';
 import { comoHtml } from '../servicios/markdownSimple.jsx';
 
-// 'pie' es el pie de las pantallas de acceso, con los dos documentos. 'enlace' es el que
-// va dentro de un formulario, al lado del consentimiento: abre el mismo visor sin sacar
-// a la persona de lo que está cargando.
 export default function Legales({ variante = 'pie', texto = 'Ver la política de privacidad' }) {
-  const [abierto, setAbierto] = useState(null); // 'politica' o 'terminos'
+  const [abierto, setAbierto] = useState(null);
   const [textos, setTextos] = useState(null);
 
   useEffect(() => {

@@ -1,4 +1,3 @@
-// pasarela pagopar, la misma api en desarrollo y producción: cambia el par de tokens
 import { createHash, timingSafeEqual, randomUUID } from 'node:crypto';
 import { PAGOPAR, ESTADOS_PAGO, MEDIOS_PAGO } from '../../../configuracion/ajustes.js';
 import * as ajustes from '../../../servidor/ajustesSistema.js';
@@ -7,7 +6,6 @@ import { armarPedido, formaDePago } from './pagoparPedido.js';
 import { estadoDePedido, datosDelPago, explicar } from './pagoparRespuestas.js';
 import { enCache, conEspera } from './freno.js';
 
-// los tokens se pueden cargar desde la pantalla de configuración o del .env
 function credenciales() {
   return {
     publico: ajustes.leer('PAGOPAR_TOKEN_PUBLICO', PAGOPAR.TOKEN_PUBLICO),
@@ -20,13 +18,11 @@ export function configurado() {
   return Boolean(publico && privado);
 }
 
-// el token privado nunca viaja, solo se usa para firmar
 function firmar(...partes) {
   const { privado } = credenciales();
   return createHash('sha1').update(privado + partes.join('')).digest('hex');
 }
 
-// todas las salidas pasan por acá, separadas entre sí para no golpear el servicio
 async function llamar(ruta, cuerpo) {
   let respuesta;
   try {
@@ -40,7 +36,7 @@ async function llamar(ruta, cuerpo) {
     throw new ErrorVisible('No se pudo contactar con Pagopar. Probá de nuevo en unos minutos.', 502);
   }
   const datos = await respuesta.json().catch(() => ({}));
-  // pagopar contesta 200 igual cuando rechaza, el resultado viene en "respuesta"
+
   if (!respuesta.ok || datos.respuesta !== true) {
     const motivo = typeof datos.resultado === 'string' ? datos.resultado : 'Pagopar rechazó la operación.';
     throw new ErrorVisible(explicar(motivo), 502);
@@ -51,9 +47,6 @@ async function llamar(ruta, cuerpo) {
 export async function crearCobro({ concepto, monto, medio, comprador }) {
   const { publico, privado } = credenciales();
   if (!publico || !privado) {
-    // el mensaje no manda a Configuración: la pasarela la carga el proveedor del
-    // servicio, no el colegio, y mandarlo a una pantalla donde no puede hacer nada es peor
-    // que no decirle nada. es una falla del servicio, así que va como 503.
     throw new ErrorVisible(
       'El cobro en línea no está disponible en este momento. Avisale al proveedor del servicio para que termine de configurar la pasarela.',
       503
@@ -62,7 +55,6 @@ export async function crearCobro({ concepto, monto, medio, comprador }) {
   const referencia = `CEIPAJ-${randomUUID().slice(0, 8).toUpperCase()}`;
   const montoEntero = Math.trunc(Number(monto));
 
-  // la misma cadena que se firma es la que se manda, si no el token no coincide
   const pedido = armarPedido({
     referencia,
     concepto,
@@ -80,17 +72,15 @@ export async function crearCobro({ concepto, monto, medio, comprador }) {
     referencia,
     estado: ESTADOS_PAGO.PENDIENTE,
     identificadorExterno: hash,
-    // el medio elegido viaja en la url para que el checkout abra directo en ese paso
+
     urlPago: `${PAGOPAR.CHECKOUT}/${hash}?forma_pago=${formaDePago(medio)}`,
   };
 }
 
-// hay que probar que el aviso es de pagopar comparando el sha1 antes de tocar nada
 export function verificarNotificacion(cuerpo) {
   const datos = cuerpo?.resultado?.[0];
   if (typeof datos?.hash_pedido !== 'string' || typeof datos?.token !== 'string') return null;
 
-  // si no es sha1 en hexa ni lo comparamos, timingSafeEqual revienta con largos distintos
   const recibido = datos.token.trim().toLowerCase();
   if (!/^[0-9a-f]{40}$/.test(recibido)) return null;
 
@@ -105,7 +95,6 @@ export function verificarNotificacion(cuerpo) {
   };
 }
 
-// se consulta cuando el aviso no llegó, para no dejar un pago colgado
 export async function consultarEstado(identificadorExterno) {
   const { publico } = credenciales();
   const resultado = await llamar('/pedidos/1.1/traer', {
@@ -117,7 +106,6 @@ export async function consultarEstado(identificadorExterno) {
   return { estado: estadoDePedido(datos), ...datosDelPago(datos) };
 }
 
-// medios que el comercio tiene habilitados de verdad. la lista casi no cambia, así que se cachea
 export async function listarMedios() {
   const { publico } = credenciales();
   const habilitados = await enCache(`medios:${publico}`, PAGOPAR.MINUTOS_CACHE_MEDIOS * 60, async () => {
@@ -128,12 +116,11 @@ export async function listarMedios() {
     return new Map((resultado ?? []).map((forma) => [Number(forma.forma_pago), forma]));
   });
 
-  // se devuelven los valores del sistema, no los números de pagopar: la base y la validación usan esos
   const yaPuestos = new Set();
   return MEDIOS_PAGO
     .filter((opcion) => {
       const forma = formaDePago(opcion.valor);
-      // depósito y transferencia caen en la misma forma de pago, se ofrece una sola vez
+
       if (!habilitados.has(forma) || yaPuestos.has(forma)) return false;
       yaPuestos.add(forma);
       return true;

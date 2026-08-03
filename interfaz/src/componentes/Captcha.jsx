@@ -1,4 +1,3 @@
-// widget de recaptcha v2. el script de google se carga una sola vez y recién si hace falta
 import { useEffect, useRef } from 'react';
 
 const FUENTE = 'https://www.google.com/recaptcha/api.js?render=explicit';
@@ -37,7 +36,7 @@ export default function Captcha({ claveSitio, alResolver }) {
           'error-callback': () => alResolver(''),
         });
       })
-      .catch(() => { /* sin captcha visible, el servidor decide si deja pasar */ });
+      .catch(() => { });
     return () => { vivo = false; };
   }, [claveSitio]);
 

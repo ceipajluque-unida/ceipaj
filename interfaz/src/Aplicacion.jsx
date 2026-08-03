@@ -1,4 +1,3 @@
-// rutas de la app; las pantallas internas van protegidas
 import { useEffect, useState } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { haySesion, llamarApi } from './servicios/api.js';
@@ -28,19 +27,15 @@ import Configuracion from './paginas/Configuracion.jsx';
 import Auditoria from './paginas/Auditoria.jsx';
 import Perfil from './paginas/Perfil.jsx';
 
-// solo deja pasar con sesión iniciada; si no, manda al ingreso
 function RutaProtegida({ children }) {
   return haySesion() ? children : <Navigate to="/ingreso" replace />;
 }
 
-// al revés: con la sesión abierta, las pantallas de acceso no tienen sentido. escribir
-// /ingreso a mano mostraba el formulario de nuevo, como si el usuario no estuviera adentro.
 function RutaDeAcceso({ children }) {
   return haySesion() ? <Navigate to="/" replace /> : children;
 }
 
 export default function Aplicacion() {
-  // al abrir se consulta si el sistema está recién instalado (sin usuarios)
   const [estado, setEstado] = useState(null);
 
   useEffect(() => {
@@ -56,9 +51,7 @@ export default function Aplicacion() {
 
   return (
     <Routes>
-      {/* la redirección va en los dos sentidos: con usuarios ya cargados esta pantalla no
-          tiene nada que hacer, y sin la guarda dejaba llenar el formulario entero para
-          recién avisar al enviarlo que la configuración inicial estaba cerrada */}
+
       <Route
         path="/configuracion-inicial"
         element={

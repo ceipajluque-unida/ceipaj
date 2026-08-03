@@ -1,13 +1,9 @@
-// checkout de la pasarela de prueba. es una pantalla del sistema, no un recuadro chico:
-// muestra el detalle del pedido y los datos de la tarjeta como cualquier carrito, y al
-// confirmar el pago se acredita por el mismo camino que usaría la pasarela real.
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Alert, Button, Descriptions, Divider, Input, Result, Steps } from 'antd';
 import { llamarApi } from '../servicios/api.js';
 import { guaranies, legible } from '../servicios/formato.js';
 
-// la tarjeta de prueba que documenta Pagopar, para que no haya que inventar números
 const TARJETA_DE_PRUEBA = { numero: '4111 1111 1111 1111', vence: '12/30', codigo: '123', titular: '' };
 
 export default function Checkout() {

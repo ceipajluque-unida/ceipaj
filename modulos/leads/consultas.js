@@ -1,4 +1,3 @@
-// lecturas de leads: listado con filtros, alertas de seguimiento y detalle con historial.
 import { bd } from '../../servidor/bd/conexion.js';
 import * as ajustes from '../../servidor/ajustesSistema.js';
 import { ErrorVisible } from '../../servidor/errores.js';
@@ -6,25 +5,20 @@ import { institucionActual } from '../../servidor/contexto.js';
 import { ESTADOS_LEAD, LIMITES } from '../../configuracion/ajustes.js';
 import { transicionesPosibles } from './estados.js';
 
-// subconsulta y no group by, así funciona igual en mysql y en el mariadb de xampp
 const ULTIMA_INTERACCION = '(SELECT MAX(i.fecha) FROM interacciones i WHERE i.lead_id = l.id)';
 
-// los interesados son de su institución y de nadie más. sin institución en el pedido no
-// se devuelve nada: ni el proveedor del servicio tiene por qué ver estos datos (ley 7593)
 export function institucionDelPedido() {
   const institucionId = institucionActual();
   if (!institucionId) throw new ErrorVisible('Esta operación es de una institución.', 403);
   return institucionId;
 }
 
-// el % y el _ son comodines de LIKE: sin escaparlos, buscar "100%" trae cualquier cosa
 const escaparLike = (texto) => String(texto).replace(/[\\%_]/g, (c) => `\\${c}`);
 
 export async function listarLeads({ estado, canal, buscar, aliado, incluirBajas } = {}) {
-  // la institución va primero y siempre, así ningún filtro de la url la puede saltear
   const condiciones = ['l.institucion_id = ?'];
   const parametros = [institucionDelPedido()];
-  // los dados de baja quedan fuera salvo que se pidan expresamente
+
   if (!incluirBajas) condiciones.push('l.activo = 1');
   if (estado) { condiciones.push('l.estado = ?'); parametros.push(estado); }
   if (canal) { condiciones.push('l.canal = ?'); parametros.push(canal); }
@@ -50,7 +44,6 @@ export async function listarLeads({ estado, canal, buscar, aliado, incluirBajas 
   return filas;
 }
 
-// leads activos sin contacto hace demasiados días. si nunca hubo interacción, cuenta desde el alta.
 export async function listarAlertas() {
   const [filas] = await bd.query(
     `SELECT l.id, l.nombre, l.cedula, l.canal, l.estado,
@@ -65,7 +58,6 @@ export async function listarAlertas() {
   return filas;
 }
 
-// detalle completo: datos, interacciones y a qué estados puede pasar
 export async function obtenerLead(id) {
   const [[lead]] = await bd.query(
     `SELECT l.*, u.nombre AS aliado
@@ -75,10 +67,9 @@ export async function obtenerLead(id) {
        WHERE l.id = ? AND l.institucion_id = ?`,
     [id, institucionDelPedido()]
   );
-  // un id de otra institución cae acá como "no encontrado", que es lo correcto: no
-  // confirma ni desmiente que ese interesado exista
+
   if (!lead) throw new ErrorVisible('Interesado no encontrado.', 404);
-  // las interacciones cuelgan del lead, que ya quedó filtrado por la consulta de arriba
+
   const [interacciones] = await bd.query(
     `SELECT i.id, i.tipo, i.detalle, i.fecha, u.nombre AS usuario
        FROM interacciones i
@@ -90,8 +81,6 @@ export async function obtenerLead(id) {
   return { ...lead, interacciones, transiciones: transicionesPosibles(lead.estado) };
 }
 
-// lista mínima de aliados activos para el selector del alta y de la edición. no expone
-// datos de contacto: solo hace falta saber a quién atribuirle el interesado.
 export async function listarAliadosParaElegir() {
   const [filas] = await bd.query(
     `SELECT a.id, u.nombre

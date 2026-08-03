@@ -1,4 +1,3 @@
-// menú agrupado por temas; cada ítem se ve solo si el rol tiene ese módulo
 import { NavLink } from 'react-router-dom';
 import Icono from './iconos.jsx';
 
@@ -14,7 +13,7 @@ export const GRUPOS = [
     { clave: 'comisiones', ruta: '/comisiones', texto: 'Comisiones' },
     { clave: 'portal', ruta: '/portal', texto: 'Mi portal' },
   ] },
-  // solo lo ve el proveedor del servicio: el menú se arma con los módulos del rol
+
   { titulo: 'Plataforma', items: [
     { clave: 'instituciones', ruta: '/instituciones', texto: 'Instituciones' },
     { clave: 'planes', ruta: '/planes', texto: 'Planes' },
@@ -29,12 +28,10 @@ export const GRUPOS = [
   ] },
 ];
 
-// cómo se llama cada módulo en el menú, para poder nombrarlo en los avisos
 export const NOMBRE_MODULO = Object.fromEntries(
   GRUPOS.flatMap((grupo) => grupo.items).map((item) => [item.clave, item.texto])
 );
 
-// con qué módulo se corresponde cada dirección, para saber quién puede abrirla
 export const MODULO_POR_RUTA = Object.fromEntries(
   GRUPOS.flatMap((grupo) => grupo.items).map((item) => [item.ruta, item.clave])
 );
@@ -50,8 +47,6 @@ export default function MenuLateral({ puedeVer, bloqueados, plan, badges }) {
             {grupo.titulo && <span className="grupo-titulo">{grupo.titulo}</span>}
             <ul className="lista-nav">
               {items.map((item) => {
-                // el módulo que el rol tiene pero el plan no incluye se muestra con
-                // candado en vez de esconderse: así se ve qué habilita cambiar de plan
                 const trabado = bloqueados.includes(item.clave);
                 return (
                   <li key={item.clave}>

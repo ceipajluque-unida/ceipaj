@@ -1,4 +1,3 @@
-// ficha del interesado: datos y estado en una pestaña, historial de contactos en la otra
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button, Table } from 'antd';
@@ -9,7 +8,6 @@ import BajaLead from '../componentes/BajaLead.jsx';
 import FormularioLead from '../componentes/FormularioLead.jsx';
 import InteraccionLead from '../componentes/InteraccionLead.jsx';
 
-// el texto del botón depende del paso, no alcanza con el nombre del estado
 const TEXTO_PASO = {
   interesado: 'Marcar como interesado',
   matriculado: 'Marcar como matriculado',
@@ -43,7 +41,6 @@ export default function LeadDetalle() {
   }, [id]);
 
   async function cambiarEstado(estado) {
-    // matricular no tiene vuelta atrás, por eso el aviso cambia según el caso
     const fuerte = estado === 'perdido' || estado === 'matriculado';
     const ok = await confirmar({
       titulo: `¿Pasarlo a ${legible(estado)}?`,

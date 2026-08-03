@@ -1,4 +1,3 @@
-// íconos del menú, salen de lucide-react
 import {
   GraduationCap, Menu, Home, Users, Activity, RefreshCw, Handshake, CircleDollarSign,
   Building2, BarChart3, CreditCard, CalendarClock, UserCog, Settings, ClipboardList,

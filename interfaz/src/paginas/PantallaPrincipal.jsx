@@ -1,11 +1,9 @@
-// pantalla de inicio, muestra cómo viene el día y qué conviene atender primero
 import { useEffect, useState } from 'react';
 import { Link, Navigate, useNavigate, useOutletContext } from 'react-router-dom';
 import { Button } from 'antd';
 import { haySesion, llamarApi, usuarioActual } from '../servicios/api.js';
 import { contar, legible } from '../servicios/formato.js';
 
-// "Sábado, 25 de julio", con la primera en mayúscula
 function fechaDeHoy() {
   const texto = new Date().toLocaleDateString('es-PY', { weekday: 'long', day: 'numeric', month: 'long' });
   return texto.charAt(0).toUpperCase() + texto.slice(1);
@@ -16,20 +14,17 @@ export default function PantallaPrincipal() {
   const navegar = useNavigate();
   const { modulos, bloqueados = [] } = useOutletContext() ?? {};
   const esAliado = usuario?.rol === 'aliado';
-  // el proveedor no tiene indicadores de captación propios: pedirlos le daba un 403 en la
-  // cara apenas entraba, que era la primera pantalla que veía
+
   const esProveedor = usuario?.rol === 'superadministrador';
   const [datos, setDatos] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     if (esAliado || esProveedor) return;
-    // por resumen y no por reportes: reportes está detrás del candado del plan y el
-    // inicio tiene que abrir siempre, incluso con el plan más chico
+
     llamarApi('/api/resumen/indicadores')
       .then(setDatos)
       .catch((excepcion) => {
-        // si el token venció, llamarApi ya limpió la sesión y hay que volver al ingreso
         if (!haySesion()) return window.location.assign('/ingreso');
         setError(excepcion.message);
       });
@@ -46,7 +41,7 @@ export default function PantallaPrincipal() {
   const hayPendientes = sinContacto > 0 || enRiesgo > 0;
   const maximoCanal = Math.max(...datos.leadsPorCanal.map((fila) => fila.total), 1);
   const maximoEstado = Math.max(...datos.leadsPorEstado.map((fila) => fila.total), 1);
-  // el candado del plan también cuenta: enlazar a un módulo trabado solo lleva a un aviso
+
   const disponible = (clave) => modulos?.includes(clave) && !bloqueados.includes(clave);
   const veLeads = disponible('leads');
   const veSeguimiento = disponible('seguimiento');
@@ -115,7 +110,7 @@ export default function PantallaPrincipal() {
               {datos.leadsPorCanal.map((fila) => (
                 <li key={fila.canal} className="fila-barra">
                   <span className="nota">{legible(fila.canal)}</span>
-                  {/* el ancho sale de los datos, va como variable css */}
+
                   <div className="barra"><span style={{ '--porcentaje': `${Math.round((fila.total / maximoCanal) * 100)}%` }} /></div>
                   <strong>{fila.total}</strong>
                 </li>

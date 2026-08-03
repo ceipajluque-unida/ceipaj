@@ -1,10 +1,6 @@
-// las tarjetas de los planes disponibles. cada botón dice lo que va a pasar de verdad:
-// renovar el que ya se tiene, mejorar pagando la diferencia, o pasar a uno más barato
-// cuando termine el período pagado.
 import { Button } from 'antd';
 import { guaranies, fecha, contar, legible } from '../servicios/formato.js';
 
-// alto fijo para que las tarjetas queden parejas aunque las imágenes vengan de distintos tamaños
 const ESTILO_PORTADA = { width: '100%', height: 110, objectFit: 'cover', borderRadius: 10 };
 
 export const ETIQUETA_CAMBIO = {
@@ -28,7 +24,7 @@ export default function TarjetasPlanes({ planes, vigente, cambios = {}, esAdmini
         const esElActual = vigente?.plan === plan.valor;
         return (
           <article className={`plan ${esElActual ? 'plan-actual' : ''}`} key={plan.valor}>
-            {/* decorativa: el título va justo abajo, repetirlo en el alt molesta al lector de pantalla */}
+
             {plan.imagen && <img src={`/api/planes/imagenes/${plan.imagen}`} alt="" style={ESTILO_PORTADA} />}
             <h3>{plan.texto}{esElActual && <span className="etiqueta">tu plan</span>}</h3>
             {plan.descripcion && <p className="nota">{plan.descripcion}</p>}
@@ -41,7 +37,7 @@ export default function TarjetasPlanes({ planes, vigente, cambios = {}, esAdmini
             </ul>
             {esAdministrador && (
               <>
-                {/* el detalle va antes del botón: quien lo aprieta ya sabe qué se le cobra */}
+
                 {cambio && !esElActual && cambio.credito > 0 && (
                   <p className="nota">
                     Se te descuentan {guaranies(cambio.credito)} por lo que queda del plan {cambio.planActual}.

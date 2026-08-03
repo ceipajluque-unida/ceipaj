@@ -1,8 +1,6 @@
-// padrón de aliados con sus totales y las acciones de editar, reenviar acceso y activar
 import { Button, Table } from 'antd';
 import { legible } from '../servicios/formato.js';
 
-// total viene aparte de la lista visible para distinguir "no hay nada" de "el filtro no encontró"
 export default function TablaAliados({ aliados, total, soloLectura, alEditar, alReenviarAcceso, alCambiarActivo }) {
   const columnas = [
     { title: 'Nombre', dataIndex: 'nombre', key: 'nombre' },

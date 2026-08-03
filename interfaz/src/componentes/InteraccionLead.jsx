@@ -1,4 +1,3 @@
-// alta de un contacto con el interesado: llamada, mensaje o visita
 import { useEffect, useState } from 'react';
 import { Button, Input, Select } from 'antd';
 import { llamarApi } from '../servicios/api.js';
@@ -13,7 +12,6 @@ export default function InteraccionLead({ abierto, lead, tipos, alCerrar, alGuar
   const [error, setError] = useState(null);
   const [guardando, setGuardando] = useState(false);
 
-  // cada vez que se abre arranca en blanco, no con lo que quedó de la vez anterior
   useEffect(() => {
     if (!abierto) return;
     setInteraccion(INTERACCION_VACIA);

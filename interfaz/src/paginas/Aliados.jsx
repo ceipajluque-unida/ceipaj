@@ -1,4 +1,3 @@
-// aliados institucionales con su puntaje, alta y edición de datos, reenvío de acceso y activación
 import { useEffect, useState } from 'react';
 import { Button } from 'antd';
 import { llamarApi, usuarioActual } from '../servicios/api.js';
@@ -11,7 +10,6 @@ import FiltrosAliados, { FILTROS_VACIOS, filtrarAliados } from '../componentes/F
 const FORMULARIO_VACIO = { nombre: '', correo: '', institucion: '', cargo: '', telefono: '' };
 
 export default function Aliados() {
-  // dirección entra al padrón solo a mirar, el backend le rechaza cualquier cambio
   const soloLectura = usuarioActual()?.rol === 'direccion';
   const [aliados, setAliados] = useState([]);
   const [cargos, setCargos] = useState([]);
@@ -74,7 +72,6 @@ export default function Aliados() {
     }
   }
 
-  // si el correo del alta no llegó, sin esto el aliado no entra nunca a su portal
   async function reenviarAcceso(aliado) {
     const ok = await confirmar({
       titulo: '¿Reenviar el acceso?',

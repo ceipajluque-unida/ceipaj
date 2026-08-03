@@ -1,5 +1,3 @@
-// política de privacidad, disponible sin iniciar sesión. el texto se edita desde Configuración,
-// así que se pide a la api en vez de quemarlo y quedar contradiciendo al oficial
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Skeleton } from 'antd';
@@ -29,8 +27,6 @@ export default function Privacidad() {
           {politica && <article className="documento-legal">{comoHtml(politica)}</article>}
         </div>
 
-        {/* con la sesión abierta, mandar al ingreso echaba al usuario de su propio
-            sistema: la política se abre desde adentro y desde afuera */}
         <p className="ayuda centrado sep-arriba">
           {haySesion()
             ? <Link to="/">Volver al sistema</Link>

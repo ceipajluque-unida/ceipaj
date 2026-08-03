@@ -1,5 +1,3 @@
-// consentimiento y baja lógica del interesado. no hay borrado: se llevaría por delante
-// las interacciones, las acciones de seguimiento y las comisiones del aliado.
 import { useState } from 'react';
 import { Button, Input } from 'antd';
 import { llamarApi } from '../servicios/api.js';
@@ -22,7 +20,7 @@ export default function BajaLead({ lead, alActualizar }) {
   async function darDeBaja(evento) {
     evento.preventDefault();
     setError(null);
-    // el motivo es obligatorio también en el servidor, acá se avisa antes de salir
+
     if (!motivo.trim()) return setError('Escribí el motivo de la baja.');
     setGuardando(true);
     try {

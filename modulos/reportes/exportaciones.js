@@ -1,14 +1,9 @@
-// lista blanca de tablas exportables con columnas legibles, para csv, excel y pdf
 import { bd } from '../../servidor/bd/conexion.js';
 import { ErrorVisible } from '../../servidor/errores.js';
 import { institucionActual } from '../../servidor/contexto.js';
 
-// tope de filas por archivo, de sobra para el volumen que manejamos
 const FILAS_MAXIMAS = 5000;
 
-// cada tabla define sus encabezados y un select con nombres y fechas formateadas.
-// el primer ? de cada consulta es siempre la institución: acá salen datos personales,
-// así que ninguna se exporta sin ese filtro. las tablas hijas lo toman de su padre.
 const EXPORTACIONES = {
   leads: {
     encabezados: ['Nombre', 'Cédula', 'Teléfono', 'Correo', 'Canal', 'Estado', 'Aliado', 'Fecha de conversión', 'Registrado el'],
@@ -77,26 +72,22 @@ const EXPORTACIONES = {
 
 export const TABLAS_EXPORTABLES = Object.keys(EXPORTACIONES);
 
-// trae los datos legibles (encabezados + filas); lo comparten csv, excel y pdf
 export async function obtenerDatos(tabla) {
   const definicion = EXPORTACIONES[tabla];
   if (!definicion) throw new ErrorVisible('Tabla no disponible para exportar.');
-  // sin institución no hay exportación: bajar la base entera de todos los clientes en un
-  // archivo sería lo peor que puede pasar acá
+
   const institucionId = institucionActual();
   if (institucionId === null) throw new ErrorVisible('Esta operación es de una institución.', 403);
   const [filas] = await bd.query(`${definicion.sql} LIMIT ?`, [institucionId, FILAS_MAXIMAS]);
   return { encabezados: definicion.encabezados, filas: filas.map((fila) => Object.values(fila)) };
 }
 
-// valores entre comillas; apóstrofo delante de = + - @ para que excel no ejecute fórmulas
 function escapar(valor) {
   let texto = String(valor ?? '');
   if (/^[=+\-@\t\r]/.test(texto)) texto = `'${texto}`;
   return `"${texto.replace(/"/g, '""')}"`;
 }
 
-// separador ';' para el excel en español y bom utf-8 por los acentos
 export async function generarCsv(tabla) {
   const { encabezados, filas } = await obtenerDatos(tabla);
   const lineas = [encabezados.map(escapar).join(';')];

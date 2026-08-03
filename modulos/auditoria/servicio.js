@@ -1,4 +1,3 @@
-// consulta de la auditoría, con filtros y paginación porque la tabla crece rápido
 import { bd } from '../../servidor/bd/conexion.js';
 import { institucionActual } from '../../servidor/contexto.js';
 
@@ -8,9 +7,7 @@ export async function listarAuditoria({ buscar = '', accion = '', pagina = 1 }) 
   const pag = Math.max(1, Number(pagina) || 1);
   const condiciones = [];
   const args = [];
-  // acá el filtro es al revés que en el resto del sistema, y es a propósito: el
-  // superadministrador (institución en null) ve la auditoría entera porque es su consola
-  // de operación; el administrador de una institución ve solo la suya.
+
   const institucionId = institucionActual();
   if (institucionId !== null) {
     condiciones.push('a.institucion_id = ?');
@@ -36,8 +33,7 @@ export async function listarAuditoria({ buscar = '', accion = '', pagina = 1 }) 
        ${donde} ORDER BY a.fecha DESC LIMIT ? OFFSET ?`,
     [...args, POR_PAGINA, (pag - 1) * POR_PAGINA]
   );
-  // acciones distintas, para el desplegable del filtro; también acotadas, si no el
-  // desplegable delata qué hacen las otras instituciones
+
   const [acciones] = await bd.query(
     `SELECT DISTINCT a.accion FROM auditoria a
       ${institucionId !== null ? 'WHERE a.institucion_id = ?' : ''} ORDER BY a.accion`,

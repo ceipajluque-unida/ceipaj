@@ -1,4 +1,3 @@
-// baja un archivo del backend a mano, porque el token tiene que ir en el encabezado
 import { tokenActual } from './api.js';
 
 export async function descargarArchivo(ruta, nombre) {

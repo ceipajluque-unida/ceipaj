@@ -1,4 +1,3 @@
-// checkout de la pasarela dentro de la pantalla; mientras tanto se consulta si ya se acreditó
 import { useEffect, useRef, useState } from 'react';
 import { Alert, Button } from 'antd';
 import { llamarApi } from '../servicios/api.js';
@@ -17,7 +16,6 @@ export default function VentanaPago({ cobro, alAcreditar, alCerrar }) {
     let vivo = true;
     let turno;
 
-    // se empieza seguido y se va espaciando, para no consultar de más si el pago demora
     function proximaEspera() {
       const minutos = (Date.now() - desde) / 60000;
       if (minutos < 2) return segundos * 1000;
@@ -28,7 +26,7 @@ export default function VentanaPago({ cobro, alAcreditar, alCerrar }) {
     async function preguntar() {
       if (!vivo) return;
       if (Date.now() - desde > limite) { setSeCanso(true); return; }
-      // con la pestaña de fondo no tiene sentido consultar, se espera a que vuelva
+
       if (document.visibilityState === 'visible') {
         try {
           const actual = await llamarApi(`/api/pagos/${cobro.referencia}/estado`);
@@ -39,7 +37,7 @@ export default function VentanaPago({ cobro, alAcreditar, alCerrar }) {
             alAcreditar(actual.estado);
             return;
           }
-        } catch { /* si falla una consulta se reintenta en la vuelta siguiente */ }
+        } catch { }
       }
       turno = setTimeout(preguntar, proximaEspera());
     }

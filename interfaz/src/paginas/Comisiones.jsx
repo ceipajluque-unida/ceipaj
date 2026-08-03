@@ -1,4 +1,3 @@
-// comisiones de aliados con su resumen; solo el admin marca pagada una pendiente
 import { useEffect, useState } from 'react';
 import { Button, Select, Table } from 'antd';
 import { llamarApi, usuarioActual } from '../servicios/api.js';
@@ -9,7 +8,7 @@ const FILTROS_VACIOS = { aliado: '', estado: '' };
 
 export default function Comisiones() {
   const esAdministrador = usuarioActual()?.rol === 'administrador';
-  const [datos, setDatos] = useState(null); // { comisiones, resumen }
+  const [datos, setDatos] = useState(null);
   const [cargaError, setCargaError] = useState(null);
   const [pestana, setPestana] = useState('resumen');
   const [filtros, setFiltros] = useState(FILTROS_VACIOS);
@@ -23,7 +22,6 @@ export default function Comisiones() {
   }
   useEffect(() => { cargar(); }, []);
 
-  // marcar pagada mueve plata, se confirma antes
   async function marcarPagada(comision) {
     const ok = await confirmar({
       titulo: '¿Marcar la comisión como pagada?',
@@ -58,8 +56,7 @@ export default function Comisiones() {
     { pendiente: 0, pagada: 0 }
   );
   const pendientes = datos.comisiones.filter((comision) => comision.estado === 'pendiente').length;
-  // por id y no por nombre: el backend agrupa por aliado_id justamente para no mezclar
-  // homónimos, y filtrar por el nombre volvía a juntarlos en una sola opción
+
   const opcionesAliado = datos.resumen.map((fila) => ({ value: fila.aliado_id, label: fila.aliado }));
 
   const hayFiltros = Boolean(filtros.aliado || filtros.estado);

@@ -1,4 +1,3 @@
-// cambio de contraseña propio, obligatorio si entró con una clave temporal
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Input } from 'antd';
@@ -21,7 +20,7 @@ export default function CambioClave() {
   async function enviar(evento) {
     evento.preventDefault();
     setError(null);
-    // se chequea acá para no molestar al servidor con un error evitable
+
     if (claveNueva !== claveRepetida) {
       setError('Las contraseñas nuevas no coinciden.');
       return;

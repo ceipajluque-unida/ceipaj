@@ -10,7 +10,6 @@ export async function emitirCodigo(usuario, metodo = usuario.metodo_2fa) {
   const vence = Date.now() + SEGURIDAD.MINUTOS_CODIGO_2FA * 60000;
 
   if (metodo === 'sms') {
-    // twilio verify genera, envía y guarda el código; nosotros solo recordamos que hay uno pendiente
     const configurado = verifyConfigurado();
     let enviado = false;
     if (configurado) {
@@ -21,7 +20,6 @@ export async function emitirCodigo(usuario, metodo = usuario.metodo_2fa) {
     return { medio: 'sms', configurado, enviado };
   }
 
-  // correo: el código lo generamos y lo mandamos nosotros
   const codigo = String(randomInt(0, 1000000)).padStart(6, '0');
   pendientes.set(usuario.id, { canal: 'email', codigo, vence });
   const texto = `Tu código de verificación para ${INSTITUCION.NOMBRE} es: ${codigo}. Vence en ${SEGURIDAD.MINUTOS_CODIGO_2FA} minutos.`;

@@ -1,20 +1,17 @@
-// capa http de leads, delega en el servicio, que es donde están las validaciones fuertes
 import * as servicio from './servicio.js';
 import * as consultas from './consultas.js';
 import * as ajustes from '../../servidor/ajustesSistema.js';
 import { CANALES_CAPTACION, TIPOS_INTERACCION, ESTADOS_LEAD, LEGALES, LIMITES } from '../../configuracion/ajustes.js';
 
-// opciones que necesita la interfaz (y el portal del aliado), así no las duplica
 export async function opciones(req, res) {
   res.json({
     canales: CANALES_CAPTACION,
     tiposInteraccion: TIPOS_INTERACCION,
     estados: Object.values(ESTADOS_LEAD),
     avisoConsentimiento: ajustes.leer('TEXTO_CONSENTIMIENTO', LEGALES.AVISO_CONSENTIMIENTO),
-    // se lee de la tabla, no del archivo: si no, el título decía 7 días y la lista usaba 15
+
     diasAlerta: ajustes.leerNumero('DIAS_SIN_SEGUIMIENTO_PARA_ALERTA', LIMITES.DIAS_SIN_SEGUIMIENTO_PARA_ALERTA),
-    // para el selector "¿lo trajo un aliado?" del alta y de la edición. solo id y nombre:
-    // no hace falta el padrón entero para elegir uno.
+
     aliados: await consultas.listarAliadosParaElegir(),
   });
 }

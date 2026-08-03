@@ -1,20 +1,16 @@
-// consulta de comisiones y marcado de pago, las crea leads al matricular
 import { bd } from '../../servidor/bd/conexion.js';
 import { registrarAuditoria } from '../../servidor/auditoria.js';
 import { ErrorVisible } from '../../servidor/errores.js';
 import { institucionActual } from '../../servidor/contexto.js';
 
-// espejo del enum de la tabla comisiones, no un valor configurable
 export const ESTADOS_COMISION = { PENDIENTE: 'pendiente', PAGADA: 'pagada' };
 
-// la comisión no guarda la institución: cuelga del aliado, así que se filtra por el join
 function institucionDelPedido() {
   const id = institucionActual();
   if (id === null) throw new ErrorVisible('Esta operación es de una institución.', 403);
   return id;
 }
 
-// se agrupa por aliado_id y no por nombre, para no mezclar homónimos
 function resumirPorAliado(filas) {
   const porAliado = new Map();
   for (const fila of filas) {
@@ -41,7 +37,6 @@ export async function listarComisiones() {
   return { comisiones: filas, resumen: resumirPorAliado(filas) };
 }
 
-// se condiciona por estado para no pagar dos veces la misma comisión
 export async function pagarComision(id, usuario, ip) {
   const institucionId = institucionDelPedido();
   const [actualizacion] = await bd.query(
@@ -51,8 +46,6 @@ export async function pagarComision(id, usuario, ip) {
     [ESTADOS_COMISION.PAGADA, id, ESTADOS_COMISION.PENDIENTE, institucionId]
   );
   if (actualizacion.affectedRows === 0) {
-    // la comprobación también va por el join: si la comisión es de otro colegio tiene
-    // que dar "no encontrada" y no "ya está pagada", que sería confirmar que existe
     const [[existe]] = await bd.query(
       'SELECT c.id FROM comisiones c JOIN aliados a ON a.id = c.aliado_id WHERE c.id = ? AND a.institucion_id = ?',
       [id, institucionId]

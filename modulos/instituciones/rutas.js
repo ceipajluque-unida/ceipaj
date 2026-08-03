@@ -1,4 +1,3 @@
-// urls del alta de instituciones. todo el módulo es del proveedor del servicio.
 import { Router } from 'express';
 import * as servicio from './servicio.js';
 import * as administrador from './administrador.js';
@@ -27,8 +26,6 @@ rutasInstituciones.put('/:id/activo', async (req, res) => {
   res.json(await servicio.cambiarActivo(idDeRuta(req), activo, req.usuario, req.ip));
 });
 
-// el administrador de la institución lo crea el proveedor al darla de alta
 rutasInstituciones.post('/:id/administrador', async (req, res) =>
   res.status(201).json(await administrador.crearAdministrador(idDeRuta(req), req.body, req.usuario, req.ip))
 );
-

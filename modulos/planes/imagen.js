@@ -1,24 +1,19 @@
-// subida de la imagen del plan. llega en base64 dentro del json, así no hace falta multer
 import { writeFile, mkdir } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ErrorVisible } from '../../servidor/errores.js';
 
-// se ancla al archivo y no al cwd: con path.resolve('subidas/planes') la carpeta cambiaba
-// según desde dónde se arrancara el servidor, y express.static servía un directorio vacío
 const RAIZ = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../subidas');
 export const CARPETA = path.join(RAIZ, 'planes');
-// solo estas subcarpetas: el nombre viene del código, nunca de lo que mande el navegador
+
 const SUBCARPETAS = { planes: CARPETA, fondo: path.join(RAIZ, 'fondo') };
 export const CARPETA_FONDO = SUBCARPETAS.fondo;
-// la miniatura del plan es chica y 400 KB le sobran; el fondo del ingreso ocupa la
-// pantalla entera y con ese tope no entraba ninguna imagen de 1920 × 1080, que es
-// justo la medida que la propia ayuda recomienda
+
 export const MAXIMO_KB = 400;
 export const MAXIMO_KB_FONDO = 2048;
 const MAXIMO_POR_CARPETA = { planes: MAXIMO_KB, fondo: MAXIMO_KB_FONDO };
-// solo formatos de imagen conocidos, y se confía en la firma del archivo, no en el nombre
+
 const FIRMAS = [
   { tipo: 'image/png', extension: 'png', bytes: [0x89, 0x50, 0x4e, 0x47] },
   { tipo: 'image/jpeg', extension: 'jpg', bytes: [0xff, 0xd8, 0xff] },
@@ -49,7 +44,7 @@ export async function guardar(base64, subcarpeta = 'planes') {
   if (!firma) throw new ErrorVisible('El archivo tiene que ser una imagen PNG, JPG o WEBP.');
 
   await mkdir(destino, { recursive: true });
-  // el nombre lo genera el sistema: así no se puede escribir fuera de la carpeta
+
   const nombre = `${randomUUID()}.${firma.extension}`;
   await writeFile(path.join(destino, nombre), datos);
   return nombre;

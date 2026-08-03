@@ -1,4 +1,3 @@
-// urls de conversión
 import { Router } from 'express';
 import * as controlador from './controlador.js';
 import { exigirClave } from './recepcion.js';
@@ -12,5 +11,4 @@ rutasConversion.get('/matriculados', autenticar, permitirRoles(...PERMISOS.conve
 rutasConversion.post('/importar', autenticar, permitirRoles(...PERMISOS.conversion), controlador.importar);
 rutasConversion.get('/ejemplo.csv', autenticar, permitirRoles(...PERMISOS.conversion), controlador.ejemploCsv);
 
-// entrada para el sistema académico: sin sesión, protegida por clave de api
 rutasConversion.post('/matriculados', exigirClave, controlador.recibir);

@@ -1,4 +1,3 @@
-// capa http del visor de auditoría
 import * as servicio from './servicio.js';
 
 export async function listar(req, res) {

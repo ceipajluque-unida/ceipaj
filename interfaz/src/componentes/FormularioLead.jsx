@@ -1,5 +1,3 @@
-// edición de los datos de contacto del interesado. la cédula no está a propósito: es la
-// que cruza con el sistema académico para detectar la matriculación, así que no se toca.
 import { useEffect, useState } from 'react';
 import { Button, Input, Select } from 'antd';
 import { llamarApi } from '../servicios/api.js';
@@ -7,7 +5,6 @@ import { toast } from '../servicios/avisos.js';
 import { legible } from '../servicios/formato.js';
 import Modal from './Modal.jsx';
 
-// copia editable de los datos de contacto
 const desdeLead = (lead) => ({
   nombre: lead.nombre,
   telefono: lead.telefono ?? '',
@@ -21,7 +18,6 @@ export default function FormularioLead({ abierto, lead, canales, aliados = [], a
   const [error, setError] = useState(null);
   const [guardando, setGuardando] = useState(false);
 
-  // al abrir se vuelve a copiar del lead, para no arrastrar una edición cancelada
   useEffect(() => {
     if (!abierto) return;
     setDatos(desdeLead(lead));
@@ -60,8 +56,7 @@ export default function FormularioLead({ abierto, lead, canales, aliados = [], a
             <Select value={datos.canal} options={opcionesCanal} onChange={(valor) => setDatos({ ...datos, canal: valor })} />
           </label>
         </div>
-        {/* se puede corregir después: un aliado recomienda por teléfono y el interesado
-            lo carga el personal, y sin esto nunca cobraba su comisión */}
+
         {aliados.length > 0 && (
           <label>¿Lo recomendó un aliado?
             <Select

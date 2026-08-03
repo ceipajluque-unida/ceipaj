@@ -1,4 +1,3 @@
-// capa http de aliados, valida lo que entra antes de llamar al servicio
 import * as servicio from './servicio.js';
 import { ErrorVisible } from '../../servidor/errores.js';
 import { validarCorreo, validarTelefono, validarLargo, LARGOS } from '../../comun/validar.js';
@@ -10,7 +9,6 @@ function idDeRuta(req) {
   return id;
 }
 
-// mismas reglas para el alta y la edición, así no se separan con el tiempo
 function datosValidados(cuerpo) {
   const nombre = String(cuerpo?.nombre ?? '').trim();
   const correo = String(cuerpo?.correo ?? '').trim().toLowerCase();
@@ -28,7 +26,6 @@ function datosValidados(cuerpo) {
   return { nombre, correo, institucion, cargo: cargo || null, telefono: telefono || null };
 }
 
-// los cargos válidos los necesita el select de la pantalla, así no los duplica
 export async function opciones(req, res) {
   res.json({ cargos: CARGOS_ALIADO });
 }

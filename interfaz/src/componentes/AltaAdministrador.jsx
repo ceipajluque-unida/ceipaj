@@ -1,5 +1,3 @@
-// alta del administrador de una institución recién creada. sin él, el colegio no puede
-// entrar al sistema, así que se ofrece apenas se da de alta la institución.
 import { useState } from 'react';
 import { Button, Input, Select } from 'antd';
 import Modal from './Modal.jsx';
@@ -7,7 +5,6 @@ import AvisoPrivacidad from './AvisoPrivacidad.jsx';
 
 const VACIO = { nombre: '', correo: '', telefono: '', direccion: '', metodo2fa: 'app' };
 
-// el mismo catálogo del backend; acá se muestra en criollo
 const METODOS = [
   { value: 'app', label: 'Aplicación de autenticación' },
   { value: 'email', label: 'Código por correo electrónico' },
@@ -24,7 +21,7 @@ export default function AltaAdministrador({ institucion, alEnviar, alCerrar }) {
   async function enviar(evento) {
     evento.preventDefault();
     setError(null);
-    // el Select de antd no admite required, así que la validación va acá
+
     if (!datos.metodo2fa) return setError('Elegí cómo va a verificar su identidad.');
     if (datos.metodo2fa === 'sms' && !datos.telefono.trim()) {
       return setError('Para verificar por SMS hace falta cargar el celular.');

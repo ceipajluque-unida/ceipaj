@@ -1,4 +1,3 @@
-// recibo de dinero en pdf. la dnit no lo timbra, pero hay que aclarar que no da crédito fiscal
 import PDFDocument from 'pdfkit';
 import { RECIBO, INSTITUCION } from '../../configuracion/ajustes.js';
 import * as ajustes from '../../servidor/ajustesSistema.js';
@@ -7,7 +6,6 @@ import { guaraniesEnLetras } from '../../comun/numeroALetras.js';
 const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto',
   'septiembre', 'octubre', 'noviembre', 'diciembre'];
 
-// los datos del emisor se cargan desde configuración, no van quemados
 function emisor() {
   return {
     nombre: ajustes.leer('RECIBO_EMISOR_NOMBRE', RECIBO.EMISOR_NOMBRE) || ajustes.leer('INSTITUCION_NOMBRE', INSTITUCION.NOMBRE),
@@ -18,7 +16,6 @@ function emisor() {
   };
 }
 
-// numeración simple: unas letras y el número del pago. no es un timbrado, no lleva ese formato
 export function numeroDeRecibo(pago) {
   const serie = ajustes.leer('RECIBO_SERIE', RECIBO.SERIE);
   return `${serie}-${pago.id}`;
@@ -35,14 +32,12 @@ function fechaLarga(valor) {
 
 const anchoUtil = (doc) => doc.page.width - doc.page.margins.left - doc.page.margins.right;
 
-// una línea de dato con su etiqueta en negrita. el ancho va explícito porque pdfkit hereda el anterior
 function dato(doc, etiqueta, valor) {
   doc.font('Helvetica-Bold').fontSize(9).fillColor('#444')
     .text(`${etiqueta}: `, doc.page.margins.left, doc.y, { width: anchoUtil(doc), continued: true });
   doc.font('Helvetica').fillColor('#000').text(valor || '—');
 }
 
-// las dos columnas van con coordenadas fijas, así ninguna arrastra a la otra
 function encabezado(doc, datos, pago) {
   const izq = doc.page.margins.left;
   const ancho = anchoUtil(doc);
@@ -51,7 +46,6 @@ function encabezado(doc, datos, pago) {
   const anchoDer = ancho * 0.40;
   const derecha = { width: anchoDer, align: 'right' };
 
-  // a la izquierda, quién cobra
   doc.font('Helvetica-Bold').fontSize(13).fillColor('#1f2430')
     .text(datos.nombre, izq, arriba, { width: anchoIzq });
   doc.font('Helvetica').fontSize(8.5).fillColor('#555');
@@ -62,7 +56,6 @@ function encabezado(doc, datos, pago) {
   lineas.forEach((linea) => doc.text(linea, izq, doc.y, { width: anchoIzq }));
   const finIzquierda = doc.y;
 
-  // a la derecha, qué documento es
   doc.font('Helvetica-Bold').fontSize(14).fillColor('#1f2430')
     .text('RECIBO DE DINERO', izq + ancho - anchoDer, arriba, derecha);
   doc.fontSize(11).fillColor('#35597e')
@@ -90,7 +83,6 @@ function cuerpo(doc, datos, pago) {
   dato(doc, 'En concepto de', pago.concepto);
   doc.moveDown(0.8);
 
-  // el importe en números va recuadrado para que se lea de un vistazo
   const alto = 30;
   const anchoCaja = 190;
   const x = izq + ancho - anchoCaja;

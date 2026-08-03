@@ -1,8 +1,6 @@
-// el correo con las credenciales del aliado. va aparte porque lo usan el alta y el reenvío.
 import { enviarCorreo } from '../../servidor/correo.js';
 import { INSTITUCION } from '../../configuracion/ajustes.js';
 
-// tono cordial porque el aliado es un docente externo, no personal de la institución
 function textoCredenciales({ nombre, correo, claveTemporal }) {
   return (
     `Hola ${nombre}:\n\n` +
@@ -25,6 +23,6 @@ export async function enviarAcceso({ nombre, correo, claveTemporal, asunto }) {
     asunto,
     texto: textoCredenciales({ nombre, correo, claveTemporal }),
   });
-  // si el correo no salió, la clave vuelve para mostrarse una única vez en pantalla
+
   return { correoEnviado: enviado, ...(enviado ? {} : { claveTemporal }) };
 }

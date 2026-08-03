@@ -1,4 +1,3 @@
-// alta y edición de un aliado institucional dentro de su ventana
 import { Button, Input, Select } from 'antd';
 import { legible } from '../servicios/formato.js';
 import Modal from './Modal.jsx';

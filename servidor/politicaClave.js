@@ -1,8 +1,6 @@
-// reglas de contraseña configurables, leídas en caliente de ajustesSistema
 import * as ajustes from './ajustesSistema.js';
 import { POLITICA_CLAVE } from '../configuracion/ajustes.js';
 
-// claves demasiado obvias que no aceptamos
 const COMUNES = new Set([
   '12345678', '123456789', 'password', 'contrasena', 'contraseña', 'qwerty', '111111',
   '00000000', 'abcd1234', 'admin123', 'iloveyou', 'sistema', 'ceipaj', 'usuario', 'clave1234', 'password1',
@@ -19,7 +17,6 @@ export function reglas() {
   };
 }
 
-// quien llama muestra el motivo tal cual al usuario
 export function validar(clave) {
   const texto = String(clave ?? '');
   const r = reglas();
@@ -32,7 +29,6 @@ export function validar(clave) {
   return { valido: true };
 }
 
-// arma el texto de requisitos para mostrar en la pantalla
 export function describir() {
   const r = reglas();
   const partes = [`al menos ${r.largoMin} caracteres`];

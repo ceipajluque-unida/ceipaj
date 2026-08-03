@@ -1,4 +1,3 @@
-// pasa un monto a letras para el recibo. guaraníes: enteros, sin centavos
 const UNIDADES = ['cero', 'uno', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve',
   'diez', 'once', 'doce', 'trece', 'catorce', 'quince', 'dieciséis', 'diecisiete', 'dieciocho',
   'diecinueve', 'veinte', 'veintiuno', 'veintidós', 'veintitrés', 'veinticuatro', 'veinticinco',
@@ -9,7 +8,6 @@ const DECENAS = ['', '', '', 'treinta', 'cuarenta', 'cincuenta', 'sesenta', 'set
 const CENTENAS = ['', 'ciento', 'doscientos', 'trescientos', 'cuatrocientos', 'quinientos',
   'seiscientos', 'setecientos', 'ochocientos', 'novecientos'];
 
-// delante de "mil" o "millones" el uno se apocopa: veintiún mil, treinta y un millones
 function apocopar(texto) {
   if (texto.endsWith('veintiuno')) return `${texto.slice(0, -9)}veintiún`;
   if (texto.endsWith('uno')) return `${texto.slice(0, -3)}un`;
@@ -46,7 +44,6 @@ export function enLetras(monto) {
   return resto ? `${texto} ${hastaMillon(resto)}` : texto;
 }
 
-// como va en el recibo: "Doscientos cincuenta mil guaraníes"
 export function guaraniesEnLetras(monto) {
   const texto = enLetras(monto);
   return `${texto.charAt(0).toUpperCase()}${texto.slice(1)} guaraníes`;

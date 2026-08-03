@@ -1,4 +1,3 @@
-// campos del alta y la edición de un usuario interno, dentro del mismo modal
 import { Button, Input, Select } from 'antd';
 import { legible } from '../servicios/formato.js';
 import AvisoPrivacidad from './AvisoPrivacidad.jsx';
@@ -14,7 +13,7 @@ export default function FormularioUsuario({ formulario, alCambiar, roles, editan
         <label><span>Celular</span><Input value={formulario.telefono} onChange={campo('telefono')} /></label>
         <label><span>Dirección</span><Input value={formulario.direccion} onChange={campo('direccion')} /></label>
       </div>
-      {/* editando el rol se cambia desde la tabla, porque corta la sesión del afectado */}
+
       {!editando && (
         <label><span>Rol</span>
           <Select

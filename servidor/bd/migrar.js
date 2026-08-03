@@ -1,4 +1,3 @@
-// crea la base, aplica esquema.sql y ajusta columnas nuevas. se corre con npm run migrar
 import { readFile } from 'node:fs/promises';
 import mysql from 'mysql2/promise';
 import { BASE_DATOS, PLANES_SUSCRIPCION, INSTITUCION } from '../../configuracion/ajustes.js';
@@ -6,7 +5,6 @@ import { CLAVES_PLATAFORMA } from '../../configuracion/ambitos.js';
 
 const rutaEsquema = new URL('./esquema.sql', import.meta.url);
 
-// agrega una columna solo si falta, así la migración se puede correr mil veces
 async function asegurarColumna(conexion, tabla, columna, definicion) {
   const [filas] = await conexion.query(
     'SELECT COUNT(*) AS existe FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = ?',
@@ -18,10 +16,6 @@ async function asegurarColumna(conexion, tabla, columna, definicion) {
   }
 }
 
-// cambia el tipo de una columna que ya existe. hace falta aparte de asegurarColumna
-// porque el esquema usa CREATE TABLE IF NOT EXISTS: en una base ya creada el tipo viejo queda.
-// tipoEsperado se compara contra COLUMN_TYPE, que trae el largo ('varchar(30)'),
-// porque DATA_TYPE a secas no distingue un varchar(20) de un varchar(30)
 async function asegurarTipo(conexion, tabla, columna, tipoEsperado, definicion) {
   const [filas] = await conexion.query(
     'SELECT COLUMN_TYPE AS tipo FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = ?',
@@ -32,7 +26,6 @@ async function asegurarTipo(conexion, tabla, columna, tipoEsperado, definicion) 
   console.log(`columna ampliada: ${tabla}.${columna} → ${tipoEsperado}`);
 }
 
-// cambia la clave primaria solo si todavía no es la esperada
 async function asegurarClavePrimaria(conexion, tabla, columnasEsperadas, definicion) {
   const [filas] = await conexion.query(
     `SELECT GROUP_CONCAT(COLUMN_NAME ORDER BY SEQ_IN_INDEX) AS columnas
@@ -45,7 +38,6 @@ async function asegurarClavePrimaria(conexion, tabla, columnasEsperadas, definic
   console.log(`clave primaria nueva: ${tabla} ${definicion}`);
 }
 
-// reemplaza un índice único viejo por uno compuesto con la institución
 async function asegurarUnico(conexion, tabla, nombre, columnas, indiceViejo) {
   const [existe] = await conexion.query(
     `SELECT GROUP_CONCAT(COLUMN_NAME ORDER BY SEQ_IN_INDEX) AS columnas
@@ -64,12 +56,6 @@ async function asegurarUnico(conexion, tabla, nombre, columnas, indiceViejo) {
   console.log(`índice único nuevo: ${tabla} (${columnas})`);
 }
 
-// adopta los datos de una instalación anterior, de cuando el sistema era de una sola
-// institución: crea su fila y le pasa todo lo que quedó suelto.
-//
-// en un sistema nuevo NO crea nada. las instituciones las da de alta el proveedor desde
-// su pantalla, que es el recorrido real del producto; sembrar un colegio de ejemplo
-// dejaba una institución fantasma que nadie pidió y confundía el primer arranque.
 async function sembrarInstitucion(conexion) {
   const [[{ total }]] = await conexion.query('SELECT COUNT(*) AS total FROM instituciones');
   if (Number(total) > 0) return;
@@ -87,8 +73,7 @@ async function sembrarInstitucion(conexion) {
   for (const tabla of ['usuarios', 'leads', 'aliados', 'pagos', 'suscripciones', 'auditoria', 'academico_matriculados']) {
     await conexion.query(`UPDATE \`${tabla}\` SET institucion_id = ? WHERE institucion_id IS NULL`, [id]);
   }
-  // los ajustes que ya estaban eran de la única institución que había, salvo los que
-  // ahora son del proveedor: esos se quedan en 0 y siguen valiendo para todas
+
   const marcas = CLAVES_PLATAFORMA.map(() => '?').join(',');
   await conexion.query(
     `UPDATE ajustes_sistema SET institucion_id = ? WHERE institucion_id = 0 AND clave NOT IN (${marcas})`,
@@ -97,11 +82,6 @@ async function sembrarInstitucion(conexion) {
   console.log(`institución "${ajuste?.valor || INSTITUCION.NOMBRE}" creada con id ${id}, datos existentes traspasados`);
 }
 
-// los tres planes de siempre entran una sola vez; después se editan desde el sistema.
-// aparte se completan los límites de los que ya existían: las dos columnas se agregaron
-// después, así que en una base vieja quedaron en NULL y el candado por plan no trababa
-// nada. se tocan solo si las dos siguen sin valor, para no pisar lo que se haya editado
-// (el avanzado guarda cadena vacía, que significa "todos los módulos", y ya no es NULL).
 async function sembrarPlanes(conexion) {
   const [[{ total }]] = await conexion.query('SELECT COUNT(*) AS total FROM planes');
   if (Number(total) === 0) {
@@ -125,7 +105,6 @@ async function sembrarPlanes(conexion) {
 }
 
 async function migrar() {
-  // sin base seleccionada porque primero hay que poder crearla
   const conexion = await mysql.createConnection({
     host: BASE_DATOS.HOST,
     port: BASE_DATOS.PUERTO,
@@ -140,7 +119,6 @@ async function migrar() {
   await conexion.changeUser({ database: BASE_DATOS.NOMBRE });
   await conexion.query(await readFile(rutaEsquema, 'utf8'));
 
-  // ajustes sobre tablas que ya existían antes de estos cambios
   await asegurarColumna(conexion, 'usuarios', 'debe_cambiar_clave', 'TINYINT(1) NOT NULL DEFAULT 0 AFTER activado_2fa');
   await asegurarColumna(conexion, 'usuarios', 'telefono', "VARCHAR(30) NULL AFTER rol");
   await asegurarColumna(conexion, 'usuarios', 'direccion', "VARCHAR(150) NULL AFTER telefono");
@@ -167,35 +145,26 @@ async function migrar() {
   await asegurarColumna(conexion, 'planes', 'max_usuarios', 'INT UNSIGNED NULL AFTER incluye');
   await asegurarColumna(conexion, 'planes', 'modulos_incluidos', 'TEXT NULL AFTER max_usuarios');
 
-  // los textos legales pasan los 5.000 caracteres y la columna nació con 255:
-  // sin modo estricto mysql los cortaba en silencio al guardarlos
   await asegurarTipo(conexion, 'ajustes_sistema', 'valor', 'mediumtext', 'MEDIUMTEXT NULL');
-  // guardar toda la configuración de una vez manda más de 500 caracteres de claves y el
-  // registro se cortaba a la mitad de un nombre, justo lo que el rnf-13 pide conservar
+
   await asegurarTipo(conexion, 'auditoria', 'detalle', 'text', 'TEXT NULL');
-  // el rol del proveedor: sin este alter, en una base ya creada el insert corta con
-  // "data truncated for column rol"
+
   await asegurarTipo(conexion, 'usuarios', 'rol',
     "enum('administrador','comercial','direccion','aliado','superadministrador')",
     "ENUM('administrador','comercial','direccion','aliado','superadministrador') NOT NULL");
-  // planes.clave es VARCHAR(30) y estas dos la referencian: si quedan más cortas, se trunca
+
   await asegurarTipo(conexion, 'pagos', 'plan', 'varchar(30)', 'VARCHAR(30) NULL');
   await asegurarTipo(conexion, 'suscripciones', 'plan', 'varchar(30)', 'VARCHAR(30) NOT NULL');
 
-  // multi-institución: cada dato operativo pasa a pertenecer a una institución.
-  // en usuarios va NULL para el superadministrador, que es del proveedor y no
-  // pertenece a ninguna.
   for (const tabla of ['usuarios', 'leads', 'aliados', 'pagos', 'suscripciones', 'auditoria', 'academico_matriculados']) {
     await asegurarColumna(conexion, tabla, 'institucion_id', 'INT UNSIGNED NULL');
   }
-  // en los ajustes el 0 significa "de la plataforma", así el mismo mecanismo sirve
-  // para lo que fija el proveedor y para lo que configura cada institución
+
   await asegurarColumna(conexion, 'ajustes_sistema', 'institucion_id', 'INT UNSIGNED NOT NULL DEFAULT 0');
   await asegurarClavePrimaria(conexion, 'ajustes_sistema', 'institucion_id,clave', '(institucion_id, clave)');
 
   await sembrarInstitucion(conexion);
-  // la cédula identifica a la persona DENTRO de su institución: con el único global, dos
-  // colegios no podían tener al mismo interesado y el segundo choca con "ya existe"
+
   await asegurarUnico(conexion, 'leads', 'uk_leads_institucion_cedula', 'institucion_id,cedula', 'cedula');
   await asegurarUnico(conexion, 'academico_matriculados', 'uk_matriculados_institucion_cedula', 'institucion_id,cedula', 'cedula');
   await sembrarPlanes(conexion);

@@ -1,4 +1,3 @@
-// configuración del sistema, solo admin, con una pestaña por categoría
 import { useEffect, useState } from 'react';
 import { Button, Input, InputNumber, Select, Switch } from 'antd';
 import { llamarApi } from '../servicios/api.js';
@@ -11,7 +10,7 @@ export default function Configuracion() {
   const { previsualizar } = useTema();
   const [config, setConfig] = useState(null);
   const [valores, setValores] = useState({});
-  const [sucios, setSucios] = useState(new Set()); // claves que el admin tocó
+  const [sucios, setSucios] = useState(new Set());
   const [pestana, setPestana] = useState(0);
   const [guardando, setGuardando] = useState(false);
   const [destinoCorreo, setDestinoCorreo] = useState('');
@@ -21,7 +20,7 @@ export default function Configuracion() {
   async function cargar() {
     const datos = await llamarApi('/api/configuracion');
     setConfig(datos);
-    // los secretos arrancan en blanco: solo se envían si el admin escribe uno nuevo
+
     const iniciales = {};
     datos.forEach((grupo) => grupo.ajustes.forEach((a) => { iniciales[a.clave] = a.tipo === 'secreto' ? '' : (a.valor ?? ''); }));
     setValores(iniciales);
@@ -32,7 +31,7 @@ export default function Configuracion() {
   function editar(clave, valor) {
     setValores((previo) => ({ ...previo, [clave]: valor }));
     setSucios((previo) => new Set(previo).add(clave));
-    // el color se ve en el momento, sin esperar a guardar: elegirlo a ciegas no sirve
+
     if (clave === 'COLOR_ACENTO') previsualizar(valor);
   }
 
@@ -44,7 +43,7 @@ export default function Configuracion() {
     try {
       await llamarApi('/api/configuracion', { metodo: 'PUT', cuerpo: { cambios } });
       await cargar();
-      // el nombre de la institución puede haber cambiado y se muestra en varias pantallas
+
       window.dispatchEvent(new Event('institucion'));
       toast('Configuración guardada.');
     } catch (excepcion) {
@@ -105,7 +104,6 @@ export default function Configuracion() {
       return <Input.Password value={valor} placeholder={ajuste.configurado ? 'Ya configurado' : 'Sin configurar'} onChange={(e) => editar(ajuste.clave, e.target.value)} />;
     }
     if (ajuste.tipo === 'numero') {
-      // los que son plata van con punto de miles: 100000 y 1000000 se confunden de un vistazo
       return (
         <InputNumber
           style={{ width: '100%' }}
@@ -122,7 +120,6 @@ export default function Configuracion() {
     return <Input value={valor} onChange={(e) => editar(ajuste.clave, e.target.value)} />;
   };
 
-  // hay campos que solo tienen sentido según lo que se eligió en otro
   const seMuestra = (ajuste) => !ajuste.depende || valores[ajuste.depende.clave] === ajuste.depende.valor;
 
   const grupo = config[pestana];
@@ -170,8 +167,6 @@ export default function Configuracion() {
           ))}
         </div>
 
-        {/* cada prueba con su propio campo: antes compartían el mismo estado, así que
-            escribir el correo cambiaba también el número del SMS */}
         {grupo.categoria === 'Correo' && (
           <section className="prueba-envio">
             <h3>Probar el envío</h3>

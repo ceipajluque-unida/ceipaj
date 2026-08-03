@@ -1,4 +1,3 @@
-// verificación 2fa por sms con twilio verify: twilio genera, envía y valida el código
 import { SMS } from '../configuracion/ajustes.js';
 import * as ajustes from './ajustesSistema.js';
 
@@ -16,9 +15,9 @@ export function verifyConfigurado() {
 }
 
 const ERRORES = {
-  20003: 'Twilio rechazó las credenciales. Revisá el Account SID y el Auth Token.',
+  20003: 'Twilio rechazó las credenciales.',
   20404: 'No hay una verificación pendiente para ese número.',
-  60200: 'El número de destino no es válido. Va con código de país, por ejemplo +59598...',
+  60200: 'El número de destino no es válido.',
   60203: 'Se alcanzó el máximo de envíos para ese número. Esperá unos minutos.',
   60205: 'Ese número no puede recibir SMS.',
   60212: 'Demasiados intentos para ese número. Esperá unos minutos.',
@@ -47,7 +46,6 @@ async function llamar(ruta, cuerpo) {
   return respuesta;
 }
 
-// valida credenciales y que el Verify Service exista, sin enviar nada
 export async function verificarConfiguracion() {
   const { sid, token, servicio } = credenciales();
   if (!sid || !token) return { ok: false, motivo: 'Faltan el Account SID y el Auth Token de Twilio.' };
@@ -64,7 +62,6 @@ export async function verificarConfiguracion() {
   }
 }
 
-// pide a twilio que genere y envíe un código al número
 export async function enviarVerificacion({ para, canal = 'sms' }) {
   if (!verifyConfigurado()) return { enviado: false, motivo: 'Twilio Verify no está configurado.' };
   if (!para) return { enviado: false, motivo: 'La cuenta no tiene un celular cargado para recibir el código.' };
@@ -80,7 +77,6 @@ export async function enviarVerificacion({ para, canal = 'sms' }) {
   }
 }
 
-// consulta a twilio si el código que escribió el usuario es correcto
 export async function comprobarVerificacion({ para, codigo }) {
   if (!verifyConfigurado() || !para) return { aprobado: false };
   try {

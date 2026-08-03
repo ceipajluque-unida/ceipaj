@@ -1,4 +1,3 @@
-// listado de cuentas internas con sus acciones: editar, cambiar rol, activar y restablecer clave
 import { Button, Select, Table } from 'antd';
 import { fecha, legible } from '../servicios/formato.js';
 
@@ -15,7 +14,6 @@ export default function TablaUsuarios({ usuarios, miId, roles, alEditar, alCambi
     { title: 'Correo', dataIndex: 'correo', key: 'correo' },
     { title: 'Celular', dataIndex: 'telefono', key: 'telefono', render: (valor) => valor || '—' },
     {
-      // el propio usuario no se cambia el rol a sí mismo, se quedaría sin poder administrar
       title: 'Rol',
       dataIndex: 'rol',
       key: 'rol',

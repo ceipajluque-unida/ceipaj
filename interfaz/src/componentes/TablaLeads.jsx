@@ -1,9 +1,7 @@
-// listado de interesados con su estado y su última interacción
 import { Link, useNavigate } from 'react-router-dom';
 import { Button, Table } from 'antd';
 import { fecha, legible } from '../servicios/formato.js';
 
-// la fila apagada evita confundir un dado de baja con uno que sigue en seguimiento
 const FILA_DE_BAJA = { opacity: 0.55 };
 
 export default function TablaLeads({ leads }) {

@@ -1,4 +1,3 @@
-// capa http de conversión: responde json; las validaciones están en el servicio
 import * as servicio from './servicio.js';
 import * as recepcion from './recepcion.js';
 
@@ -10,13 +9,11 @@ export async function matriculados(req, res) {
   res.json(await servicio.listarMatriculados());
 }
 
-// el csv llega como texto dentro del json, se lee en el navegador
 export async function importar(req, res) {
   const { contenido } = req.body ?? {};
   res.status(201).json(await servicio.importarPlanilla(contenido, req.usuario.id, req.ip));
 }
 
-// planilla de ejemplo, para que quien la llene sepa qué columnas van
 export async function ejemploCsv(req, res) {
   const filas = [
     'cedula;nombre;fecha_inscripcion',
@@ -26,11 +23,10 @@ export async function ejemploCsv(req, res) {
   ].join('\r\n');
   res.setHeader('Content-Type', 'text/csv; charset=utf-8');
   res.setHeader('Content-Disposition', 'attachment; filename="matriculados-ejemplo.csv"');
-  // el BOM hace que excel abra los acentos bien
+
   res.send(`\ufeff${filas}\r\n`);
 }
 
-// acá el sistema académico deja sus matriculados; no hay sesión, la defensa es la clave de api
 export async function recibir(req, res) {
   res.status(201).json(await recepcion.recibirMatriculados(req.body, req.ip));
 }

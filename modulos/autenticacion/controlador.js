@@ -1,4 +1,3 @@
-// capa http del módulo, valida entradas y llama al servicio
 import QRCode from 'qrcode';
 import * as servicio from './servicio.js';
 import { bd } from '../../servidor/bd/conexion.js';
@@ -16,14 +15,13 @@ import { planEnVigor, moduloIncluido } from '../suscripciones/plan.js';
 export async function estado(req, res) {
   res.json({
     requiereConfiguracionInicial: await servicio.haceFaltaConfiguracionInicial(),
-    // el nombre del producto, que es lo único que se puede mostrar antes de entrar:
-    // sin sesión todavía no se sabe de qué institución es quien está del otro lado
+
     plataforma: { nombre: ajustes.leer('PLATAFORMA_NOMBRE', PLATAFORMA.NOMBRE) },
     institucion: {
       nombre: ajustes.leer('INSTITUCION_NOMBRE', INSTITUCION.NOMBRE),
       ciudad: ajustes.leer('INSTITUCION_CIUDAD', INSTITUCION.CIUDAD),
     },
-    // la clave del sitio es pública: va en el widget del navegador
+
     captcha: { activo: captcha.activo(), claveSitio: captcha.activo() ? captcha.claveSitio() : '' },
   });
 }
@@ -32,7 +30,7 @@ export async function primerUsuario(req, res) {
   const { nombre, correo, clave } = req.body ?? {};
   if (!nombre?.trim()) throw new ErrorVisible('El nombre es obligatorio.');
   if (!validarCorreo(correo)) throw new ErrorVisible('El correo no es válido.');
-  // la política de contraseñas la valida el servicio (una sola fuente de verdad)
+
   const { otpauth } = await servicio.crearPrimerProveedor(
     { nombre: nombre.trim(), correo: correo.trim().toLowerCase(), clave },
     req.ip
@@ -42,11 +40,11 @@ export async function primerUsuario(req, res) {
 
 export async function ingresar(req, res) {
   const { correo, clave, recordar, tokenDispositivo, captchaRespuesta } = req.body ?? {};
-  // el captcha se revisa antes que la contraseña, para que no sirva de oráculo
+
   const revision = await captcha.verificar(captchaRespuesta, req.ip);
   if (!revision.ok) throw new ErrorVisible(revision.motivo, 400);
   const respuesta = await servicio.ingresar({ correo, clave, recordar, tokenDispositivo }, req.ip);
-  // el 2fa por app viaja como qr; los de correo/sms ya avisan el destino
+
   if (respuesta.otpauth) respuesta.qr = await QRCode.toDataURL(respuesta.otpauth);
   res.json(respuesta);
 }
@@ -69,7 +67,6 @@ export async function olvidarDispositivo(req, res) {
   res.json(await servicio.olvidarDispositivo(req.usuario.id, id, req.ip));
 }
 
-// manda el código por correo o sms cuando no hay acceso a la app
 export async function codigoAlternativo(req, res) {
   const { tokenPre2fa, metodo } = req.body ?? {};
   res.json(await servicio.enviarCodigoAlternativo({ tokenPre2fa, metodo }, req.ip));
@@ -86,14 +83,13 @@ export async function salir(req, res) {
   res.json({ listo: true });
 }
 
-// siempre responde lo mismo para no revelar si el correo existe
 export async function recuperar(req, res) {
   const { correo, captchaRespuesta } = req.body ?? {};
-  // el captcha va antes de tocar la base: cada llamada dispara un correo real
+
   const revision = await captcha.verificar(captchaRespuesta, req.ip);
   if (!revision.ok) throw new ErrorVisible(revision.motivo, 400);
   if (!validarCorreo(correo)) throw new ErrorVisible('Indicá un correo válido.');
-  // freno por correo además del de ip, para que varias ip no inunden la misma casilla
+
   bloqueos.recuperacion.revisar(correo);
   bloqueos.recuperacion.anotar(correo);
   const resultado = await recuperacion.solicitar(correo, req.ip);
@@ -103,14 +99,12 @@ export async function recuperar(req, res) {
   });
 }
 
-// el usuario define su nueva contraseña con el token del enlace
 export async function restablecer(req, res) {
   const { token, claveNueva } = req.body ?? {};
   await recuperacion.restablecer({ token, claveNueva }, req.ip);
   res.json({ listo: true });
 }
 
-// requisitos de contraseña vigentes, para mostrarlos en las pantallas
 export async function politicaClave(req, res) {
   res.json(politica.describir());
 }
@@ -122,12 +116,10 @@ export async function cambiarMetodo2fa(req, res) {
   res.json(resultado);
 }
 
-// datos de la sesión + módulos del rol + su configuración de 2fa
 export async function perfil(req, res) {
   const [[extra]] = await bd.query('SELECT metodo_2fa, telefono, direccion FROM usuarios WHERE id = ?', [req.usuario.id]);
   const modulos = modulosDelRol(req.usuario.rol);
-  // el rol dice qué módulos le tocan y el plan cuáles de esos están contratados:
-  // el menú necesita los dos para dibujar el candado en vez de esconder el ítem
+
   const plan = await planEnVigor();
   res.json({
     usuario: { ...req.usuario, metodo_2fa: extra?.metodo_2fa ?? 'app', telefono: extra?.telefono ?? '', direccion: extra?.direccion ?? '' },
@@ -138,7 +130,6 @@ export async function perfil(req, res) {
   });
 }
 
-// edición de los datos del propio perfil (solo administrador)
 export async function actualizarPerfil(req, res) {
   const { nombre, correo, telefono, direccion } = req.body ?? {};
   if (!String(nombre ?? '').trim()) throw new ErrorVisible('El nombre completo es obligatorio.');

@@ -1,6 +1,3 @@
-// pantalla para el caso sin salida: la única sección del rol está trabada y no hay
-// ninguna otra a la que mandarlo. le pasa al aliado cuando la institución cae a un plan
-// que no incluye su portal; antes esto era un rebote infinito y la pantalla en blanco.
 import { Button, Result } from 'antd';
 import { salir } from './Diseno.jsx';
 

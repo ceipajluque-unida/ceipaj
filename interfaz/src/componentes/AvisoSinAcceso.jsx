@@ -1,5 +1,3 @@
-// avisa por qué se volvió al inicio cuando alguien pidió un módulo que no le toca.
-// va como mensaje flotante y no como pantalla: la sección no se muestra de ninguna forma.
 import { useEffect } from 'react';
 import { message } from 'antd';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -24,7 +22,7 @@ export default function AvisoSinAcceso() {
         duration: 6,
       });
     }
-    // se limpia el estado para que el aviso no vuelva a salir al recargar o al volver atrás
+
     navegar(pathname, { replace: true, state: null });
   }, [state]);
 

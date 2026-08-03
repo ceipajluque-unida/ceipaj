@@ -1,6 +1,3 @@
-// primer arranque del sistema. la primera cuenta es la del proveedor del servicio, no la
-// de ningún colegio: es quien configura la apariencia, la pasarela y los planes, y recién
-// después da de alta las instituciones con su administrador.
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Input } from 'antd';
@@ -19,7 +16,6 @@ export default function ConfiguracionInicial() {
   const [error, setError] = useState(null);
   const [cargando, setCargando] = useState(false);
 
-  // los requisitos de la contraseña son configurables, así que se piden al servidor
   useEffect(() => {
     llamarApi('/api/autenticacion/politica').then((p) => setRequisitos(p.texto)).catch(() => {});
   }, []);
@@ -52,7 +48,6 @@ export default function ConfiguracionInicial() {
     setError(null);
     setCargando(true);
     try {
-      // se reutiliza el flujo normal de ingreso...clave, código y sesión
       const paso1 = await llamarApi('/api/autenticacion/ingresar', {
         metodo: 'POST',
         cuerpo: { correo: datos.correo, clave: datos.clave },

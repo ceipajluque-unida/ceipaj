@@ -1,4 +1,3 @@
-// administración de usuarios internos con alta, edición, rol, activación y restablecer clave
 import { useEffect, useState } from 'react';
 import { Button } from 'antd';
 import { llamarApi, usuarioActual } from '../servicios/api.js';
@@ -8,7 +7,6 @@ import Modal from '../componentes/Modal.jsx';
 import FormularioUsuario from '../componentes/FormularioUsuario.jsx';
 import TablaUsuarios from '../componentes/TablaUsuarios.jsx';
 
-// los aliados no se dan de alta acá, tienen su propio módulo con datos extra
 const ROLES_INTERNOS = ['administrador', 'comercial', 'direccion'];
 const FORMULARIO_VACIO = { nombre: '', correo: '', telefono: '', direccion: '', rol: 'comercial' };
 

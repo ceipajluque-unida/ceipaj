@@ -1,4 +1,3 @@
-// acompañamiento a estudiantes activos y riesgo por días sin acción
 import { bd } from '../../servidor/bd/conexion.js';
 import * as ajustes from '../../servidor/ajustesSistema.js';
 import { registrarAuditoria } from '../../servidor/auditoria.js';
@@ -7,18 +6,14 @@ import { validarLargo, LARGOS } from '../../comun/validar.js';
 import { ESTADOS_LEAD, TIPOS_ACCION_SEGUIMIENTO, LIMITES } from '../../configuracion/ajustes.js';
 import { institucionActual } from '../../servidor/contexto.js';
 
-// va como subconsulta y no como group by para que ande igual en mysql y mariadb
 const ULTIMA_ACCION = '(SELECT MAX(s.fecha) FROM acciones_seguimiento s WHERE s.lead_id = l.id)';
 
-// los estudiantes son de su institución y de nadie más: sin institución en el pedido no
-// se devuelve nada, ni al proveedor del servicio, que no tiene por qué verlos (ley 7593)
 function institucionDelPedido() {
   const id = institucionActual();
   if (!id) throw new ErrorVisible('Esta operación es de una institución.', 403);
   return id;
 }
 
-// si nunca hubo acción, los días se cuentan desde la matrícula
 export async function listarEstudiantes() {
   const [filas] = await bd.query(
     `SELECT l.id, l.nombre, l.cedula, l.telefono, l.fecha_conversion,
@@ -37,13 +32,12 @@ export async function listarEstudiantes() {
 }
 
 export async function listarAcciones(leadId) {
-  // un id de otra institución cae acá como "no encontrado", que no confirma ni desmiente
   const [[lead]] = await bd.query(
     'SELECT id FROM leads WHERE id = ? AND institucion_id = ? AND activo = 1',
     [leadId, institucionDelPedido()]
   );
   if (!lead) throw new ErrorVisible('Estudiante no encontrado.', 404);
-  // las acciones cuelgan del lead, que quedó filtrado por la consulta de arriba
+
   const [acciones] = await bd.query(
     `SELECT s.id, s.tipo, s.detalle, s.fecha, u.nombre AS usuario
        FROM acciones_seguimiento s

@@ -1,8 +1,6 @@
-// historial de cobros con sus acciones: bajar el recibo o retomar el pago
 import { Button, Table } from 'antd';
 import { guaranies, legible } from '../servicios/formato.js';
 
-// acá "exitoso" se muestra como "pagado", que es la palabra que usa la institución
 const TEXTO_ESTADO = { pendiente: 'Pendiente', exitoso: 'Pagado', rechazado: 'Rechazado' };
 
 export default function TablaPagos({ pagos, textoMedio, esAdministrador, bajando, alBajarRecibo, alRetomar }) {
@@ -13,7 +11,7 @@ export default function TablaPagos({ pagos, textoMedio, esAdministrador, bajando
       title: 'Medio',
       dataIndex: 'forma_pago_externa',
       key: 'medio',
-      // la pasarela informa el medio real; si todavía no lo mandó se usa el elegido al crear el cobro
+
       render: (valor, pago) => valor ?? textoMedio(pago.medio_pago),
     },
     { title: 'Monto', dataIndex: 'monto', key: 'monto', render: (valor) => guaranies(valor) },

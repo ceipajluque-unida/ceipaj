@@ -1,5 +1,3 @@
-// administración de los planes de suscripción: precio, duración, qué módulos habilita
-// cada uno y cuántos usuarios internos admite
 import { useEffect, useState } from 'react';
 import { Button, Table } from 'antd';
 import { llamarApi } from '../servicios/api.js';

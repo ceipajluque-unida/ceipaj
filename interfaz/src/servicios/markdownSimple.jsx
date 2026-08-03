@@ -1,4 +1,3 @@
-// los textos legales vienen con encabezados ##, listas - y negritas **, se arman a mano para no sumar dependencias
 import { Fragment } from 'react';
 
 export function comoHtml(texto) {
@@ -16,7 +15,6 @@ export function comoHtml(texto) {
   });
 }
 
-// un salto suelto dentro del párrafo se respeta, si no los renglones seguidos salen pegados en una línea
 function conRenglones(bloque) {
   return bloque.split('\n').map((linea, i) => (
     <Fragment key={i}>{i > 0 && <br />}{conNegritas(linea)}</Fragment>

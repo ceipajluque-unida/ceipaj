@@ -1,4 +1,3 @@
-// envío de sms por twilio para el 2fa, vía api rest
 import { SMS } from '../configuracion/ajustes.js';
 import * as ajustes from './ajustesSistema.js';
 
@@ -15,7 +14,6 @@ export function smsConfigurado() {
   return Boolean(sid && token && desde);
 }
 
-// "error 21608" no le dice nada a quien configura, así que se explican en criollo
 const ERRORES = {
   21608: 'Con una cuenta de prueba de Twilio solo se puede enviar a números verificados en su panel. Verificá ese número o usá el 2FA por app o por correo.',
   21606: 'El número remitente no sirve para mandar SMS. Revisá el número que te dio Twilio.',
@@ -29,7 +27,6 @@ function explicar(datos, estado) {
   return ERRORES[datos?.code] ?? datos?.message ?? `Twilio respondió ${estado}.`;
 }
 
-// valida las credenciales contra twilio sin mandar sms
 export async function verificarSms() {
   const { sid, token, desde } = credenciales();
   if (!sid || !token) return { ok: false, motivo: 'Faltan el Account SID y el Auth Token de Twilio.' };

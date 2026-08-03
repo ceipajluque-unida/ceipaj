@@ -1,11 +1,9 @@
-// arma los reportes en excel (.xlsx) y pdf, con los mismos datos que el csv
 import ExcelJS from 'exceljs';
 import PDFDocument from 'pdfkit';
 import { obtenerDatos } from './exportaciones.js';
 import { INSTITUCION } from '../../configuracion/ajustes.js';
 import * as ajustes from '../../servidor/ajustesSistema.js';
 
-// título legible por tabla, para la hoja de excel y el encabezado del pdf
 const TITULOS = {
   leads: 'Interesados', interacciones: 'Interacciones', comisiones: 'Comisiones', suscripciones: 'Suscripciones',
   pagos: 'Pagos', auditoria: 'Auditoría',
@@ -21,14 +19,12 @@ export async function generarXlsx(tabla) {
   cabecera.font = { bold: true, color: { argb: 'FFFFFFFF' } };
   cabecera.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1F2430' } };
 
-  // los montos vienen como texto desde mysql, se pasan a número para poder sumarlos en excel
   const columnasMonto = encabezados.map((h, i) => (/monto/i.test(h) ? i : -1)).filter((i) => i >= 0);
   for (const fila of filas) {
     hoja.addRow(fila.map((valor, i) =>
       columnasMonto.includes(i) && valor != null && valor !== '' && !Number.isNaN(Number(valor)) ? Number(valor) : valor));
   }
 
-  // ancho de cada columna según el texto más largo (con topes razonables)
   hoja.columns.forEach((columna, i) => {
     let largo = String(encabezados[i] ?? '').length;
     for (const fila of filas) largo = Math.max(largo, String(fila[i] ?? '').length);
@@ -59,7 +55,6 @@ export async function generarPdf(tabla) {
     const anchoCol = ancho / encabezados.length;
     const alto = 16;
 
-    // dibuja la fila de encabezado (se repite en cada página nueva)
     const encabezar = (y) => {
       doc.rect(izq, y, ancho, alto).fill('#1f2430');
       doc.font('Helvetica-Bold').fontSize(8).fillColor('#fff');

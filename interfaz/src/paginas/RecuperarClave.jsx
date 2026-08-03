@@ -1,4 +1,3 @@
-// olvido de contraseña, paso 1. la respuesta es genérica a propósito para no revelar si el correo existe
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button, Input } from 'antd';

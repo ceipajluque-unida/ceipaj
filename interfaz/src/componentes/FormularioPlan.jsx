@@ -1,4 +1,3 @@
-// alta y edición de un plan de suscripción: precio, duración, tope de usuarios y módulos
 import { Button, Input, InputNumber, Select, Switch } from 'antd';
 import { legible, conMiles, sinMiles } from '../servicios/formato.js';
 import Modal from './Modal.jsx';
@@ -13,7 +12,7 @@ export default function FormularioPlan({ abierto, editando, modulos, formulario,
         <label><span>Descripción</span><Input value={formulario.descripcion} onChange={campo('descripcion')} /></label>
         <div className="fila-campos">
           <label><span>Precio en guaraníes</span>
-            {/* con el punto de miles se lee de un vistazo si son 250.000 o 2.500.000 */}
+
             <InputNumber value={formulario.precio} min={1} step={50000} style={{ width: '100%' }}
               formatter={conMiles} parser={sinMiles} prefix="Gs."
               onChange={(valor) => alCambiar({ ...formulario, precio: valor })} />
@@ -23,12 +22,12 @@ export default function FormularioPlan({ abierto, editando, modulos, formulario,
               onChange={(valor) => alCambiar({ ...formulario, meses: valor })} />
           </label>
         </div>
-        {/* si se deja vacío el InputNumber devuelve null, que es justamente "sin tope" */}
+
         <label><span>Tope de usuarios internos (vacío = sin tope)</span>
           <InputNumber value={formulario.maxUsuarios} min={1} style={{ width: '100%' }}
             onChange={(valor) => alCambiar({ ...formulario, maxUsuarios: valor })} />
         </label>
-        {/* la lista vacía habilita todos los módulos, no ninguno */}
+
         <label><span>Módulos que habilita (vacío = todos)</span>
           <Select mode="multiple" value={formulario.modulos} style={{ width: '100%' }}
             options={modulos.map((clave) => ({ value: clave, label: legible(clave) }))}

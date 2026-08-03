@@ -1,29 +1,25 @@
 const CLAVE_TOKEN = 'ceipaj_token';
 const CLAVE_USUARIO = 'ceipaj_usuario';
-// por qué se cortó la sesión, para poder decirlo en el ingreso. va en sessionStorage
-// porque solo tiene que sobrevivir a la recarga que hace el redirect.
+
 const CLAVE_MOTIVO_SALIDA = 'ceipaj_motivo_salida';
 
-// lo lee el ingreso una sola vez: si quedara, saldría también en el próximo login normal
 export function motivoDeSalida() {
   const motivo = sessionStorage.getItem(CLAVE_MOTIVO_SALIDA);
   if (motivo) sessionStorage.removeItem(CLAVE_MOTIVO_SALIDA);
   return motivo;
 }
 
-// sin recordarme la sesión vive en sessionStorage y se pierde al cerrar la pestaña
 function leer(clave) {
   return localStorage.getItem(clave) ?? sessionStorage.getItem(clave);
 }
 
 export function guardarSesion(token, usuario, recordar) {
-  // si no aclaran, se respeta dónde estaba guardada la sesión de antes
   const recordarla = recordar ?? Boolean(localStorage.getItem(CLAVE_TOKEN));
   cerrarSesion();
   const almacen = recordarla ? localStorage : sessionStorage;
   almacen.setItem(CLAVE_TOKEN, token);
   almacen.setItem(CLAVE_USUARIO, JSON.stringify(usuario));
-  // aviso para que la apariencia cargue el color guardado por el usuario
+
   window.dispatchEvent(new Event('sesion'));
 }
 
@@ -50,7 +46,6 @@ export function tokenActual() {
   return leer(CLAVE_TOKEN);
 }
 
-// el equipo de confianza va siempre en localStorage, así no se vuelve a pedir el código
 const CLAVE_DISPOSITIVO = 'ceipaj_dispositivo';
 
 export function tokenDispositivo() {
@@ -83,8 +78,6 @@ export async function llamarApi(ruta, { metodo = 'GET', cuerpo } = {}) {
 
   const datos = await respuesta.json().catch(() => ({}));
   if (!respuesta.ok) {
-    // sesión vencida...se limpia y vuelve al login. se deja dicho por qué: antes echaba
-    // sin explicación y parecía que el sistema se hubiera roto solo
     if (respuesta.status === 401 && haySesion()) {
       cerrarSesion();
       sessionStorage.setItem(CLAVE_MOTIVO_SALIDA, datos.error ?? 'Tu sesión venció. Volvé a ingresar.');

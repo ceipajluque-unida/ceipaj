@@ -1,12 +1,8 @@
-// revisa que lo que llega a configuración tenga el tipo y el rango que declara el
-// catálogo. sin esto el backend aceptaba cualquier cosa: un texto en el mínimo de la
-// contraseña dejaba la política en NaN y la apagaba entera.
 import { CATALOGO } from './ajustesSistema.js';
 import { ErrorVisible } from './errores.js';
 
 const POR_CLAVE = new Map(CATALOGO.flatMap((grupo) => grupo.ajustes.map((a) => [a.clave, a])));
 
-// tope de caracteres según el tipo de campo
 const LARGO_MAXIMO = { texto: 300, secreto: 300, parrafo: 2000, documento: 50000 };
 
 export function validarAjuste(clave, valor) {
@@ -33,7 +29,6 @@ export function validarAjuste(clave, valor) {
   }
 
   if (ajuste.tipo === 'opcion') {
-    // las opciones vienen como {valor, texto} o como cadenas sueltas, según el ajuste
     const admitidos = (ajuste.opciones ?? []).map((o) => (typeof o === 'string' ? o : o.valor));
     if (!admitidos.includes(texto)) throw new ErrorVisible(`"${ajuste.etiqueta}" no admite ese valor.`);
     return texto;

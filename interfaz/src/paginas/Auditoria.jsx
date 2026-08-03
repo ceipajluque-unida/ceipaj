@@ -1,4 +1,3 @@
-// visor de auditoría de solo lectura para el admin, quién hizo qué y desde dónde
 import { useEffect, useRef, useState } from 'react';
 import { Button, Input, Select, Table } from 'antd';
 import { llamarApi } from '../servicios/api.js';
@@ -8,7 +7,6 @@ import { TEXTO_ACCION } from '../servicios/textosAuditoria.js';
 
 const FILTROS_VACIOS = { buscar: '', accion: '', pagina: 1 };
 
-// lo que no esté en la lista al menos pierde los guiones bajos
 function textoAccion(accion) {
   if (TEXTO_ACCION[accion]) return TEXTO_ACCION[accion];
   const suelto = String(accion).replace(/_/g, ' ');
@@ -18,7 +16,7 @@ function textoAccion(accion) {
 export default function Auditoria() {
   const [datos, setDatos] = useState(null);
   const [filtros, setFiltros] = useState(FILTROS_VACIOS);
-  // descarta respuestas viejas cuando se escribe rápido en el buscador
+
   const ultimaConsulta = useRef(0);
 
   async function cargar(actuales = filtros) {
@@ -34,7 +32,6 @@ export default function Auditoria() {
   useEffect(() => { cargar(); }, []);
 
   function cambiar(campo, valor) {
-    // al cambiar un filtro se vuelve a la página 1
     const actuales = { ...filtros, [campo]: valor, pagina: campo === 'pagina' ? valor : 1 };
     setFiltros(actuales);
     cargar(actuales);
