@@ -163,6 +163,7 @@ async function migrar() {
   await asegurarColumna(conexion, 'leads', 'consentimiento_revocado_en', 'DATETIME NULL AFTER consentimiento_version');
   await asegurarColumna(conexion, 'leads', 'activo', 'TINYINT(1) NOT NULL DEFAULT 1 AFTER consentimiento_revocado_en');
   await asegurarColumna(conexion, 'leads', 'motivo_baja', 'VARCHAR(200) NULL AFTER activo');
+  await asegurarColumna(conexion, 'suscripciones', 'cancelada_en', 'DATETIME NULL AFTER pago_id');
   await asegurarColumna(conexion, 'planes', 'max_usuarios', 'INT UNSIGNED NULL AFTER incluye');
   await asegurarColumna(conexion, 'planes', 'modulos_incluidos', 'TEXT NULL AFTER max_usuarios');
 

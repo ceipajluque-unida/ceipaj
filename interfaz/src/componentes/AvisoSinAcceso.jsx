@@ -12,9 +12,17 @@ export default function AvisoSinAcceso() {
     const aviso = state?.sinAcceso;
     if (!aviso) return;
     if (aviso.motivo === 'plan') {
-      message.warning(`El plan ${aviso.plan ?? 'contratado'} no incluye esa sección. Podés habilitarla cambiando de plan.`);
+      message.warning({
+        content: `${aviso.modulo ?? 'Esa sección'} no está disponible con el plan ${aviso.plan ?? 'contratado'}. `
+          + 'Podés habilitarla contratando un plan que la incluya.',
+        duration: 6,
+      });
     } else {
-      message.error('No tenés acceso a esa sección.');
+      message.error({
+        content: `${aviso.modulo ?? 'Esa sección'} no está disponible para tu rol. `
+          + 'Si necesitás entrar, pedíselo a quien administra el sistema.',
+        duration: 6,
+      });
     }
     // se limpia el estado para que el aviso no vuelva a salir al recargar o al volver atrás
     navegar(pathname, { replace: true, state: null });

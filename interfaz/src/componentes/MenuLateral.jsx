@@ -29,6 +29,11 @@ export const GRUPOS = [
   ] },
 ];
 
+// cómo se llama cada módulo en el menú, para poder nombrarlo en los avisos
+export const NOMBRE_MODULO = Object.fromEntries(
+  GRUPOS.flatMap((grupo) => grupo.items).map((item) => [item.clave, item.texto])
+);
+
 // con qué módulo se corresponde cada dirección, para saber quién puede abrirla
 export const MODULO_POR_RUTA = Object.fromEntries(
   GRUPOS.flatMap((grupo) => grupo.items).map((item) => [item.ruta, item.clave])

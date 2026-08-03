@@ -44,11 +44,15 @@ export async function crearCobro({ concepto, monto, medio, plan }, usuario, ip) 
 }
 
 // historial de transacciones, las últimas primero
-export async function listarPagos() {
+// los cobros del colegio, que son los suyos: comisiones a aliados y cualquier cobro
+// suelto. lo que paga POR la plataforma es otra cosa y vive en Suscripción, con su
+// historial de períodos; mezclarlos hacía que "Pagos" fuera dos cosas a la vez.
+export async function listarPagos({ soloSuscripciones = false } = {}) {
+  const condicionPlan = soloSuscripciones ? 'plan IS NOT NULL' : 'plan IS NULL';
   const [filas] = await bd.query(
     `SELECT referencia, concepto, monto, moneda, estado, proveedor, medio_pago, plan, url_pago,
             fecha_pago, forma_pago_externa, creado_en, actualizado_en
-       FROM pagos WHERE institucion_id = ? ORDER BY creado_en DESC LIMIT 50`,
+       FROM pagos WHERE institucion_id = ? AND ${condicionPlan} ORDER BY creado_en DESC LIMIT 50`,
     [institucionDelPedido()]
   );
   return filas;

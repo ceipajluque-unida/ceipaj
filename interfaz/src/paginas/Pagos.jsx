@@ -119,7 +119,9 @@ export default function Pagos() {
   return (
     <>
       <header className="encabezado-pagina">
-        <h2>Pagos de la plataforma <span className="etiqueta">sandbox</span></h2>
+        {/* los de la suscripción no van acá: son lo que la institución paga POR el
+            sistema, y viven en Suscripción con su historial de períodos */}
+        <h2>Cobros de la institución</h2>
         {esAdministrador && (
           <div className="acciones">
             <Button disabled={conciliando} onClick={conciliar}>

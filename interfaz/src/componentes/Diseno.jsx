@@ -4,7 +4,7 @@ import { Navigate, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { Button } from 'antd';
 import { cerrarSesion, llamarApi, usuarioActual } from '../servicios/api.js';
 import MenuUsuario from './MenuUsuario.jsx';
-import MenuLateral, { MODULO_POR_RUTA } from './MenuLateral.jsx';
+import MenuLateral, { MODULO_POR_RUTA, NOMBRE_MODULO } from './MenuLateral.jsx';
 import AvisoSinAcceso from './AvisoSinAcceso.jsx';
 import Icono from './iconos.jsx';
 import { useInstitucion } from '../contextos/institucion.jsx';
@@ -79,13 +79,18 @@ export default function Diseno() {
   // que llegó ahí escribiendo la dirección o con un enlace viejo.
   const raiz = `/${ubicacion.pathname.split('/')[1] ?? ''}`;
   const moduloPedido = MODULO_POR_RUTA[raiz];
+
+  // la raíz no es un módulo ajeno: es a donde cae cualquiera al entrar. el proveedor y el
+  // aliado tienen su propia pantalla de inicio, así que se los manda sin ningún reproche.
+  if (raiz === '/' && inicio !== '/') return <Navigate to={inicio} replace />;
+
   const motivo = !moduloPedido ? null
     : !puedeVer(moduloPedido) ? 'rol'
     : bloqueados.includes(moduloPedido) ? 'plan'
     : null;
 
   if (motivo) {
-    return <Navigate to={motivo === 'plan' ? '/suscripcion' : inicio} replace state={{ sinAcceso: { motivo, plan: plan?.texto } }} />;
+    return <Navigate to={motivo === 'plan' ? '/suscripcion' : inicio} replace state={{ sinAcceso: { motivo, plan: plan?.texto, modulo: NOMBRE_MODULO[moduloPedido] } }} />;
   }
 
   return (

@@ -97,7 +97,7 @@ export default function Instituciones() {
   // quedan ancladas a la derecha.
   const columnas = [
     {
-      title: 'Institución', dataIndex: 'nombre', key: 'nombre', width: 280,
+      title: 'Institución', dataIndex: 'nombre', key: 'nombre', width: 240,
       render: (nombre, institucion) => (
         <>
           <strong>{nombre}</strong>
@@ -146,7 +146,7 @@ export default function Instituciones() {
       <section className="panel">
         {instituciones.length > 0 ? (
           <div className="tabla-envoltura">
-            <Table columns={columnas} dataSource={instituciones} rowKey="id" size="small" pagination={false} scroll={{ x: 900 }} />
+            <Table columns={columnas} dataSource={instituciones} rowKey="id" size="small" pagination={false} scroll={{ x: 'max-content' }} />
           </div>
         ) : (
           <div className="vacio">

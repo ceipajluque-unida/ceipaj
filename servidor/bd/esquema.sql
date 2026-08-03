@@ -194,6 +194,9 @@ CREATE TABLE IF NOT EXISTS suscripciones (
   fecha_inicio DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   fecha_fin DATETIME NOT NULL,
   pago_id INT UNSIGNED NULL UNIQUE, -- un pago no puede abrir dos suscripciones
+  -- cancelar no corta el servicio: no hay reembolso, así que el período contratado se
+  -- respeta hasta su fecha de fin y lo único que se pierde es la renovación
+  cancelada_en DATETIME NULL,
   institucion_id INT UNSIGNED NULL,
   creado_por INT UNSIGNED NULL,
   creado_en DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,

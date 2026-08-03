@@ -5,7 +5,7 @@ import { generarRecibo, numeroDeRecibo } from './recibo.js';
 import { registrarAuditoria } from '../../servidor/auditoria.js';
 import { ErrorVisible } from '../../servidor/errores.js';
 import { ESTADOS_PAGO, MEDIOS_PAGO, CHECKOUT } from '../../configuracion/ajustes.js';
-import { buscarPlan } from '../suscripciones/servicio.js';
+import { buscarPlan, calcularCambio } from '../suscripciones/servicio.js';
 
 // medios de pago que ofrece la pasarela, para armar el desplegable del formulario
 export async function medios(req, res) {
@@ -53,13 +53,22 @@ export async function pagarPlan(req, res) {
   const { plan, medio } = req.body ?? {};
   const elegido = await buscarPlan(plan);
   if (!elegido) throw new ErrorVisible('Elegí un plan válido.');
-  await validarMedio(medio, elegido.precio);
+  // el monto lo calcula el servidor, nunca el navegador: al mejorar de plan se cobra la
+  // diferencia descontando lo que quedaba sin usar del período en curso
+  const cambio = await calcularCambio(elegido.valor);
+  if (cambio.aPagar <= 0) {
+    throw new ErrorVisible('Con el crédito del período en curso no queda nada por pagar. Escribinos para aplicar el cambio.', 409);
+  }
+  await validarMedio(medio, cambio.aPagar);
+  const detalle = cambio.tipo === 'mejora'
+    ? `Cambio a plan ${elegido.texto} (diferencia)`
+    : `Suscripción plan ${elegido.texto}`;
   const cobro = await servicio.crearCobro(
-    { concepto: `Suscripción plan ${elegido.texto}`, monto: elegido.precio, medio, plan: elegido.valor },
+    { concepto: detalle, monto: cambio.aPagar, medio, plan: elegido.valor },
     req.usuario,
     req.ip
   );
-  res.status(201).json({ ...cobro, ...ajustesDeCheckout() });
+  res.status(201).json({ ...cobro, ...ajustesDeCheckout(), cambio });
 }
 
 export async function listar(req, res) {
