@@ -1,0 +1,109 @@
+// checkout de la pasarela dentro de la pantalla; mientras tanto se consulta si ya se acreditó
+import { useEffect, useRef, useState } from 'react';
+import { Alert, Button } from 'antd';
+import { llamarApi } from '../servicios/api.js';
+import { guaranies } from '../servicios/formato.js';
+
+export default function VentanaPago({ cobro, alAcreditar, alCerrar }) {
+  const [estado, setEstado] = useState('pendiente');
+  const [seCanso, setSeCanso] = useState(false);
+  const avisado = useRef(false);
+
+  const segundos = cobro.segundosConsulta ?? 5;
+  const limite = (cobro.minutosEspera ?? 15) * 60000;
+
+  useEffect(() => {
+    const desde = Date.now();
+    let vivo = true;
+    let turno;
+
+    // se empieza seguido y se va espaciando, para no consultar de más si el pago demora
+    function proximaEspera() {
+      const minutos = (Date.now() - desde) / 60000;
+      if (minutos < 2) return segundos * 1000;
+      if (minutos < 5) return segundos * 2000;
+      return segundos * 4000;
+    }
+
+    async function preguntar() {
+      if (!vivo) return;
+      if (Date.now() - desde > limite) { setSeCanso(true); return; }
+      // con la pestaña de fondo no tiene sentido consultar, se espera a que vuelva
+      if (document.visibilityState === 'visible') {
+        try {
+          const actual = await llamarApi(`/api/pagos/${cobro.referencia}/estado`);
+          if (!vivo) return;
+          if (actual.estado !== 'pendiente' && !avisado.current) {
+            avisado.current = true;
+            setEstado(actual.estado);
+            alAcreditar(actual.estado);
+            return;
+          }
+        } catch { /* si falla una consulta se reintenta en la vuelta siguiente */ }
+      }
+      turno = setTimeout(preguntar, proximaEspera());
+    }
+
+    turno = setTimeout(preguntar, segundos * 1000);
+    return () => { vivo = false; clearTimeout(turno); };
+  }, [cobro.referencia]);
+
+  if (estado === 'exitoso') {
+    return (
+      <section className="panel panel-pago">
+        <Alert type="success" showIcon message="Pago acreditado. Ya podés descargar tu recibo desde el historial." />
+      </section>
+    );
+  }
+
+  if (estado === 'rechazado') {
+    return (
+      <section className="panel panel-pago">
+        <Alert type="error" showIcon message="El pago fue rechazado. Podés intentar de nuevo con otro medio." />
+        <div className="acciones"><Button onClick={alCerrar}>Cerrar</Button></div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="panel panel-pago">
+      <header className="pago-cabecera">
+        <div>
+          <h3>Completá el pago</h3>
+          <p className="nota">{cobro.concepto} · {guaranies(cobro.monto)} · {cobro.referencia}</p>
+        </div>
+        <Button size="small" onClick={alCerrar}>Cancelar</Button>
+      </header>
+
+      {cobro.urlPago && cobro.incrustado && (
+        <iframe
+          className="marco-pago"
+          src={cobro.urlPago}
+          title="Pago seguro de la pasarela"
+          style={{ height: `${cobro.altoCheckout ?? 640}px` }}
+          allow="payment"
+        />
+      )}
+
+      <p className="nota pago-espera" role="status">
+        <span className="punto-vivo" aria-hidden="true" />
+        Esperando la confirmación de la pasarela. La pantalla se actualiza sola cuando el pago se acredite.
+      </p>
+
+      {cobro.urlPago && (
+        <p className="nota">
+          ¿No se ve el formulario de pago?{' '}
+          <a href={cobro.urlPago} target="_blank" rel="noreferrer">Abrilo en una pestaña nueva</a>.
+        </p>
+      )}
+
+      {seCanso && (
+        <Alert
+          type="error"
+          showIcon
+          message="Pasó el tiempo de espera y todavía no hay confirmación. Si ya pagaste, usá «Conciliar pagos» en el historial para que el sistema le pregunte el estado a la pasarela."
+        />
+      )}
+    </section>
+  );
+}

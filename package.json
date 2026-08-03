@@ -1,0 +1,26 @@
+{
+  "name": "ceipaj-sig",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Sistema de Información Gerencial (CRM educativo) del CEIPAJ — tesis de grado 2026",
+  "type": "module",
+  "scripts": {
+    "migrar": "node servidor/bd/migrar.js",
+    "servidor": "node --watch servidor/servidor.js",
+    "interfaz": "npm run dev --prefix interfaz",
+    "compilar": "npm run compilar --prefix interfaz"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "exceljs": "^4.4.0",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "mysql2": "^3.22.6",
+    "nodemailer": "^9.0.3",
+    "otplib": "^12.0.1",
+    "pdfkit": "^0.19.1",
+    "qrcode": "^1.5.4"
+  }
+}

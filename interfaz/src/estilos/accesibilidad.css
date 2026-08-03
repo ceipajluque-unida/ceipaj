@@ -1,0 +1,77 @@
+/* panel flotante de accesibilidad y los modos que enciende */
+
+.accesibilidad { position: fixed; bottom: 1.2rem; z-index: 1080; }
+.accesibilidad-derecha { right: 1.2rem; }
+.accesibilidad-izquierda { left: 1.2rem; }
+
+
+.accesibilidad-panel { position: absolute; bottom: 62px; width: 268px; }
+.accesibilidad-derecha .accesibilidad-panel { right: 0; }
+.accesibilidad-izquierda .accesibilidad-panel { left: 0; }
+
+@media (max-width: 420px) {
+  .accesibilidad-panel { width: calc(100vw - 2.4rem); }
+}
+
+/* ---------- alto contraste ---------- */
+/* sube el contraste de texto y bordes por encima del 7:1 que pide WCAG AAA.
+   el acento va con !important porque el color por usuario se aplica en línea */
+:root[data-contraste='alto'] {
+  --fondo: #ffffff;
+  --panel: #ffffff;
+  --panel-2: #f2f2f2;
+  --texto: #000000;
+  --texto-suave: #303030;
+  --borde: #000000;
+  --acento: #0a3157 !important;
+  --acento-hover: #061e36 !important;
+  --acento-suave: #d6e4f0 !important;
+  --lateral: #000000;
+  --sombra: none;
+  --verde: #0a5c2e; --verde-fondo: #ffffff;
+  --ambar: #6b4300; --ambar-fondo: #ffffff;
+  --rojo: #8f1d12;  --rojo-fondo: #ffffff;
+}
+
+/* sin bordes marcados todo se funde, porque el fondo y los paneles quedan blancos */
+:root[data-contraste='alto'] .panel,
+:root[data-contraste='alto'] .card,
+:root[data-contraste='alto'] .tarjeta-auth,
+:root[data-contraste='alto'] .modal,
+:root[data-contraste='alto'] table,
+:root[data-contraste='alto'] .form-control,
+:root[data-contraste='alto'] .form-select,
+:root[data-contraste='alto'] input,
+:root[data-contraste='alto'] select,
+:root[data-contraste='alto'] textarea {
+  border: 2px solid var(--borde) !important;
+}
+
+:root[data-contraste='alto'] .estado,
+:root[data-contraste='alto'] .etiqueta { border: 1px solid currentColor; }
+
+/* ---------- colores para daltonismo ---------- */
+/* el rojo y el verde se confunden en los tipos más comunes, así que los estados
+   pasan a azul y naranja, que se distinguen en protanopia, deuteranopia y tritanopia */
+:root[data-daltonismo='si'] {
+  --verde: #0b5ea8;  --verde-fondo: #dbeafe;
+  --ambar: #7a4a00;  --ambar-fondo: #fdecd2;
+  --rojo: #9a3412;   --rojo-fondo: #fde5d8;
+}
+
+/* además del color, cada estado lleva un símbolo: quien no distingue el tono igual lo lee */
+:root[data-daltonismo='si'] .estado::before { font-weight: 700; margin-right: 0.3rem; }
+:root[data-daltonismo='si'] .estado-activa::before,
+:root[data-daltonismo='si'] .estado-exitoso::before { content: '✓'; }
+:root[data-daltonismo='si'] .estado-pendiente::before { content: '•'; }
+:root[data-daltonismo='si'] .estado-rechazado::before,
+:root[data-daltonismo='si'] .estado-vencida::before { content: '✕'; }
+
+/* ---------- enlaces subrayados ---------- */
+/* no depender solo del color para saber qué es un enlace (WCAG 1.4.1) */
+:root[data-subrayar='si'] a { text-decoration: underline !important; }
+
+/* ---------- respeto por quien pide menos movimiento ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}

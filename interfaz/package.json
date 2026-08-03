@@ -1,0 +1,24 @@
+{
+  "name": "ceipaj-sig-interfaz",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "compilar": "vite build",
+    "previsualizar": "vite preview"
+  },
+  "dependencies": {
+    "antd": "^6.5.3",
+    "ceipaj-sig": "file:..",
+    "lucide-react": "^1.26.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.30.0",
+    "sweetalert2": "^11.26.25"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "vite": "^5.4.11"
+  }
+}

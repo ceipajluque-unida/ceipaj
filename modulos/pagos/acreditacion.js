@@ -1,0 +1,152 @@
+// acredita los pagos: el aviso de la pasarela, la conciliación y el paso a suscripción
+import { bd } from '../../servidor/bd/conexion.js';
+import { registrarAuditoria } from '../../servidor/auditoria.js';
+import { ErrorVisible } from '../../servidor/errores.js';
+import { institucionActual } from '../../servidor/contexto.js';
+import { ESTADOS_PAGO, PASARELA } from '../../configuracion/ajustes.js';
+import { pasarelaActiva } from './proveedor.js';
+import { activarPorPago } from '../suscripciones/servicio.js';
+
+// para lo que pide un usuario. el aviso de la pasarela no pasa por acá: llega sin
+// sesión y saca la institución del propio pago
+function institucionDelPedido() {
+  const id = institucionActual();
+  if (id === null) throw new ErrorVisible('Esta operación es de una institución.', 403);
+  return id;
+}
+
+// datos que informa la pasarela y hacen falta después para el recibo
+function guardarDatosDelPago(conexion, referencia, aviso = {}) {
+  return conexion.query(
+    `UPDATE pagos SET fecha_pago = COALESCE(?, fecha_pago, NOW()),
+            forma_pago_externa = COALESCE(?, forma_pago_externa),
+            comprobante_externo = COALESCE(?, comprobante_externo),
+            pagador_nombre = COALESCE(?, pagador_nombre),
+            pagador_documento = COALESCE(?, pagador_documento)
+      WHERE referencia = ?`,
+    [aviso.fechaPago ?? null, aviso.formaPago ?? null, aviso.comprobante ?? null,
+     aviso.pagadorNombre ?? null, aviso.pagadorDocumento ?? null, referencia]
+  );
+}
+
+// el pago y la suscripción van en una transacción, si no queda un pago sin su período.
+// no filtra por institución porque la referencia es única y los tres que llaman acá ya
+// resolvieron el pago: dos filtrando por institución y el aviso por su identificador externo
+export async function aplicarResultado({ referencia, estado, usuarioId, aviso }, ip) {
+  const conexion = await bd.getConnection();
+  try {
+    await conexion.beginTransaction();
+    // solo el pago exitoso queda firme, el rechazo se puede revertir
+    const [actualizacion] = await conexion.query(
+      'UPDATE pagos SET estado = ? WHERE referencia = ? AND estado <> ?',
+      [estado, referencia, ESTADOS_PAGO.EXITOSO]
+    );
+    if (actualizacion.affectedRows === 0) {
+      await conexion.rollback();
+      throw new ErrorVisible('Pago no encontrado o ya procesado.', 404);
+    }
+    if (estado === ESTADOS_PAGO.EXITOSO) await guardarDatosDelPago(conexion, referencia, aviso);
+
+    const [[pago]] = await conexion.query(
+      'SELECT id, plan, monto, institucion_id FROM pagos WHERE referencia = ?', [referencia]
+    );
+    if (estado === ESTADOS_PAGO.EXITOSO && pago?.plan) {
+      // la suscripción se abre para la institución del pago, no para la del contexto
+      await activarPorPago(
+        { pagoId: pago.id, institucionId: pago.institucion_id, plan: pago.plan, monto: pago.monto, usuarioId },
+        ip, conexion
+      );
+    }
+    await conexion.commit();
+    return { referencia, estado, plan: pago?.plan ?? null };
+  } catch (error) {
+    await conexion.rollback();
+    throw error;
+  } finally {
+    conexion.release();
+  }
+}
+
+// aviso automático del proveedor, la firma la valida el adaptador
+export async function procesarNotificacion(cuerpo, ip) {
+  const proveedor = pasarelaActiva();
+  if (typeof proveedor.verificarNotificacion !== 'function') {
+    throw new ErrorVisible('El proveedor activo no recibe notificaciones.', 400);
+  }
+  const aviso = proveedor.verificarNotificacion(cuerpo);
+  if (!aviso) {
+    await registrarAuditoria({ accion: 'pago_notificacion_invalida', detalle: 'firma incorrecta', ip });
+    throw new ErrorVisible('Notificación no válida.', 401);
+  }
+
+  // el aviso llega sin sesión, así que acá la institución sale del pago y no al revés:
+  // el identificador externo es único y es lo único que la pasarela conoce
+  const [[pago]] = await bd.query(
+    'SELECT referencia, estado, monto FROM pagos WHERE identificador_externo = ?',
+    [aviso.identificadorExterno]
+  );
+  // la firma es válida, así que el aviso es de la pasarela: se acusa recibo aunque no sea nuestro
+  if (!pago) {
+    await registrarAuditoria({ accion: 'pago_notificacion_desconocida', detalle: aviso.identificadorExterno, ip });
+    return { referencia: null, estado: null };
+  }
+  // el aviso llega repetido y hasta antes de pagar, solo se toca si el estado avanza
+  const sinCambios = aviso.estado === ESTADOS_PAGO.PENDIENTE
+    || pago.estado === ESTADOS_PAGO.EXITOSO
+    || pago.estado === aviso.estado;
+  if (sinCambios) return { referencia: pago.referencia, estado: pago.estado };
+  // nunca se acredita por el monto que manda el proveedor, se compara con el guardado
+  if (aviso.estado === ESTADOS_PAGO.EXITOSO && Number(pago.monto) !== Number(aviso.monto)) {
+    await registrarAuditoria({ accion: 'pago_monto_no_coincide', detalle: pago.referencia, ip });
+    throw new ErrorVisible('El monto informado no coincide con el del pago.', 409);
+  }
+
+  const datos = await aplicarResultado({ referencia: pago.referencia, estado: aviso.estado, usuarioId: null, aviso }, ip);
+  await registrarAuditoria({ accion: `pago_${aviso.estado}`, detalle: `${pago.referencia} · aviso del proveedor`, ip });
+  return datos;
+}
+
+// la espera es por institución: que un colegio concilie no puede dejar esperando al resto
+const ultimaConciliacion = new Map();
+
+// red de seguridad para los pagos sin aviso, incluye rechazados que se acreditan tarde
+export async function conciliarPendientes(ip) {
+  // la pide un usuario, así que revisa solo los pagos de su institución
+  const institucionId = institucionDelPedido();
+  const proveedor = pasarelaActiva();
+  if (typeof proveedor.consultarEstado !== 'function') return { revisados: 0, actualizados: 0 };
+
+  // cada pago pendiente es una consulta a la pasarela, así que no se puede repetir a discreción
+  const esperaMs = PASARELA.MINUTOS_ENTRE_CONCILIACIONES * 60000;
+  const falta = (ultimaConciliacion.get(institucionId) ?? 0) + esperaMs - Date.now();
+  if (falta > 0) {
+    throw new ErrorVisible(`Recién se conciliaron los pagos. Probá de nuevo en ${Math.ceil(falta / 60000)} minuto(s).`, 429);
+  }
+  ultimaConciliacion.set(institucionId, Date.now());
+
+  const [porRevisar] = await bd.query(
+    `SELECT referencia, estado, identificador_externo FROM pagos
+      WHERE institucion_id = ? AND estado <> ? AND identificador_externo IS NOT NULL
+      ORDER BY creado_en DESC LIMIT ?`,
+    [institucionId, ESTADOS_PAGO.EXITOSO, PASARELA.MAXIMO_POR_CONCILIACION]
+  );
+  let actualizados = 0;
+  for (const pago of porRevisar) {
+    try {
+      const aviso = await proveedor.consultarEstado(pago.identificador_externo);
+      if (aviso.estado === pago.estado || aviso.estado === ESTADOS_PAGO.PENDIENTE) continue;
+      await aplicarResultado({ referencia: pago.referencia, estado: aviso.estado, usuarioId: null, aviso }, ip);
+      await registrarAuditoria({ accion: `pago_conciliado_${aviso.estado}`, detalle: pago.referencia, ip });
+      actualizados += 1;
+    } catch (error) {
+      console.error('conciliación de pagos:', error.message);
+    }
+  }
+  // si el tope dejó pagos afuera hay que decirlo, no dar por revisado lo que no se revisó
+  const [[{ pendientes }]] = await bd.query(
+    `SELECT COUNT(*) AS pendientes FROM pagos
+      WHERE institucion_id = ? AND estado <> ? AND identificador_externo IS NOT NULL`,
+    [institucionId, ESTADOS_PAGO.EXITOSO]
+  );
+  return { revisados: porRevisar.length, actualizados, sinRevisar: Math.max(0, pendientes - porRevisar.length) };
+}

@@ -1,0 +1,496 @@
+/* estilos del sig ceipaj...interfaz clara y responsive con la barra lateral oscura,
+   foco siempre visible por accesibilidad. el color de acento lo elige cada usuario
+   (--acento lo pisa el js) */
+
+/* ---------- colores base ---------- */
+:root {
+  --acento: #35597e; /* azul apagado; lo pisa el selector de color del usuario */
+  --acento-suave: color-mix(in srgb, var(--acento) 14%, transparent);
+  --acento-hover: color-mix(in srgb, var(--acento) 85%, black);
+
+  --fondo: #f3f5fa;
+  --panel: #ffffff;
+  --panel-2: #f5f7fb;
+  --lateral: #1f2430;   /* va oscura a propósito, se ve prolija y formal */
+  --borde: #e4e7f0;
+  --texto: #232733;
+  --texto-suave: #6b7085;
+  --sombra: 0 8px 24px rgba(31, 36, 48, 0.07);
+
+  --verde: #187a44; --verde-fondo: #e4f4ea;
+  --ambar: #976000; --ambar-fondo: #fbf0d3;
+  --rojo: #bc382a;  --rojo-fondo: #fbe4e0;
+
+  /* espaciados y radios, para no ir poniendo números sueltos por todos lados */
+  --esp-1: 0.4rem;
+  --esp-2: 0.75rem;
+  --esp-3: 1.2rem;
+  --esp-4: 2rem;
+  --radio: 9px;
+  --radio-panel: 14px;
+  --ancho-lateral: 244px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+  background: var(--fondo);
+  color: var(--texto);
+  line-height: 1.5;
+}
+
+/* toda la interfaz mide en rem, así que con bajar la base se achica pareja */
+html { font-size: 15px; }
+
+h1 { font-size: 1.15rem; margin: 0; }
+h2 { font-size: 1.15rem; margin: 0; }
+h3 { font-size: 0.9rem; margin: 0 0 0.7rem; }
+a { color: var(--acento); }
+:focus-visible { outline: 3px solid var(--acento); outline-offset: 2px; border-radius: 6px; }
+.mensaje-centrado { text-align: center; margin-top: 20vh; color: var(--texto-suave); }
+
+/* ---------- estructura del menú y el contenido ---------- */
+.app { min-height: 100vh; }
+
+.lateral {
+  position: fixed; top: 0; left: 0; bottom: 0; width: var(--ancho-lateral); z-index: 30;
+  background: var(--lateral); color: #e7e9f3;
+  display: flex; flex-direction: column; gap: 0.5rem; padding: 1.1rem 0.8rem;
+  transform: translateX(0); transition: transform 0.25s ease;
+  overflow-y: auto;
+}
+.app.oculto .lateral { transform: translateX(-100%); }
+
+.marca { display: flex; align-items: center; gap: 0.6rem; padding: 0.2rem 0.6rem 0.9rem; font-weight: 600; font-size: 0.85rem; line-height: 1.3; }
+.marca-logo { flex-shrink: 0; }
+
+.lateral nav { display: flex; flex-direction: column; gap: 0.3rem; }
+.grupo-nav { display: flex; flex-direction: column; gap: 0.15rem; margin-bottom: 0.5rem; }
+.grupo-titulo { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; color: #898d97; padding: 0.5rem 0.6rem 0.2rem; }
+.lateral nav a {
+  display: flex; align-items: center; gap: 0.65rem;
+  color: #c9ccdd; text-decoration: none; padding: 0.55rem 0.65rem; border-radius: 9px; font-size: 0.9rem;
+}
+.lateral nav a:hover { background: rgba(255, 255, 255, 0.07); color: #fff; }
+.lateral nav a.activo { background: var(--acento); color: #fff; font-weight: 600; }
+.lateral nav a .icono { width: 1.3rem; text-align: center; display: inline-flex; }
+
+/* contador de pendientes al costado del ítem del menú */
+.badge { margin-left: auto; background: var(--rojo); color: #fff; border-radius: 999px; font-size: 0.68rem; font-weight: 700; padding: 0.05rem 0.4rem; min-width: 1.25rem; text-align: center; }
+.lateral nav a.activo .badge { background: rgba(255, 255, 255, 0.35); }
+
+/* módulo que el plan no incluye: se ve apagado y con candado, y lleva a suscripción */
+.lateral nav a.trabado { color: #7f8497; }
+.lateral nav a.trabado:hover { background: rgba(255, 255, 255, 0.04); color: #9aa0b4; }
+.candado { margin-left: auto; display: inline-flex; opacity: 0.75; }
+
+/* miniatura y subida de la imagen del plan */
+.imagen-plan { display: inline-flex; flex-direction: column; align-items: center; gap: 0.2rem; cursor: pointer; font-size: 0.72rem; }
+.imagen-plan img { width: 56px; height: 40px; object-fit: cover; border-radius: 6px; border: 1px solid var(--borde); }
+.imagen-plan .sin-imagen { width: 56px; height: 40px; display: grid; place-items: center; border: 1px dashed var(--borde); border-radius: 6px; color: var(--texto-suave); font-size: 0.62rem; }
+.imagen-plan input[type='file'] { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.cambiar-imagen { color: var(--acento); }
+
+/* dos campos en la misma fila dentro de un formulario */
+.fila-campos { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+@media (max-width: 520px) { .fila-campos { grid-template-columns: 1fr; } }
+
+/* subida de la imagen de fondo del ingreso */
+.fondo-ingreso { display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-start; }
+.fondo-ingreso img { width: 100%; max-width: 340px; aspect-ratio: 16/9; object-fit: cover; border-radius: 9px; border: 1px solid var(--borde); }
+.fondo-ingreso .sin-imagen { color: var(--texto-suave); font-size: 0.82rem; }
+.subir-fondo input[type='file'] { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.campo-ancho { grid-column: 1 / -1; }
+
+/* aviso de la ley 7593 debajo de los formularios de alta */
+.aviso-privacidad { font-size: 0.78rem; color: var(--texto-suave); line-height: 1.45; margin: 0.6rem 0 0; }
+
+/* plan contratado, siempre visible en la barra de arriba */
+.chip-plan {
+  display: inline-flex; align-items: center; gap: 0.15rem; text-decoration: none;
+  background: var(--acento-suave); color: var(--acento); border-radius: 999px;
+  padding: 0.2rem 0.7rem; font-size: 0.76rem; font-weight: 600; white-space: nowrap;
+}
+.chip-plan:hover { background: color-mix(in srgb, var(--acento) 22%, transparent); }
+.chip-plan.sin-plan { background: color-mix(in srgb, var(--rojo) 14%, transparent); color: var(--rojo); }
+.chip-detalle { font-weight: 500; opacity: 0.85; }
+/* en pantallas chicas el chip se come la barra: queda solo el nombre del plan */
+@media (max-width: 700px) { .chip-detalle { display: none; } }
+
+.principal { transition: margin-left 0.25s ease; min-height: 100vh; display: flex; flex-direction: column; }
+
+/* fondo oscuro detrás del menú, solo en pantallas chicas */
+.fondo-lateral { display: none; }
+
+/* ---------- barra superior ---------- */
+.barra-superior {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; gap: 0.9rem;
+  padding: 0.65rem 1.5rem; background: var(--panel); border-bottom: 1px solid var(--borde);
+}
+.boton-menu { background: transparent; color: var(--texto); border: none; font-size: 1.3rem; cursor: pointer; padding: 0.2rem 0.4rem; }
+.boton-menu:hover { color: var(--acento); }
+.titulo-app { font-weight: 600; color: var(--texto-suave); font-size: 0.9rem; }
+.barra-derecha { margin-left: auto; display: flex; align-items: center; gap: 0.6rem; }
+
+.contenido { padding: 1.1rem 1.4rem; max-width: 1500px; width: 100%; }
+
+/* ---------- menú de usuario (arriba a la derecha) ---------- */
+.menu-usuario { position: relative; }
+.avatar {
+  width: 40px; height: 40px; border-radius: 50%; border: none; cursor: pointer;
+  background: var(--acento); color: #fff; font-weight: 700; font-size: 0.85rem;
+}
+.menu-desplegable {
+  position: absolute; right: 0; top: 48px; width: 250px; z-index: 40;
+  background: var(--panel); border: 1px solid var(--borde); border-radius: 12px; box-shadow: var(--sombra);
+  padding: 0.5rem; display: flex; flex-direction: column; gap: 0.2rem;
+}
+.menu-cabecera { padding: 0.6rem; display: flex; flex-direction: column; gap: 0.3rem; border-bottom: 1px solid var(--borde); margin-bottom: 0.3rem; }
+.menu-seccion { display: flex; flex-direction: column; gap: 0.3rem; padding: 0.4rem 0.2rem; border-bottom: 1px solid var(--borde); }
+.menu-fila { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; padding: 0.2rem 0.4rem; font-size: 0.85rem; }
+.menu-enlace { background: transparent; border: none; color: var(--texto); text-align: left; padding: 0.55rem 0.6rem; border-radius: 8px; cursor: pointer; font-size: 0.88rem; }
+.menu-enlace:hover { background: var(--panel-2); }
+.menu-enlace.salir { color: var(--rojo); margin-top: 0.2rem; }
+.rol-chip { align-self: flex-start; background: var(--acento-suave); color: var(--acento); border-radius: 999px; padding: 0.1rem 0.6rem; font-size: 0.72rem; font-weight: 600; text-transform: capitalize; }
+
+.colores { display: flex; gap: 0.35rem; }
+.punto-color { width: 20px; height: 20px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; padding: 0; }
+.punto-color.activo { border-color: var(--texto); }
+
+/* ---------- tarjetas, indicadores, paneles ---------- */
+.encabezado-pagina { display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; }
+.encabezado-pagina h2 { font-size: 1.25rem; }
+
+.cuadricula { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+.indicador, .panel { background: var(--panel); border: 1px solid var(--borde); border-radius: 14px; padding: 1.1rem 1.2rem; }
+.panel { margin-bottom: 1.2rem; }
+.indicador h3 { color: var(--texto-suave); font-weight: 600; font-size: 0.82rem; margin: 0; }
+.cifra { font-size: 1.7rem; font-weight: 700; margin: 0.4rem 0 0.2rem; color: var(--texto); }
+.nota { font-size: 0.78rem; color: var(--texto-suave); margin: 0; }
+
+.etiqueta { font-size: 0.68rem; background: var(--ambar-fondo); color: var(--ambar); border-radius: 999px; padding: 0.15rem 0.6rem; vertical-align: middle; font-weight: 600; }
+
+/* ---------- botones ---------- */
+/* los botones los dibuja antd. lo de acá abajo es solo para los <button> propios que
+   quedaron a mano (las pestañas y los puntos de color), por eso el :not(.ant-btn) */
+button { font-family: inherit; }
+.panel button:not([class*='ant-']), form button:not([class*='ant-']) {
+  padding: 0.55rem 1.1rem; border: none; border-radius: 9px; background: var(--acento); color: #fff;
+  font-weight: 600; font-size: 0.88rem; cursor: pointer;
+}
+.panel button:not([class*='ant-']):hover, form button:not([class*='ant-']):hover { background: var(--acento-hover); }
+button:not([class*='ant-']):disabled { opacity: 0.6; cursor: wait; }
+.boton-crear { display: inline-flex; align-items: center; gap: 0.4rem; }
+.acciones { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+
+/* ---------- formularios ---------- */
+form { display: grid; gap: 0.9rem; }
+label { display: grid; gap: 0.3rem; font-size: 0.82rem; font-weight: 600; color: var(--texto); }
+input, select, textarea {
+  padding: 0.55rem 0.7rem; border: 1px solid var(--borde); border-radius: 9px; font-size: 0.92rem;
+  font-family: inherit; background: var(--panel-2); color: var(--texto); width: 100%;
+}
+textarea { resize: vertical; min-height: 70px; }
+input::placeholder, textarea::placeholder { color: var(--texto-suave); }
+.fila-formulario { display: flex; flex-wrap: wrap; gap: 0.7rem; align-items: end; }
+.fila-formulario label { flex: 1 1 170px; }
+.ayuda { font-size: 0.83rem; color: var(--texto-suave); margin: 0; }
+.error { color: var(--rojo); background: var(--rojo-fondo); border-radius: 9px; padding: 0.55rem 0.8rem; font-size: 0.85rem; margin: 0.4rem 0 0; }
+.exito { color: var(--verde); background: var(--verde-fondo); border-radius: 9px; padding: 0.55rem 0.8rem; font-size: 0.85rem; margin: 0.4rem 0 0; }
+.consentimiento { display: flex; align-items: flex-start; gap: 0.5rem; font-weight: 400; }
+
+
+/* casilla de tildar con su texto al costado */
+.casilla { display: flex; align-items: center; gap: 0.5rem; font-weight: 400; font-size: 0.86rem; cursor: pointer; }
+
+
+/* ---------- planes de suscripción ---------- */
+/* el botón va siempre abajo aunque un plan tenga más items que otro */
+.plan {
+  background: var(--panel); border: 1px solid var(--borde); border-radius: 14px; padding: 1.1rem 1.2rem;
+  display: flex; flex-direction: column; gap: 0.35rem;
+}
+.plan.plan-actual { border-color: var(--acento); box-shadow: 0 0 0 1px var(--acento); }
+.plan h3 { display: flex; align-items: center; gap: 0.5rem; margin: 0; }
+.plan .cifra { margin: 0.2rem 0 0; }
+.plan button { margin-top: auto; }
+
+.lista-plan { list-style: none; margin: 0.7rem 0; padding: 0; display: grid; gap: 0.35rem; font-size: 0.85rem; color: var(--texto-suave); }
+.lista-plan li { padding-left: 1.2rem; position: relative; }
+.lista-plan li::before { content: '✓'; position: absolute; left: 0; color: var(--verde); font-weight: 700; }
+
+/* ---------- configuración: secciones al costado ---------- */
+.config { display: grid; gap: var(--esp-3); align-items: start; }
+.config .panel { margin: 0; }
+
+.config-secciones {
+  display: flex; flex-direction: column;
+  background: var(--panel); border: 1px solid var(--borde); border-radius: var(--radio-panel);
+  overflow: hidden; height: fit-content;
+}
+.config-secciones button { height: auto; width: 100%; justify-content: flex-start; white-space: normal; line-height: 1.35;
+  background: transparent; border: none; border-left: 3px solid transparent;
+  color: var(--texto-suave); cursor: pointer; font: inherit; font-size: 0.88rem;
+  padding: 0.7rem 1rem; text-align: left;
+}
+.config-secciones button:hover { background: var(--panel-2); color: var(--texto); }
+.config-secciones button.activa {
+  background: var(--acento-suave); border-left-color: var(--acento);
+  color: var(--acento); font-weight: 600;
+}
+
+@media (min-width: 861px) {
+  .config { grid-template-columns: 250px 1fr; }
+}
+
+/* ---------- pestañas ---------- */
+.pestanas {
+  display: flex; flex-wrap: wrap; gap: 0.15rem; margin-bottom: 1rem;
+  border-bottom: 1px solid var(--borde);
+}
+.pestanas button {
+  background: transparent; border: none; border-bottom: 2px solid transparent;
+  color: var(--texto-suave); cursor: pointer; font: inherit; font-size: 0.88rem;
+  padding: 0.6rem 0.9rem; margin-bottom: -1px;
+}
+.pestanas button:hover { color: var(--texto); }
+.pestanas button.activa { color: var(--acento); border-bottom-color: var(--acento); font-weight: 600; }
+
+/* campos en columnas, se acomodan solos según el ancho */
+.campos { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem 1.4rem; }
+.campos label { gap: 0.35rem; }
+.campos .nota { font-weight: 400; }
+
+.prueba-envio { margin-top: 1.4rem; padding-top: 1.1rem; border-top: 1px solid var(--borde); }
+.prueba-envio h3 { margin-bottom: 0.6rem; }
+
+/* ---------- tablas ---------- */
+.tabla-envoltura { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+th, td { text-align: left; padding: 0.6rem 0.65rem; border-bottom: 1px solid var(--borde); }
+th { color: var(--texto-suave); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.02em; }
+tbody tr:hover td { background: var(--panel-2); }
+
+.estado { border-radius: 999px; padding: 0.15rem 0.65rem; font-size: 0.74rem; font-weight: 600; white-space: nowrap; text-transform: capitalize; }
+.estado-nuevo { background: var(--acento-suave); color: var(--acento); }
+.estado-interesado, .estado-pendiente { background: var(--ambar-fondo); color: var(--ambar); }
+.estado-matriculado, .estado-exitoso, .estado-pagada { background: var(--verde-fondo); color: var(--verde); }
+.estado-perdido, .estado-rechazado, .estado-riesgo { background: var(--rojo-fondo); color: var(--rojo); }
+
+/* barras simples para los reportes */
+.barra { background: var(--panel-2); border-radius: 6px; height: 15px; overflow: hidden; }
+.barra > span { display: block; height: 100%; background: var(--acento); }
+
+/* ---------- perfil ---------- */
+.datos-perfil { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; }
+.datos-perfil p { margin: 0.2rem 0 0; font-size: 1rem; }
+.chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.chip-permiso { background: var(--acento-suave); color: var(--acento); border-radius: 999px; padding: 0.3rem 0.8rem; font-size: 0.82rem; font-weight: 600; }
+
+/* ---------- modal ---------- */
+.modal-fondo { position: fixed; inset: 0; background: rgba(10, 11, 16, 0.55); display: grid; place-items: center; padding: 1rem; z-index: 50; }
+.modal { width: 100%; background: var(--panel); border: 1px solid var(--borde); border-radius: 16px; box-shadow: var(--sombra); max-height: 90vh; display: flex; flex-direction: column; }
+.modal-cabecera { display: flex; align-items: center; justify-content: space-between; padding: 1.1rem 1.3rem; border-bottom: 1px solid var(--borde); }
+.modal-cabecera h3 { margin: 0; }
+.modal-cerrar { background: transparent; border: none; color: var(--texto-suave); font-size: 1rem; cursor: pointer; padding: 0.3rem 0.5rem; }
+.modal-cerrar:hover { color: var(--texto); }
+.modal-cuerpo { padding: 1.3rem; overflow-y: auto; }
+
+/* ---------- pantallas de acceso (ingreso / configuración inicial) ---------- */
+/* en el celular se ve solo el formulario; en pantalla grande aparece al costado
+   el panel azul con el nombre de la institución */
+.pantalla-auth {
+  min-height: 100vh; display: grid; place-items: center; padding: 1rem;
+  background: var(--fondo);
+}
+
+.tarjeta-auth {
+  background: var(--panel); border: 1px solid var(--borde); border-radius: 16px;
+  padding: 2rem; width: 100%; max-width: 400px; box-shadow: var(--sombra);
+}
+.tarjeta-auth h1 { color: var(--acento); text-align: center; font-size: 1.3rem; line-height: 1.3; }
+.tarjeta-auth h2 { text-align: center; margin-top: 0.4rem; color: var(--texto-suave); font-weight: 500; font-size: 0.95rem; }
+.tarjeta-auth form { margin-top: 1.4rem; }
+
+/* en celular el panel se ve igual, arriba del formulario y compacto: antes estaba en
+   display:none y la presentación desaparecía del todo en pantallas chicas */
+.marca-auth {
+  display: flex; flex-direction: column; gap: 0.6rem;
+  background: var(--acento); color: #fff; padding: 1.6rem 1.4rem;
+  background-size: cover; background-position: center;
+}
+.marca-auth h1 { color: #fff; font-size: 1.6rem; line-height: 1.2; margin: 0; }
+.marca-auth .presentacion { max-height: 8.5rem; overflow-y: auto; }
+
+@media (min-width: 900px) {
+  .pantalla-auth.con-marca {
+    grid-template-columns: 1fr 400px;
+    place-items: stretch;
+    padding: 0;
+  }
+  .marca-auth {
+    display: flex; flex-direction: column; justify-content: center; gap: 1rem;
+    background: var(--acento); color: #fff; padding: 3.5rem;
+    background-size: cover; background-position: center;
+  }
+  /* el ch escala con el font-size, así que al agrandar el título hay que bajar el tope
+     o se sale de la columna. el clamp baja solo cuando la ventana es angosta. */
+  .marca-auth h1 { color: #fff; font-size: clamp(2.4rem, 4vw, 4rem); line-height: 1.12; margin: 0; max-width: 14ch; }
+  /* sin tope de caracteres: el texto usa todo el panel, que es la columna 1fr */
+  .marca-auth .presentacion { max-width: none; max-height: none; overflow: visible; font-size: 1.02rem; line-height: 1.7; }
+  .marca-auth .presentacion p { margin: 0 0 1rem; }
+  .con-marca .caja-auth { display: grid; place-items: center; padding: 2rem; }
+  .con-marca .tarjeta-auth { border: none; box-shadow: none; max-width: 360px; }
+  /* el nombre ya está en el panel de al lado, en la tarjeta sobra */
+  .con-marca .tarjeta-auth h1 { display: none; }
+  .tarjeta-auth h2 { font-size: 1.15rem; color: var(--texto); font-weight: 600; }
+  .tarjeta-auth form { margin-top: 1rem; }
+}
+.qr { display: block; margin: 0.5rem auto; width: 190px; height: 190px; border-radius: 10px; background: #fff; padding: 6px; }
+
+/* el botón "¿no tenés acceso a tu app?" del segundo paso se ve como un enlace */
+.alternativas-2fa { margin: 0.2rem 0; }
+.enlace-texto { background: none; border: none; color: var(--acento); cursor: pointer; padding: 0; font: inherit; text-decoration: underline; }
+
+/* ---------- barra de filtros de los listados ---------- */
+.barra-filtros {
+  display: flex; flex-wrap: wrap; gap: 0.7rem; align-items: end;
+  background: var(--panel-2); border: 1px solid var(--borde); border-radius: 11px;
+  padding: 0.8rem 0.9rem; margin-bottom: 1rem;
+}
+.barra-filtros label { flex: 1 1 170px; }
+.barra-filtros .ancho { flex: 2 1 220px; } /* el buscador va más largo que los selectores */
+.barra-filtros .ant-input, .barra-filtros .ant-select-selector { background: var(--panel); }
+
+/* listado corto de avisos, como los interesados sin contacto */
+.lista-alertas { list-style: none; margin: 0.6rem 0 0; padding: 0; display: grid; gap: 0.45rem; }
+.lista-alertas li { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; font-size: 0.9rem; }
+
+/* cuando una tabla no tiene nada que mostrar */
+.vacio { text-align: center; color: var(--texto-suave); padding: 1.8rem 1rem 1.4rem; }
+.vacio p { margin: 0 0 0.8rem; font-size: 0.9rem; }
+
+/* separa un bloque del que viene arriba */
+.separado { margin-top: 1.4rem; }
+
+/* dos paneles lado a lado en el inicio, se apilan solos cuando no entran */
+.dos-columnas { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; align-items: start; }
+.dos-columnas .panel { margin-bottom: 0; }
+
+/* fila del inicio con el nombre, la barra y el total alineados */
+.fila-barra { display: grid; grid-template-columns: 9rem 1fr 2.5rem; gap: 0.6rem; align-items: center; margin-top: 0.5rem; }
+.fila-barra strong { text-align: right; }
+
+/* formularios cortos que quedan mejor sin ocupar todo el ancho */
+.panel-angosto { max-width: 560px; }
+
+/* enlaces al pie de las pantallas de acceso */
+.pie-auth { text-align: center; margin-top: 1rem; }
+
+/* ---------- de celular para arriba ----------
+   la base de arriba es la de pantalla chica: el menú va encima del contenido y
+   se abre por el botón. recién en pantalla grande se le hace lugar al costado. */
+.lateral { box-shadow: var(--sombra); }
+.principal { margin-left: 0; }
+.app:not(.oculto) .fondo-lateral {
+  display: block; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.45); z-index: 25;
+}
+
+@media (min-width: 861px) {
+  .lateral { box-shadow: none; }
+  .app:not(.oculto) .principal { margin-left: var(--ancho-lateral); }
+  .app:not(.oculto) .fondo-lateral { display: none; }
+  .contenido { padding: 1.6rem var(--esp-4) 3rem; }
+  .barra-superior { padding: 0.65rem 1.5rem; }
+}
+
+/* ---------- pie de los listados paginados ---------- */
+.paginacion {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.6rem;
+  margin-top: 0.9rem; padding-top: 0.8rem; border-top: 1px solid var(--borde);
+}
+
+/* fechas y códigos que quedan feos partidos en dos líneas */
+.sin-cortar { white-space: nowrap; }
+
+/* ---------- utilitarias, para no dejar estilos sueltos en el jsx ---------- */
+.sep-arriba { margin-top: var(--esp-3); }
+.sep-abajo { margin-bottom: var(--esp-3); }
+.centrado { text-align: center; }
+
+/* texto que solo lee el lector de pantalla, como el título de la columna de botones */
+.oculto-visual {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+}
+
+/* lista de datos etiqueta/valor, se usa con dl/dt/dd */
+.datos-perfil dt { font-size: 0.78rem; color: var(--texto-suave); }
+.datos-perfil dd { margin: 0.2rem 0 0; font-size: 1rem; }
+.datos-perfil { margin: 0; } /* el dl trae margen propio del navegador */
+
+/* ---------- ajustes del inicio, el menú, el modal y la privacidad ---------- */
+
+/* barras de canales y estados del inicio, ahora en lista */
+.lista-barras { list-style: none; margin: 0; padding: 0; }
+.barra > span { width: var(--porcentaje, 0); } /* el porcentaje viene de los datos, lo pone el jsx */
+
+/* ítems del menú lateral, van dentro de una lista */
+.lista-nav { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.15rem; }
+
+/* el fondo oscuro que cierra el menú es un botón, no un div */
+.fondo-lateral { border: none; padding: 0; cursor: pointer; }
+
+/* permisos del perfil, también en lista */
+.chips { list-style: none; margin: 0; padding: 0; }
+
+/* cada punto de color trae el suyo de la paleta del tema */
+.punto-color { background: var(--color-punto, var(--acento)); }
+
+/* el ancho lo elige la pantalla que abre el modal */
+.modal { max-width: var(--ancho-modal, 460px); }
+
+/* la política de privacidad es texto largo y necesita más ancho que el ingreso */
+.tarjeta-ancha { max-width: 720px; }
+
+/* checkout de la pasarela dentro de la pantalla, sin mandar al usuario a otro lado */
+.panel-pago { border: 2px solid var(--acento); }
+.pago-cabecera { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--esp-2); flex-wrap: wrap; }
+.pago-cabecera h3 { margin: 0; }
+.marco-pago { width: 100%; border: 1px solid var(--borde); border-radius: var(--radio); margin: var(--esp-2) 0; display: block; }
+.pago-espera { display: flex; align-items: center; gap: 0.45rem; }
+
+/* el punto que late avisa que el sistema sigue esperando la confirmación */
+.punto-vivo { width: 8px; height: 8px; border-radius: 50%; background: var(--acento); flex-shrink: 0; animation: latir 1.4s ease-in-out infinite; }
+@keyframes latir { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+@media (prefers-reduced-motion: reduce) { .punto-vivo { animation: none; } }
+
+/* botón que se ve como enlace, para acciones secundarias dentro de un texto */
+.enlace {
+  background: none; border: none; padding: 0; font: inherit;
+  color: var(--acento); text-decoration: underline; cursor: pointer;
+}
+
+/* pie con los textos legales, en el ingreso y donde haga falta */
+.pie-legal { display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin-top: 1.2rem; font-size: 0.8rem; color: var(--texto-suave); }
+.pie-legal button { background: none; border: none; padding: 0; font: inherit; color: var(--texto-suave); text-decoration: underline; cursor: pointer; }
+.pie-legal button:hover { color: var(--acento); }
+
+/* la presentación del sistema, debajo del nombre en el ingreso */
+.presentacion { max-width: 58ch; margin: 0.8rem 0 0; font-size: 0.95rem; line-height: 1.65; opacity: 0.92; }
+.presentacion p { margin: 0 0 0.75rem; }
+.presentacion p:last-child { margin-bottom: 0; }
+
+/* los documentos legales se leen en negro sobre blanco, sin adornos */
+.documento-legal { color: #000; background: #fff; font-size: 0.9rem; line-height: 1.65; }
+.documento-legal h3 { font-size: 0.98rem; margin: 1.3rem 0 0.4rem; color: #000; }
+.documento-legal h3:first-child { margin-top: 0; }
+.documento-legal p { margin: 0 0 0.7rem; }
+.documento-legal ul { margin: 0 0 0.7rem; padding-left: 1.3rem; }
+.documento-legal li { margin-bottom: 0.3rem; }
+
+/* los textos legales son largos: una sola columna a todo el ancho */
+.campos-anchos { grid-template-columns: 1fr; }

@@ -1,0 +1,107 @@
+// arranque del backend con sus middlewares, rutas y manejo de errores
+import express from 'express';
+import cors from 'cors';
+import { SERVIDOR, SEGURIDAD } from '../configuracion/ajustes.js';
+import { rutasAutenticacion } from '../modulos/autenticacion/rutas.js';
+import { rutasUsuarios } from '../modulos/usuarios/rutas.js';
+import { rutasLeads } from '../modulos/leads/rutas.js';
+import { rutasAliados } from '../modulos/aliados/rutas.js';
+import { rutasPortal } from '../modulos/portal/rutas.js';
+import { rutasComisiones } from '../modulos/comisiones/rutas.js';
+import { rutasConversion } from '../modulos/conversion/rutas.js';
+import { rutasSeguimiento } from '../modulos/seguimiento/rutas.js';
+import { rutasReportes } from '../modulos/reportes/rutas.js';
+import { rutasPagos } from '../modulos/pagos/rutas.js';
+import { rutasSuscripciones } from '../modulos/suscripciones/rutas.js';
+import { rutasPlanes } from '../modulos/planes/rutas.js';
+import { rutasInstituciones } from '../modulos/instituciones/rutas.js';
+import { CARPETA_FONDO } from '../modulos/planes/imagen.js';
+import { rutasConfiguracion } from '../modulos/configuracion/rutas.js';
+import { rutasResumen } from '../modulos/resumen/rutas.js';
+import { rutasAuditoria } from '../modulos/auditoria/rutas.js';
+import { iniciarSincronizacionAutomatica } from '../modulos/conversion/servicio.js';
+import { iniciarControlDeVencimientos } from '../modulos/suscripciones/servicio.js';
+import { exigirPlan } from './middleware/exigirPlan.js';
+import * as ajustesSistema from './ajustesSistema.js';
+
+const aplicacion = express();
+
+// detrás de un proxy que termina el tls (nginx, cloudflare) req.ip sería la del
+// proxy: sin esto la auditoría guardaría siempre la misma y el freno por ip metería
+// a todo el mundo en el mismo balde
+if (SERVIDOR.DETRAS_DE_PROXY) aplicacion.set('trust proxy', 1);
+
+// el límite por defecto son 100kb y la planilla de matriculados puede pasarlo
+aplicacion.use(express.json({ limit: '2mb' }));
+aplicacion.use(cors()); // en desarrollo la interfaz corre en otro puerto
+
+// encabezados de seguridad básicos (owasp)
+aplicacion.use((req, res, siguiente) => {
+  res.set('X-Content-Type-Options', 'nosniff');
+  res.set('X-Frame-Options', 'DENY');
+  res.set('Referrer-Policy', 'no-referrer');
+  // hsts solo cuando la conexión ya vino por https, para no romper el localhost
+  if (req.secure || req.get('x-forwarded-proto') === 'https') {
+    res.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  }
+  siguiente();
+});
+
+// latido para pruebas smoke
+// el fondo del ingreso se ve sin sesión, igual que la presentación
+aplicacion.use('/api/fondo', express.static(CARPETA_FONDO, { maxAge: '1d' }));
+
+aplicacion.get('/api/salud', (req, res) => res.json({ estado: 'ok' }));
+
+aplicacion.use('/api/autenticacion', rutasAutenticacion);
+aplicacion.use('/api/usuarios', rutasUsuarios);
+// estos módulos dependen del plan contratado; el núcleo de abajo nunca se bloquea
+aplicacion.use('/api/leads', exigirPlan('leads'), rutasLeads);
+aplicacion.use('/api/aliados', exigirPlan('aliados'), rutasAliados);
+aplicacion.use('/api/portal', exigirPlan('portal'), rutasPortal);
+aplicacion.use('/api/comisiones', exigirPlan('comisiones'), rutasComisiones);
+aplicacion.use('/api/conversion', exigirPlan('conversion'), rutasConversion);
+aplicacion.use('/api/seguimiento', exigirPlan('seguimiento'), rutasSeguimiento);
+aplicacion.use('/api/reportes', exigirPlan('reportes'), rutasReportes);
+aplicacion.use('/api/pagos', rutasPagos);
+aplicacion.use('/api/suscripciones', rutasSuscripciones);
+aplicacion.use('/api/planes', rutasPlanes);
+aplicacion.use('/api/instituciones', rutasInstituciones);
+aplicacion.use('/api/configuracion', rutasConfiguracion);
+aplicacion.use('/api/resumen', rutasResumen);
+aplicacion.use('/api/auditoria', rutasAuditoria);
+
+// manejo central de errores. el ErrorVisible llega al usuario incluso con estado 500,
+// porque su mensaje ya está redactado para leerse; el resto sale sin detalles.
+aplicacion.use((error, req, res, siguiente) => {
+  // un archivo demasiado grande lo corta express antes de llegar al módulo, y sin esto
+  // la persona veía "error interno" en vez de enterarse de que el archivo pesa de más
+  if (error.type === 'entity.too.large') {
+    return res.status(413).json({ error: 'El archivo es demasiado grande. Elegí uno más liviano.' });
+  }
+  if (error.type === 'entity.parse.failed') {
+    return res.status(400).json({ error: 'El pedido llegó mal formado.' });
+  }
+  const estado = error.estadoHttp ?? 500;
+  if (estado === 500) console.error(error);
+  const visible = Boolean(error.estadoHttp);
+  res.status(estado).json({ error: visible ? error.message : 'Error interno del servidor.' });
+});
+
+// sin un secreto jwt propio cualquiera forja sesiones y se saltea clave + 2fa
+const secretoJwt = process.env.JWT_SECRETO ?? '';
+const secretosDebiles = ['CEIPAJULTRASECRETOUNIDA', 'cambiar-por-una-clave-larga-y-aleatoria', 'solo-desarrollo-cambiar-este-secreto'];
+if (secretoJwt.length < 24 || secretosDebiles.includes(secretoJwt)) {
+  console.error('\n✗ Definí un JWT_SECRETO propio, largo y aleatorio en el .env (firma las sesiones). El servidor no arranca por seguridad.\n');
+  process.exit(1);
+}
+
+// primero se cargan los ajustes editables de la base y recién ahí se sirve
+ajustesSistema.cargar().finally(() => {
+  aplicacion.listen(SERVIDOR.PUERTO, () => {
+    console.log(`backend del sig ceipaj escuchando en http://localhost:${SERVIDOR.PUERTO}`);
+    // si está configurado, arranca el cruce periódico con el académico
+    iniciarSincronizacionAutomatica();
+    iniciarControlDeVencimientos();
+  });
+});
