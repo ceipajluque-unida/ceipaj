@@ -59,16 +59,17 @@ export async function aplicarResultado({ referencia, estado, usuarioId, aviso },
   }
 }
 
-export async function procesarNotificacion(cuerpo, ip) {
+export async function procesarNotificacion(cuerpo, ip, req) {
   const proveedor = pasarelaActiva();
   if (typeof proveedor.verificarNotificacion !== 'function') {
     throw new ErrorVisible('El proveedor activo no recibe notificaciones.', 400);
   }
-  const aviso = proveedor.verificarNotificacion(cuerpo);
+  const aviso = proveedor.verificarNotificacion(cuerpo, req);
   if (!aviso) {
     await registrarAuditoria({ accion: 'pago_notificacion_invalida', detalle: 'firma incorrecta', ip });
     throw new ErrorVisible('Notificación no válida.', 401);
   }
+  if (aviso.ignorar) return { referencia: null, estado: null };
 
   const [[pago]] = await bd.query(
     'SELECT referencia, estado, monto FROM pagos WHERE identificador_externo = ?',

@@ -3,6 +3,10 @@ import { registrarAuditoria } from '../../servidor/auditoria.js';
 import { ErrorVisible } from '../../servidor/errores.js';
 import { validarCorreo, validarTelefono, validarLargo, LARGOS } from '../../comun/validar.js';
 import * as ajustes from '../../servidor/ajustesSistema.js';
+import { conInstitucion } from '../../servidor/contexto.js';
+import { modulosDelRol } from '../../configuracion/permisos.js';
+import { ROLES } from '../../configuracion/ajustes.js';
+import { planEnVigor, moduloIncluido } from '../suscripciones/plan.js';
 
 const CAMPOS = 'id, nombre, ciudad, correo_contacto, telefono, direccion, activo, creado_en';
 
@@ -72,6 +76,29 @@ export async function editar(id, cuerpo, solicitante, ip) {
   await copiarAAjustes(Number(id), datos);
   await registrarAuditoria({ usuarioId: solicitante.id, accion: 'institucion_editada', detalle: `${antes.nombre} → ${datos.nombre}`, ip });
   return obtener(id);
+}
+
+export async function detalleRoles(id) {
+  await obtener(id);
+  const [filas] = await bd.query(
+    'SELECT rol, COUNT(*) AS total, SUM(activo = 1) AS activos FROM usuarios WHERE institucion_id = ? GROUP BY rol',
+    [id]
+  );
+  const porRol = new Map(filas.map((fila) => [fila.rol, fila]));
+  const plan = await conInstitucion(Number(id), () => planEnVigor());
+
+  return {
+    plan: plan.vigente ? plan.clave : null,
+    roles: [ROLES.ADMINISTRADOR, ROLES.COMERCIAL, ROLES.DIRECCION, ROLES.ALIADO].map((rol) => {
+      const fila = porRol.get(rol);
+      return {
+        rol,
+        usuarios: Number(fila?.total ?? 0),
+        activos: Number(fila?.activos ?? 0),
+        modulos: modulosDelRol(rol).filter((modulo) => moduloIncluido(plan, modulo)),
+      };
+    }),
+  };
 }
 
 export async function cambiarActivo(id, activo, solicitante, ip) {

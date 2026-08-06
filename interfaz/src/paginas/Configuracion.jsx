@@ -6,6 +6,12 @@ import { contar, conMiles, sinMiles } from '../servicios/formato.js';
 import FondoIngreso from '../componentes/FondoIngreso.jsx';
 import { useTema } from '../contextos/tema.jsx';
 
+function generarClave() {
+  const bytes = new Uint8Array(24);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+}
+
 export default function Configuracion() {
   const { previsualizar } = useTema();
   const [config, setConfig] = useState(null);
@@ -101,7 +107,16 @@ export default function Configuracion() {
       );
     }
     if (ajuste.tipo === 'secreto') {
-      return <Input.Password value={valor} placeholder={ajuste.configurado ? 'Ya configurado' : 'Sin configurar'} onChange={(e) => editar(ajuste.clave, e.target.value)} />;
+      const campo = (
+        <Input.Password value={valor} placeholder={ajuste.configurado ? 'Ya configurado' : 'Sin configurar'} onChange={(e) => editar(ajuste.clave, e.target.value)} />
+      );
+      if (!ajuste.generable) return campo;
+      return (
+        <div className="campo-con-boton">
+          {campo}
+          <Button onClick={() => editar(ajuste.clave, generarClave())}>Generar</Button>
+        </div>
+      );
     }
     if (ajuste.tipo === 'numero') {
       return (

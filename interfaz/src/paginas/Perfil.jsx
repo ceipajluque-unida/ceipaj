@@ -2,13 +2,7 @@ import { useEffect, useState } from 'react';
 import { Button, Input, Select, Table } from 'antd';
 import { llamarApi, guardarSesion, tokenActual, usuarioActual } from '../servicios/api.js';
 import { avisarError, confirmar, toast } from '../servicios/avisos.js';
-import { fecha, legible } from '../servicios/formato.js';
-
-const NOMBRES_MODULO = {
-  usuarios: 'Usuarios', leads: 'Interesados', aliados: 'Aliados institucionales', portal: 'Portal del aliado',
-  comisiones: 'Comisiones', conversion: 'Conversión', seguimiento: 'Seguimiento estratégico',
-  reportes: 'Reportes', pagos: 'Pagos', suscripcion: 'Suscripción', configuracion: 'Configuración', auditoria: 'Auditoría',
-};
+import { fecha, legible, nombreModulo } from '../servicios/formato.js';
 
 export default function Perfil() {
   const [perfil, setPerfil] = useState(null);
@@ -196,7 +190,7 @@ export default function Perfil() {
         <h3>Mis permisos</h3>
         <ul className="chips">
           {perfil.modulos.map((clave) => (
-            <li key={clave} className="chip-permiso">{NOMBRES_MODULO[clave] ?? clave}</li>
+            <li key={clave} className="chip-permiso">{nombreModulo(clave)}</li>
           ))}
         </ul>
       </section>

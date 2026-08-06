@@ -9,6 +9,17 @@ function credenciales() {
   };
 }
 
+export function aE164(numero) {
+  const limpio = String(numero ?? '').replace(/[\s()-]/g, '');
+  if (limpio === '') return '';
+  if (limpio.startsWith('+')) return limpio;
+  if (limpio.startsWith('00')) return '+' + limpio.slice(2);
+  const prefijo = SMS.PREFIJO_PAIS;
+  if (limpio.startsWith('0')) return prefijo + limpio.slice(1);
+  if (limpio.startsWith(prefijo.slice(1))) return '+' + limpio;
+  return prefijo + limpio;
+}
+
 export function verifyConfigurado() {
   const { sid, token, servicio } = credenciales();
   return Boolean(sid && token && servicio);
@@ -66,7 +77,7 @@ export async function enviarVerificacion({ para, canal = 'sms' }) {
   if (!verifyConfigurado()) return { enviado: false, motivo: 'Twilio Verify no está configurado.' };
   if (!para) return { enviado: false, motivo: 'La cuenta no tiene un celular cargado para recibir el código.' };
   try {
-    const respuesta = await llamar('/Verifications', new URLSearchParams({ To: para, Channel: canal }));
+    const respuesta = await llamar('/Verifications', new URLSearchParams({ To: aE164(para), Channel: canal }));
     if (!respuesta.ok) {
       const datos = await respuesta.json().catch(() => ({}));
       return { enviado: false, motivo: explicar(datos, respuesta.status) };
@@ -80,7 +91,7 @@ export async function enviarVerificacion({ para, canal = 'sms' }) {
 export async function comprobarVerificacion({ para, codigo }) {
   if (!verifyConfigurado() || !para) return { aprobado: false };
   try {
-    const respuesta = await llamar('/VerificationChecks', new URLSearchParams({ To: para, Code: String(codigo ?? '').trim() }));
+    const respuesta = await llamar('/VerificationChecks', new URLSearchParams({ To: aE164(para), Code: String(codigo ?? '').trim() }));
     if (!respuesta.ok) return { aprobado: false };
     const datos = await respuesta.json().catch(() => ({}));
     return { aprobado: datos.status === 'approved' };

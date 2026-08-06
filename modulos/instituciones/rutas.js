@@ -17,6 +17,7 @@ rutasInstituciones.use(autenticar, permitirRoles(...PERMISOS.instituciones));
 
 rutasInstituciones.get('/', async (req, res) => res.json(await servicio.listar()));
 rutasInstituciones.get('/:id', async (req, res) => res.json(await servicio.obtener(idDeRuta(req))));
+rutasInstituciones.get('/:id/roles', async (req, res) => res.json(await servicio.detalleRoles(idDeRuta(req))));
 rutasInstituciones.post('/', async (req, res) => res.status(201).json(await servicio.crear(req.body, req.usuario, req.ip)));
 rutasInstituciones.put('/:id', async (req, res) => res.json(await servicio.editar(idDeRuta(req), req.body, req.usuario, req.ip)));
 

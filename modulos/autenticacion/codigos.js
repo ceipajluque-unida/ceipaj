@@ -35,14 +35,15 @@ export async function emitirCodigo(usuario, metodo = usuario.metodo_2fa) {
 
 export async function verificarCodigo(usuario, codigo) {
   const pendiente = pendientes.get(usuario.id);
-  if (!pendiente || pendiente.vence < Date.now()) return false;
+  const porSms = pendiente ? pendiente.canal === 'sms' : usuario.metodo_2fa === 'sms';
 
-  if (pendiente.canal === 'sms') {
-    const { aprobado } = await comprobarVerificacion({ para: pendiente.telefono, codigo });
+  if (porSms) {
+    const { aprobado } = await comprobarVerificacion({ para: pendiente?.telefono ?? usuario.telefono, codigo });
     if (aprobado) pendientes.delete(usuario.id);
     return aprobado;
   }
 
+  if (!pendiente || pendiente.vence < Date.now()) return false;
   if (pendiente.codigo !== String(codigo ?? '').trim()) return false;
   pendientes.delete(usuario.id);
   return true;

@@ -1,5 +1,5 @@
 import { bd } from './bd/conexion.js';
-import { INSTITUCION, PLATAFORMA, SEGURIDAD, CORREO, SMS, LIMITES, ALIADOS, METODOS_2FA, POLITICA_CLAVE, APLICACION, PLANES_SUSCRIPCION, SUSCRIPCION, PASARELA, RECIBO, ACADEMICO, LEGALES, COLORES_SISTEMA } from '../configuracion/ajustes.js';
+import { INSTITUCION, PLATAFORMA, SEGURIDAD, CORREO, SMS, LIMITES, ALIADOS, METODOS_2FA, POLITICA_CLAVE, APLICACION, PLANES_SUSCRIPCION, SUSCRIPCION, PASARELA, ADAMSPAY, RECIBO, ACADEMICO, LEGALES, COLORES_SISTEMA } from '../configuracion/ajustes.js';
 import { POLITICA_PRIVACIDAD, TERMINOS_Y_CONDICIONES, AVISO_PRIVACIDAD, PRESENTACION_LOGIN } from '../configuracion/legales.js';
 import { AMBITO, ambitoDe } from '../configuracion/ambitos.js';
 import { institucionActual, PLATAFORMA as ID_PLATAFORMA } from './contexto.js';
@@ -121,6 +121,13 @@ export const CATALOGO = [
       depende: { clave: 'PASARELA_PROVEEDOR', valor: 'pagopar' } },
     { clave: 'PAGOPAR_TOKEN_PRIVADO', etiqueta: 'Token privado', tipo: 'secreto', porDefecto: '',
       depende: { clave: 'PASARELA_PROVEEDOR', valor: 'pagopar' } },
+    { clave: 'ADAMSPAY_ENTORNO', etiqueta: 'Entorno', tipo: 'opcion',
+      opciones: [{ valor: 'staging', texto: 'Pruebas (staging)' }, { valor: 'produccion', texto: 'Producción' }],
+      porDefecto: ADAMSPAY.ENTORNO, depende: { clave: 'PASARELA_PROVEEDOR', valor: 'adamspay' } },
+    { clave: 'ADAMSPAY_API_KEY', etiqueta: 'Api key', tipo: 'texto', porDefecto: '',
+      depende: { clave: 'PASARELA_PROVEEDOR', valor: 'adamspay' } },
+    { clave: 'ADAMSPAY_SECRETO', etiqueta: 'Secreto', tipo: 'secreto', porDefecto: '',
+      depende: { clave: 'PASARELA_PROVEEDOR', valor: 'adamspay' } },
   ] },
   { categoria: 'Apariencia', ajustes: [
     { clave: 'PLATAFORMA_NOMBRE', etiqueta: 'Nombre del sistema', tipo: 'texto', porDefecto: PLATAFORMA.NOMBRE },

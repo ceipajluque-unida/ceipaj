@@ -21,10 +21,10 @@ export function correoConfigurado() {
 function explicar(error, smtp) {
   const texto = String(error?.message ?? '');
   if (error?.code === 'ETIMEDOUT' || /timeout/i.test(texto)) {
-    return `No se pudo conectar al servidor de correo por el puerto ${smtp.puerto}. Muchas redes bloquean el 587; probá con el 465.`;
+    return `No se pudo conectar por el puerto ${smtp.puerto}. Probá con el 465.`;
   }
   if (/535|BadCredentials|Username and Password not accepted/i.test(texto)) {
-    return 'El servidor rechazó el usuario o la contraseña. En Gmail hay que activar la verificación en dos pasos y usar una contraseña de aplicación de 16 letras, no la contraseña de la cuenta.';
+    return 'Usuario o contraseña rechazados. En Gmail va una contraseña de aplicación, no la de la cuenta.';
   }
   if (error?.code === 'ENOTFOUND' || /getaddrinfo/i.test(texto)) {
     return `No se encontró el servidor "${smtp.host}". Revisá que esté bien escrito.`;

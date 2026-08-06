@@ -83,12 +83,20 @@ export default function VentanaPago({ cobro, alAcreditar, alCerrar }) {
         />
       )}
 
+      {cobro.urlPago && !cobro.incrustado && (
+        <div className="acciones">
+          <Button type="primary" href={cobro.urlPago} target="_blank" rel="noreferrer">
+            Abrir la página de pago
+          </Button>
+        </div>
+      )}
+
       <p className="nota pago-espera" role="status">
         <span className="punto-vivo" aria-hidden="true" />
         Esperando la confirmación de la pasarela. La pantalla se actualiza sola cuando el pago se acredite.
       </p>
 
-      {cobro.urlPago && (
+      {cobro.urlPago && cobro.incrustado && (
         <p className="nota">
           ¿No se ve el formulario de pago?{' '}
           <a href={cobro.urlPago} target="_blank" rel="noreferrer">Abrilo en una pestaña nueva</a>.
@@ -99,7 +107,7 @@ export default function VentanaPago({ cobro, alAcreditar, alCerrar }) {
         <Alert
           type="error"
           showIcon
-          message="Pasó el tiempo de espera y todavía no hay confirmación. Si ya pagaste, usá «Conciliar pagos» en el historial para que el sistema le pregunte el estado a la pasarela."
+          message="Pasó el tiempo de espera y no hay confirmación. Si ya pagaste, usá «Conciliar pagos» en el historial."
         />
       )}
     </section>

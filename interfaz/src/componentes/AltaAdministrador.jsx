@@ -40,11 +40,6 @@ export default function AltaAdministrador({ institucion, alEnviar, alCerrar }) {
   return (
     <Modal abierto={Boolean(institucion)} titulo={`Administrador de ${institucion?.nombre ?? ''}`} alCerrar={alCerrar} ancho={560}>
       <form onSubmit={enviar}>
-        <p className="nota">
-          Es quien va a manejar el sistema en la institución: contrata la suscripción, da
-          de alta al resto del personal y configura las reglas de su colegio. Recibe sus
-          credenciales por correo y, al entrar, tiene que cambiar la contraseña temporal.
-        </p>
         <label><span>Nombre completo</span>
           <Input value={datos.nombre} onChange={campo('nombre')} required />
         </label>
@@ -63,10 +58,6 @@ export default function AltaAdministrador({ institucion, alEnviar, alCerrar }) {
           <Select value={datos.metodo2fa} onChange={(v) => setDatos({ ...datos, metodo2fa: v })}
             options={METODOS} style={{ width: '100%' }} />
         </label>
-        <p className="nota">
-          Con la aplicación no hace falta tener el correo ni los SMS configurados, así que
-          es la opción segura para el primer ingreso.
-        </p>
         <AvisoPrivacidad />
         {error && <p className="error">{error}</p>}
         <div className="acciones">

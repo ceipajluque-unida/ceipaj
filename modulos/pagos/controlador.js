@@ -3,17 +3,15 @@ import * as acreditacion from './acreditacion.js';
 import { generarRecibo, numeroDeRecibo } from './recibo.js';
 import { registrarAuditoria } from '../../servidor/auditoria.js';
 import { ErrorVisible } from '../../servidor/errores.js';
-import { ESTADOS_PAGO, MEDIOS_PAGO, CHECKOUT } from '../../configuracion/ajustes.js';
+import { ESTADOS_PAGO, CHECKOUT } from '../../configuracion/ajustes.js';
 import { buscarPlan, calcularCambio } from '../suscripciones/servicio.js';
+import { esIncrustable } from './proveedor.js';
 
 export async function medios(req, res) {
   res.json(await servicio.listarMedios());
 }
 
 async function validarMedio(medio, monto) {
-  if (!MEDIOS_PAGO.some((opcion) => opcion.valor === medio)) {
-    throw new ErrorVisible('Elegí un medio de pago válido.');
-  }
   const habilitados = await servicio.listarMedios();
   const elegido = habilitados.find((opcion) => opcion.valor === medio);
   if (!elegido) throw new ErrorVisible('Ese medio de pago no está habilitado en la pasarela.');
@@ -25,7 +23,7 @@ async function validarMedio(medio, monto) {
 
 function ajustesDeCheckout() {
   return {
-    incrustado: CHECKOUT.INCRUSTADO,
+    incrustado: CHECKOUT.INCRUSTADO && esIncrustable(),
     altoCheckout: CHECKOUT.ALTO_PIXELES,
     segundosConsulta: CHECKOUT.SEGUNDOS_CONSULTA,
     minutosEspera: CHECKOUT.MINUTOS_MAXIMO_ESPERA,
@@ -51,7 +49,7 @@ export async function pagarPlan(req, res) {
 
   const cambio = await calcularCambio(elegido.valor);
   if (cambio.aPagar <= 0) {
-    throw new ErrorVisible('Con el crédito del período en curso no queda nada por pagar. Escribinos para aplicar el cambio.', 409);
+    throw new ErrorVisible('Ese cambio no lleva pago: usá el botón de bajar de plan.', 409);
   }
   await validarMedio(medio, cambio.aPagar);
   const detalle = cambio.tipo === 'mejora'
@@ -74,7 +72,7 @@ export async function estado(req, res) {
 }
 
 export async function notificacion(req, res) {
-  await acreditacion.procesarNotificacion(req.body, req.ip);
+  await acreditacion.procesarNotificacion(req.body, req.ip, req);
 
   res.json(req.body?.resultado ?? []);
 }

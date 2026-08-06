@@ -11,8 +11,13 @@ function base() {
   };
 }
 
-export function confirmar({ titulo, texto, confirmar = 'Sí, continuar', peligro = false }) {
-  return Swal.fire({
+let confirmando = false;
+
+export async function confirmar({ titulo, texto, confirmar = 'Sí, continuar', peligro = false }) {
+  if (confirmando) return false;
+  confirmando = true;
+  try {
+    return await Swal.fire({
     ...base(),
     icon: peligro ? 'warning' : 'question',
     title: titulo,
@@ -20,8 +25,11 @@ export function confirmar({ titulo, texto, confirmar = 'Sí, continuar', peligro
     showCancelButton: true,
     confirmButtonText: confirmar,
     cancelButtonText: 'Cancelar',
-    reverseButtons: true,
-  }).then((resultado) => resultado.isConfirmed);
+      reverseButtons: true,
+    }).then((resultado) => resultado.isConfirmed);
+  } finally {
+    confirmando = false;
+  }
 }
 
 export function avisarExito(texto, titulo = 'Listo') {

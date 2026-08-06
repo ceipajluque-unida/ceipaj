@@ -82,6 +82,7 @@ export const PASARELA = {
   PROVEEDORES: [
     { valor: 'simulada', texto: 'Simulada (para pruebas y demostración)' },
     { valor: 'pagopar', texto: 'Pagopar' },
+    { valor: 'adamspay', texto: 'AdamsPay' },
   ],
 
   MINUTOS_ENTRE_CONCILIACIONES: 2,
@@ -100,6 +101,18 @@ export const PAGOPAR = {
 
   MS_ENTRE_LLAMADAS: 400,
   MINUTOS_CACHE_MEDIOS: 15,
+};
+
+export const ADAMSPAY = {
+  ENTORNOS: {
+    staging: 'https://staging.adamspay.com/api/v1',
+    produccion: 'https://checkout.adamspay.com/api/v1',
+  },
+  ENTORNO: process.env.ADAMSPAY_ENTORNO ?? 'staging',
+  API_KEY: process.env.ADAMSPAY_API_KEY ?? '',
+  SECRETO: process.env.ADAMSPAY_SECRETO ?? '',
+  DIAS_PARA_PAGAR: 3,
+  SEGUNDOS_ESPERA: 20,
 };
 
 export const CHECKOUT = {
@@ -125,8 +138,8 @@ export const RECIBO = {
 export const SMS = {
   TWILIO_SID: process.env.TWILIO_SID ?? '',
   TWILIO_TOKEN: process.env.TWILIO_TOKEN ?? '',
-  TWILIO_DESDE: process.env.TWILIO_DESDE ?? '',
   TWILIO_VERIFY_SID: process.env.TWILIO_VERIFY_SID ?? '',
+  PREFIJO_PAIS: process.env.SMS_PREFIJO_PAIS ?? '+595',
 };
 
 export const ACADEMICO = {

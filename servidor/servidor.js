@@ -27,7 +27,12 @@ const aplicacion = express();
 
 if (SERVIDOR.DETRAS_DE_PROXY) aplicacion.set('trust proxy', 1);
 
-aplicacion.use(express.json({ limit: '2mb' }));
+aplicacion.use(express.json({
+  limit: '2mb',
+  verify: (req, res, cuerpo) => {
+    if (req.originalUrl.startsWith('/api/pagos/notificacion')) req.cuerpoCrudo = cuerpo.toString('utf8');
+  },
+}));
 aplicacion.use(cors());
 
 aplicacion.use((req, res, siguiente) => {

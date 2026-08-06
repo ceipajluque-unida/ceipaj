@@ -20,7 +20,7 @@ const FORMATOS = [
 ];
 
 export default function Reportes() {
-  const { modulos = [] } = useOutletContext() ?? {};
+  const { modulos = [], bloqueados = [] } = useOutletContext() ?? {};
   const [datos, setDatos] = useState(null);
   const [error, setError] = useState(null);
   const [bajando, setBajando] = useState(null);
@@ -133,7 +133,7 @@ export default function Reportes() {
         <div className="tabla-envoltura">
           <Table
             columns={columnasDescargas}
-            dataSource={TABLAS.filter((tabla) => modulos.includes(tabla.modulo))}
+            dataSource={TABLAS.filter((tabla) => modulos.includes(tabla.modulo) && !bloqueados.includes(tabla.modulo))}
             rowKey="clave"
             size="small"
             pagination={false}

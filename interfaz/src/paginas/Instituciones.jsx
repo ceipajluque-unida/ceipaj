@@ -5,6 +5,7 @@ import { confirmar, avisarError, toast, mostrarClave } from '../servicios/avisos
 import { fecha, legible } from '../servicios/formato.js';
 import FormularioInstitucion from '../componentes/FormularioInstitucion.jsx';
 import AltaAdministrador from '../componentes/AltaAdministrador.jsx';
+import RolesInstitucion from '../componentes/RolesInstitucion.jsx';
 
 const FORMULARIO_VACIO = { nombre: '', ciudad: '', correoContacto: '', telefono: '', direccion: '' };
 
@@ -23,10 +24,6 @@ export default function Instituciones() {
   useEffect(() => { cargar(); }, []);
 
   function abrirAlta() {
-    if (instituciones.length > 0) {
-      avisarError('Ya existe una institución registrada. Solo se permite una institución.');
-      return;
-    }
     setError(null);
     setEditando(null);
     setFormulario(FORMULARIO_VACIO);
@@ -138,13 +135,26 @@ export default function Instituciones() {
     <>
       <header className="encabezado-pagina">
         <h2>Instituciones</h2>
-        <Button type="primary" className="boton-crear" onClick={abrirAlta}>+ Nueva institución</Button>
+        {instituciones.length === 0 && (
+          <Button type="primary" className="boton-crear" onClick={abrirAlta}>+ Nueva institución</Button>
+        )}
       </header>
 
       <section className="panel">
         {instituciones.length > 0 ? (
           <div className="tabla-envoltura">
-            <Table columns={columnas} dataSource={instituciones} rowKey="id" size="small" pagination={false} scroll={{ x: 'max-content' }} />
+            <Table
+              columns={columnas}
+              dataSource={instituciones}
+              rowKey="id"
+              size="small"
+              pagination={false}
+              scroll={{ x: 'max-content' }}
+              expandable={{
+                expandedRowRender: (institucion) => <RolesInstitucion institucionId={institucion.id} />,
+                rowExpandable: () => true,
+              }}
+            />
           </div>
         ) : (
           <div className="vacio">

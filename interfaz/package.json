@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "antd": "^6.5.3",
-    "ceipaj-sig": "file:..",
     "lucide-react": "^1.26.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

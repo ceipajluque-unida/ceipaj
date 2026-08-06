@@ -47,6 +47,7 @@ const TEXTOS = {
   activa: 'Activa',
   vencida: 'Vencida',
   cancelada: 'Cancelada',
+  adamspay: 'AdamsPay',
   'redes sociales': 'Redes sociales',
   whatsapp: 'WhatsApp',
   llamada: 'Llamada',
@@ -59,6 +60,17 @@ const TEXTOS = {
 export function legible(valor) {
   if (!valor) return '—';
   return TEXTOS[valor] ?? valor.charAt(0).toUpperCase() + valor.slice(1);
+}
+
+const MODULOS = {
+  usuarios: 'Usuarios', leads: 'Interesados', aliados: 'Aliados institucionales', portal: 'Portal del aliado',
+  comisiones: 'Comisiones', conversion: 'Conversión', seguimiento: 'Seguimiento estratégico',
+  reportes: 'Reportes', pagos: 'Pagos', suscripcion: 'Suscripción', configuracion: 'Configuración',
+  auditoria: 'Auditoría', planes: 'Planes', instituciones: 'Instituciones',
+};
+
+export function nombreModulo(clave) {
+  return MODULOS[clave] ?? clave;
 }
 
 export function sinAcentos(texto) {
