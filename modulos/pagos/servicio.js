@@ -39,12 +39,11 @@ export async function crearCobro({ concepto, monto, medio, plan }, usuario, ip) 
   return { ...cobro, id: resultado.insertId, concepto, monto, medio, plan, moneda: PASARELA.MONEDA };
 }
 
-export async function listarPagos({ soloSuscripciones = false } = {}) {
-  const condicionPlan = soloSuscripciones ? 'plan IS NOT NULL' : 'plan IS NULL';
+export async function listarPagos() {
   const [filas] = await bd.query(
     `SELECT referencia, concepto, monto, moneda, estado, proveedor, medio_pago, plan, url_pago,
             fecha_pago, forma_pago_externa, creado_en, actualizado_en
-       FROM pagos WHERE institucion_id = ? AND ${condicionPlan} ORDER BY creado_en DESC LIMIT 50`,
+       FROM pagos WHERE institucion_id = ? ORDER BY creado_en DESC LIMIT 50`,
     [institucionDelPedido()]
   );
   return filas;

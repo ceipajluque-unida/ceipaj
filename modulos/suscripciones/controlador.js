@@ -1,6 +1,5 @@
 import * as servicio from './servicio.js';
 import { ErrorVisible } from '../../servidor/errores.js';
-import { listarPagos } from '../pagos/servicio.js';
 
 export async function planes(req, res) {
   res.json(await servicio.listarPlanes());
@@ -13,8 +12,6 @@ export async function resumen(req, res) {
   res.json({
     vigente: await servicio.suscripcionVigente(),
     historial: await servicio.listarSuscripciones(),
-
-    pagos: await listarPagos({ soloSuscripciones: true }),
     planes,
     cambios,
     diasAviso: servicio.diasDeAviso(),

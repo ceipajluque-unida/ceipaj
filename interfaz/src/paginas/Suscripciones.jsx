@@ -7,9 +7,7 @@ import { guaranies, fecha, contar, legible } from '../servicios/formato.js';
 import Modal from '../componentes/Modal.jsx';
 import VentanaPago from '../componentes/VentanaPago.jsx';
 import { abrirVentanaPago, llevarVentanaPagoA, cerrarVentanaPago } from '../servicios/ventanaPago.js';
-import TablaPagos from '../componentes/TablaPagos.jsx';
 import TarjetasPlanes, { ETIQUETA_CAMBIO } from '../componentes/TarjetasPlanes.jsx';
-import { descargarArchivo } from '../servicios/descargas.js';
 
 function textoPeriodo(meses) {
   if (meses === 1) return 'por mes';
@@ -28,7 +26,6 @@ export default function Suscripciones() {
   const [cargaError, setCargaError] = useState(null);
   const [pagando, setPagando] = useState(false);
   const [cobroEnCurso, setCobroEnCurso] = useState(null);
-  const [bajando, setBajando] = useState(null);
 
   async function cargar() {
     try {
@@ -115,17 +112,6 @@ export default function Suscripciones() {
     }
   }
 
-  async function bajarRecibo(referencia) {
-    setBajando(referencia);
-    try {
-      await descargarArchivo(`/api/pagos/${referencia}/recibo`, `recibo-${referencia}.pdf`);
-      toast('Recibo descargado.');
-    } catch (excepcion) {
-      avisarError(excepcion.message);
-    } finally {
-      setBajando(null);
-    }
-  }
 
   if (!datos) return cargaError ? <p className="error">{cargaError}</p> : <p className="mensaje-centrado">Cargando…</p>;
 
@@ -220,23 +206,6 @@ export default function Suscripciones() {
         {historial.length > 0 && (
           <div className="tabla-envoltura">
             <Table columns={columnas} dataSource={historial} rowKey="id" size="small" pagination={false} />
-          </div>
-        )}
-      </section>
-
-      <section className="panel">
-        <h3>Pagos de la plataforma</h3>
-        {(datos.pagos ?? []).length === 0 ? (
-          <p className="nota">Todavía no hay pagos de suscripción.</p>
-        ) : (
-          <div className="tabla-envoltura">
-            <TablaPagos
-              pagos={datos.pagos}
-              textoMedio={(valor) => legible(valor)}
-              esAdministrador={esAdministrador}
-              bajando={bajando}
-              alBajarRecibo={bajarRecibo}
-            />
           </div>
         )}
       </section>
