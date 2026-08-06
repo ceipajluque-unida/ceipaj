@@ -56,8 +56,9 @@ function estadoDeDeuda(deuda) {
 }
 
 function datosDelPago(deuda, transaccion) {
+  const pagada = deuda?.payStatus?.status === 'paid';
   return {
-    fechaPago: transaccion?.finalized ?? deuda?.payStatus?.time ?? null,
+    fechaPago: transaccion?.finalized ?? (pagada ? deuda?.payStatus?.time ?? null : null),
     formaPago: transaccion?.method ? `AdamsPay — ${transaccion.method}` : 'AdamsPay',
     comprobante: transaccion?.correlationId ?? transaccion?.txId ?? null,
     pagadorNombre: null,
@@ -78,7 +79,7 @@ export async function crearCobro({ concepto, monto }) {
 
   const datos = await llamar('/debts', {
     metodo: 'POST',
-    encabezados: { 'x-if-exists': 'true' },
+    encabezados: { 'x-if-exists': 'update' },
     cuerpo: {
       debt: {
         docId: referencia,
