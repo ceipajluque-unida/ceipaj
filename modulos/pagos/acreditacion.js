@@ -110,11 +110,12 @@ export async function conciliarPendientes(ip) {
   }
   ultimaConciliacion.set(institucionId, Date.now());
 
+  const soloPendientes = proveedor.RECHAZO_ES_FINAL === true;
   const [porRevisar] = await bd.query(
     `SELECT referencia, estado, identificador_externo FROM pagos
-      WHERE institucion_id = ? AND estado <> ? AND identificador_externo IS NOT NULL
+      WHERE institucion_id = ? AND estado ${soloPendientes ? '= ?' : '<> ?'} AND identificador_externo IS NOT NULL
       ORDER BY creado_en DESC LIMIT ?`,
-    [institucionId, ESTADOS_PAGO.EXITOSO, PASARELA.MAXIMO_POR_CONCILIACION]
+    [institucionId, soloPendientes ? ESTADOS_PAGO.PENDIENTE : ESTADOS_PAGO.EXITOSO, PASARELA.MAXIMO_POR_CONCILIACION]
   );
   let actualizados = 0;
   for (const pago of porRevisar) {
@@ -131,8 +132,8 @@ export async function conciliarPendientes(ip) {
 
   const [[{ pendientes }]] = await bd.query(
     `SELECT COUNT(*) AS pendientes FROM pagos
-      WHERE institucion_id = ? AND estado <> ? AND identificador_externo IS NOT NULL`,
-    [institucionId, ESTADOS_PAGO.EXITOSO]
+      WHERE institucion_id = ? AND estado ${soloPendientes ? '= ?' : '<> ?'} AND identificador_externo IS NOT NULL`,
+    [institucionId, soloPendientes ? ESTADOS_PAGO.PENDIENTE : ESTADOS_PAGO.EXITOSO]
   );
   return { revisados: porRevisar.length, actualizados, sinRevisar: Math.max(0, pendientes - porRevisar.length) };
 }

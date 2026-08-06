@@ -7,6 +7,11 @@ export default function VentanaPago({ cobro, alAcreditar, alCerrar }) {
   const [estado, setEstado] = useState('pendiente');
   const [seCanso, setSeCanso] = useState(false);
   const avisado = useRef(false);
+  const panel = useRef(null);
+
+  useEffect(() => {
+    panel.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, []);
 
   const segundos = cobro.segundosConsulta ?? 5;
   const limite = (cobro.minutosEspera ?? 15) * 60000;
@@ -64,7 +69,7 @@ export default function VentanaPago({ cobro, alAcreditar, alCerrar }) {
   }
 
   return (
-    <section className="panel panel-pago">
+    <section ref={panel} className="panel panel-pago">
       <header className="pago-cabecera">
         <div>
           <h3>Completá el pago</h3>

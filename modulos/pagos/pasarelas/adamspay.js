@@ -4,6 +4,13 @@ import * as ajustes from '../../../servidor/ajustesSistema.js';
 import { ErrorVisible } from '../../../servidor/errores.js';
 
 export const INCRUSTABLE = false;
+export const RECHAZO_ES_FINAL = true;
+
+export const CONSULTA = {
+  segundosPrimera: ADAMSPAY.SEGUNDOS_PRIMERA_CONSULTA,
+  segundosEntre: ADAMSPAY.SEGUNDOS_ENTRE_CONSULTAS,
+  maximoPorPago: ADAMSPAY.MAXIMO_CONSULTAS_POR_PAGO,
+};
 
 function credenciales() {
   return {
@@ -55,12 +62,12 @@ function estadoDeDeuda(deuda) {
   return ESTADOS_PAGO.PENDIENTE;
 }
 
-function datosDelPago(deuda, transaccion) {
+function datosDelPago(deuda) {
   const pagada = deuda?.payStatus?.status === 'paid';
   return {
-    fechaPago: transaccion?.finalized ?? (pagada ? deuda?.payStatus?.time ?? null : null),
-    formaPago: transaccion?.method ? `AdamsPay — ${transaccion.method}` : 'AdamsPay',
-    comprobante: transaccion?.correlationId ?? transaccion?.txId ?? null,
+    fechaPago: pagada ? deuda?.payStatus?.time ?? null : null,
+    formaPago: 'AdamsPay',
+    comprobante: pagada ? deuda?.objId ?? null : null,
     pagadorNombre: null,
     pagadorDocumento: null,
   };
@@ -101,14 +108,7 @@ export async function crearCobro({ concepto, monto }) {
 export async function consultarEstado(identificadorExterno) {
   const datos = await llamar(`/debts/${encodeURIComponent(identificadorExterno)}`);
   const deuda = datos?.debt;
-  const estado = estadoDeDeuda(deuda);
-  let transaccion = null;
-  if (estado === ESTADOS_PAGO.EXITOSO) {
-    transaccion = await llamar(`/debts/${encodeURIComponent(identificadorExterno)}/tx`)
-      .then((r) => r?.txList?.[0] ?? null)
-      .catch(() => null);
-  }
-  return { estado, monto: Number(deuda?.amount?.value), ...datosDelPago(deuda, transaccion) };
+  return { estado: estadoDeDeuda(deuda), monto: Number(deuda?.amount?.value), ...datosDelPago(deuda) };
 }
 
 export function verificarNotificacion(cuerpo, req) {

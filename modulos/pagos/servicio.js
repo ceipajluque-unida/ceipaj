@@ -5,6 +5,7 @@ import { institucionActual } from '../../servidor/contexto.js';
 import { PASARELA, ESTADOS_PAGO, MEDIOS_PAGO } from '../../configuracion/ajustes.js';
 
 import { nombreProveedor, pasarelaActiva } from './proveedor.js';
+import { decidirConsulta } from './frecuenciaConsultas.js';
 import { aplicarResultado } from './acreditacion.js';
 
 function institucionDelPedido() {
@@ -49,32 +50,38 @@ export async function listarPagos({ soloSuscripciones = false } = {}) {
   return filas;
 }
 
-const ultimaConsulta = new Map();
+const consultas = new Map();
 
 export async function estadoDePago(referencia) {
   const [[pago]] = await bd.query(
-    'SELECT referencia, estado, plan, identificador_externo FROM pagos WHERE referencia = ? AND institucion_id = ?',
+    'SELECT referencia, estado, plan, identificador_externo, creado_en FROM pagos WHERE referencia = ? AND institucion_id = ?',
     [referencia, institucionDelPedido()]
   );
 
   if (!pago) throw new ErrorVisible('Pago no encontrado.', 404);
   const respuesta = { referencia: pago.referencia, estado: pago.estado, plan: pago.plan };
   if (pago.estado !== ESTADOS_PAGO.PENDIENTE) {
-    ultimaConsulta.delete(referencia);
+    consultas.delete(referencia);
     return respuesta;
   }
 
   const proveedor = pasarelaActiva();
   if (typeof proveedor.consultarEstado !== 'function' || !pago.identificador_externo) return respuesta;
-  if (Date.now() - (ultimaConsulta.get(referencia) ?? 0) < PASARELA.SEGUNDOS_ENTRE_CONSULTAS_DE_PAGO * 1000) {
-    return respuesta;
-  }
-  ultimaConsulta.set(referencia, Date.now());
+
+  const registro = consultas.get(referencia) ?? { ultima: 0, usadas: 0 };
+  const permitido = decidirConsulta({
+    regla: proveedor.CONSULTA,
+    edadMs: Date.now() - new Date(pago.creado_en).getTime(),
+    ultima: registro.ultima,
+    usadas: registro.usadas,
+  });
+  if (!permitido) return respuesta;
+  consultas.set(referencia, { ultima: Date.now(), usadas: registro.usadas + 1 });
   try {
     const aviso = await proveedor.consultarEstado(pago.identificador_externo);
-    if (aviso.estado === ESTADOS_PAGO.PENDIENTE || aviso.estado === pago.estado) return respuesta;
+    if (!aviso.estado || aviso.estado === ESTADOS_PAGO.PENDIENTE || aviso.estado === pago.estado) return respuesta;
     await aplicarResultado({ referencia, estado: aviso.estado, usuarioId: null, aviso });
-    ultimaConsulta.delete(referencia);
+    consultas.delete(referencia);
     return { ...respuesta, estado: aviso.estado };
   } catch {
     return respuesta;
