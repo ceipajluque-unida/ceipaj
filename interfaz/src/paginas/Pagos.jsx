@@ -5,6 +5,7 @@ import { llamarApi, usuarioActual } from '../servicios/api.js';
 import { avisarError, toast } from '../servicios/avisos.js';
 import { descargarArchivo } from '../servicios/descargas.js';
 import VentanaPago from '../componentes/VentanaPago.jsx';
+import { abrirVentanaPago, llevarVentanaPagoA, cerrarVentanaPago } from '../servicios/ventanaPago.js';
 import TablaPagos from '../componentes/TablaPagos.jsx';
 import FormularioCobro from '../componentes/FormularioCobro.jsx';
 
@@ -56,6 +57,7 @@ export default function Pagos() {
     if (enviando) return;
     setError(null);
     if (!formulario.medio) return setError('Elegí un medio de pago.');
+    if (medios.find((opcion) => opcion.valor === formulario.medio)?.ventanaPropia) abrirVentanaPago();
     setEnviando(true);
     try {
       const cobro = await llamarApi('/api/pagos', { metodo: 'POST', cuerpo: { concepto: formulario.concepto, monto: Number(formulario.monto), medio: formulario.medio } });
@@ -64,10 +66,14 @@ export default function Pagos() {
       await cargar();
 
       if (String(cobro.urlPago ?? '').includes('/checkout/')) {
+        cerrarVentanaPago();
         return navegar(new URL(cobro.urlPago, window.location.origin).pathname);
       }
+      if (cobro.urlPago && !cobro.incrustado) llevarVentanaPagoA(cobro.urlPago);
+      else cerrarVentanaPago();
       setCobroEnCurso(cobro);
     } catch (excepcion) {
+      cerrarVentanaPago();
       setError(excepcion.message);
     } finally {
       setEnviando(false);
@@ -133,10 +139,7 @@ export default function Pagos() {
         <VentanaPago
           cobro={cobroEnCurso}
           alCerrar={() => setCobroEnCurso(null)}
-          alAcreditar={async (estado) => {
-            await cargar();
-            if (estado === 'exitoso') toast('Pago acreditado. Ya podés descargar el recibo.');
-          }}
+          alAcreditar={() => cargar()}
         />
       )}
 
@@ -168,7 +171,14 @@ export default function Pagos() {
             esAdministrador={esAdministrador}
             bajando={bajando}
             alBajarRecibo={bajarRecibo}
-            alRetomar={(pago) => setCobroEnCurso({ ...pago, urlPago: pago.url_pago, incrustado: true })}
+            alRetomar={(pago) => {
+              const propia = pago.proveedor === 'adamspay';
+              if (propia) {
+                abrirVentanaPago();
+                llevarVentanaPagoA(pago.url_pago);
+              }
+              setCobroEnCurso({ ...pago, urlPago: pago.url_pago, incrustado: !propia });
+            }}
           />
         )}
         {pagos.length === 50 && <p className="nota">Se muestran los 50 cobros más recientes.</p>}

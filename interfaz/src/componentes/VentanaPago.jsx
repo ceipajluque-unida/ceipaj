@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Alert, Button } from 'antd';
 import { llamarApi } from '../servicios/api.js';
 import { guaranies } from '../servicios/formato.js';
+import { exitoProcesando } from '../servicios/avisos.js';
+import { abrirVentanaPago, llevarVentanaPagoA, cerrarVentanaPago, hayVentanaPago } from '../servicios/ventanaPago.js';
 
 export default function VentanaPago({ cobro, alAcreditar, alCerrar }) {
   const [estado, setEstado] = useState('pendiente');
@@ -38,8 +40,13 @@ export default function VentanaPago({ cobro, alAcreditar, alCerrar }) {
           if (!vivo) return;
           if (actual.estado !== 'pendiente' && !avisado.current) {
             avisado.current = true;
+            cerrarVentanaPago();
             setEstado(actual.estado);
             alAcreditar(actual.estado);
+            if (actual.estado === 'exitoso') {
+              await exitoProcesando('Pago acreditado');
+              if (vivo) alCerrar();
+            }
             return;
           }
         } catch { }
@@ -90,15 +97,17 @@ export default function VentanaPago({ cobro, alAcreditar, alCerrar }) {
 
       {cobro.urlPago && !cobro.incrustado && (
         <div className="acciones">
-          <Button type="primary" href={cobro.urlPago} target="_blank" rel="noreferrer">
-            Abrir la página de pago
+          <Button type="primary" onClick={() => { abrirVentanaPago(); llevarVentanaPagoA(cobro.urlPago); }}>
+            {hayVentanaPago() ? 'Volver a la ventana de pago' : 'Abrir la ventana de pago'}
           </Button>
         </div>
       )}
 
       <p className="nota pago-espera" role="status">
         <span className="punto-vivo" aria-hidden="true" />
-        Esperando la confirmación de la pasarela. La pantalla se actualiza sola cuando el pago se acredite.
+        {cobro.incrustado
+          ? 'Esperando la confirmación de la pasarela. La pantalla se actualiza sola cuando el pago se acredite.'
+          : 'El pago se completa en la ventana de la pasarela. Al acreditarse, la ventana se cierra y esta pantalla se actualiza sola.'}
       </p>
 
       {cobro.urlPago && cobro.incrustado && (

@@ -6,6 +6,7 @@ import { avisarError, confirmar, toast } from '../servicios/avisos.js';
 import { guaranies, fecha, contar, legible } from '../servicios/formato.js';
 import Modal from '../componentes/Modal.jsx';
 import VentanaPago from '../componentes/VentanaPago.jsx';
+import { abrirVentanaPago, llevarVentanaPagoA, cerrarVentanaPago } from '../servicios/ventanaPago.js';
 import TablaPagos from '../componentes/TablaPagos.jsx';
 import TarjetasPlanes, { ETIQUETA_CAMBIO } from '../componentes/TarjetasPlanes.jsx';
 import { descargarArchivo } from '../servicios/descargas.js';
@@ -73,6 +74,7 @@ export default function Suscripciones() {
     if (pagando) return;
     setError(null);
     if (!medio) return setError('Elegí un medio de pago.');
+    if (medios.find((opcion) => opcion.valor === medio)?.ventanaPropia) abrirVentanaPago();
     setPagando(true);
     try {
       const cobro = await llamarApi('/api/pagos/plan', { metodo: 'POST', cuerpo: { plan: planElegido.valor, medio } });
@@ -80,10 +82,14 @@ export default function Suscripciones() {
       await cargar();
 
       if (String(cobro.urlPago ?? '').includes('/checkout/')) {
+        cerrarVentanaPago();
         return navegar(new URL(cobro.urlPago, window.location.origin).pathname);
       }
+      if (cobro.urlPago && !cobro.incrustado) llevarVentanaPagoA(cobro.urlPago);
+      else cerrarVentanaPago();
       setCobroEnCurso(cobro);
     } catch (excepcion) {
+      cerrarVentanaPago();
       setError(excepcion.message);
     } finally {
       setPagando(false);
@@ -156,10 +162,7 @@ export default function Suscripciones() {
         <VentanaPago
           cobro={cobroEnCurso}
           alCerrar={() => setCobroEnCurso(null)}
-          alAcreditar={async (estado) => {
-            await cargar();
-            if (estado === 'exitoso') toast('Pago acreditado, tu suscripción quedó activa.');
-          }}
+          alAcreditar={() => cargar()}
         />
       )}
 

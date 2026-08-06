@@ -46,6 +46,25 @@ export function toast(texto, icono = 'success') {
   return brindis.fire({ background: estilo.background, color: estilo.color, icon: icono, title: texto });
 }
 
+export async function exitoProcesando(texto) {
+  Swal.fire({
+    ...base(),
+    title: 'Procesando el pago…',
+    allowOutsideClick: false,
+    allowEscapeKey: false,
+    didOpen: () => Swal.showLoading(),
+  });
+  await new Promise((listo) => setTimeout(listo, 900));
+  return Swal.fire({
+    ...base(),
+    icon: 'success',
+    title: texto,
+    timer: 2600,
+    timerProgressBar: true,
+    showConfirmButton: false,
+  });
+}
+
 const escapar = (valor) => String(valor ?? '').replace(/[&<>"']/g, (caracter) => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
 }[caracter]));
