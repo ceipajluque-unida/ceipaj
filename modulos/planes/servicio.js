@@ -92,7 +92,7 @@ export async function apagar(id, usuario, ip) {
   const [[plan]] = await bd.query('SELECT clave FROM planes WHERE id = ?', [id]);
   if (!plan) throw new ErrorVisible('El plan no existe.', 404);
   if (plan.clave === SUSCRIPCION.PLAN_AL_VENCER) {
-    throw new ErrorVisible('Ese plan es al que cae el sistema cuando vence una suscripción: no se puede dar de baja.', 409);
+    throw new ErrorVisible('No se puede dar de baja este plan: es al que cae el sistema cuando vence la suscripción.', 409);
   }
   const [[{ enUso }]] = await bd.query(
     `SELECT COUNT(*) AS enUso FROM suscripciones

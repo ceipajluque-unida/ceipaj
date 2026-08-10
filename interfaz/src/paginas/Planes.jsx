@@ -66,8 +66,8 @@ export default function Planes() {
 
   async function apagar(plan) {
     const ok = await confirmar({
-      titulo: '¿Dar de baja el plan?',
-      texto: `"${plan.texto}" deja de ofrecerse. Las suscripciones que ya lo contrataron siguen valiendo.`,
+      titulo: `¿Dejar de ofrecer el plan ${plan.texto}?`,
+      texto: 'Las suscripciones contratadas aplican hasta su vencimiento.',
       confirmar: 'Sí, dar de baja',
       peligro: true,
     });
@@ -94,7 +94,7 @@ export default function Planes() {
     { title: 'Imagen', key: 'imagen', render: (_, plan) => <ImagenPlan plan={plan} alSubir={cargar} /> },
     {
       title: 'Estado', dataIndex: 'activo', key: 'activo',
-      render: (valor) => <span className={`estado estado-${valor ? 'exitoso' : 'rechazado'}`}>{valor ? 'Se ofrece' : 'De baja'}</span>,
+      render: (valor) => <span className={`estado estado-${valor ? 'exitoso' : 'rechazado'}`}>{valor ? 'Ofrecido' : 'De baja'}</span>,
     },
     {
       title: <span className="oculto-visual">Acciones</span>,

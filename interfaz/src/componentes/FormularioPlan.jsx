@@ -11,7 +11,7 @@ export default function FormularioPlan({ abierto, editando, modulos, formulario,
         <label><span>Título</span><Input value={formulario.titulo} onChange={campo('titulo')} required /></label>
         <label><span>Descripción</span><Input value={formulario.descripcion} onChange={campo('descripcion')} /></label>
         <div className="fila-campos">
-          <label><span>Precio en guaraníes</span>
+          <label><span>Precio</span>
 
             <InputNumber value={formulario.precio} min={1} step={50000} style={{ width: '100%' }}
               formatter={conMiles} parser={sinMiles} prefix="Gs."
@@ -23,22 +23,22 @@ export default function FormularioPlan({ abierto, editando, modulos, formulario,
           </label>
         </div>
 
-        <label><span>Tope de usuarios internos (vacío = sin tope)</span>
+        <label><span>Cantidad de usuarios internos (vacío = no hay tope)</span>
           <InputNumber value={formulario.maxUsuarios} min={1} style={{ width: '100%' }}
             onChange={(valor) => alCambiar({ ...formulario, maxUsuarios: valor })} />
         </label>
 
-        <label><span>Módulos que habilita (vacío = todos)</span>
+        <label><span>Módulos que habilita (vacío = habilita todos)</span>
           <Select mode="multiple" value={formulario.modulos} style={{ width: '100%' }}
             options={modulos.map((clave) => ({ value: clave, label: legible(clave) }))}
             onChange={(valor) => alCambiar({ ...formulario, modulos: valor })} />
         </label>
-        <label><span>Qué incluye, uno por línea</span>
+        <label><span>Detalle de lo que incluye (uno por línea)</span>
           <Input.TextArea value={formulario.incluye} onChange={campo('incluye')} rows={4} />
         </label>
-        <label><span>Se ofrece para contratar</span>
+        <label><span>Ofrecer</span>
           <span className="casilla">
-            <Switch checked={formulario.activo} aria-label="Se ofrece para contratar"
+            <Switch checked={formulario.activo} aria-label="Ofrecer"
               onChange={(valor) => alCambiar({ ...formulario, activo: valor })} />
             <span className="nota">{formulario.activo ? 'Sí' : 'No'}</span>
           </span>

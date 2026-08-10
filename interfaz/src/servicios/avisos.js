@@ -36,7 +36,7 @@ export function avisarExito(texto, titulo = 'Listo') {
   return Swal.fire({ ...base(), icon: 'success', title: titulo, text: texto });
 }
 
-export function avisarError(texto, titulo = 'No se pudo') {
+export function avisarError(texto, titulo = 'Error') {
   return Swal.fire({ ...base(), icon: 'error', title: titulo, text: texto });
 }
 
