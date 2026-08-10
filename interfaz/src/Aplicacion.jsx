@@ -49,7 +49,7 @@ export default function Aplicacion() {
 
   if (!estado) return <p className="mensaje-centrado">Cargando…</p>;
   if (estado.sinConexion) {
-    return <p className="mensaje-centrado">No hay conexión con el servidor. Iniciar el backend con «npm run servidor» y recargar.</p>;
+    return <p className="mensaje-centrado">No hay conexión con el servidor.</p>;
   }
 
   return (

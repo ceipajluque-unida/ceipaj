@@ -73,7 +73,7 @@ export async function llamarApi(ruta, { metodo = 'GET', cuerpo } = {}) {
       body: cuerpo ? JSON.stringify(cuerpo) : undefined,
     });
   } catch {
-    throw new Error('No hay conexión con el servidor. Está corriendo el backend?');
+    throw new Error('No hay conexión con el servidor.');
   }
 
   const datos = await respuesta.json().catch(() => ({}));
