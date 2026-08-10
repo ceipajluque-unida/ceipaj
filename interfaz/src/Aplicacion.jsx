@@ -16,6 +16,8 @@ import Seguimiento from './paginas/Seguimiento.jsx';
 import Conversion from './paginas/Conversion.jsx';
 import Aliados from './paginas/Aliados.jsx';
 import PortalAliado from './paginas/PortalAliado.jsx';
+import PortalInteresados from './paginas/PortalInteresados.jsx';
+import PortalComisiones from './paginas/PortalComisiones.jsx';
 import Comisiones from './paginas/Comisiones.jsx';
 import Reportes from './paginas/Reportes.jsx';
 import Pagos from './paginas/Pagos.jsx';
@@ -81,6 +83,8 @@ export default function Aplicacion() {
         <Route path="/conversion" element={<Conversion />} />
         <Route path="/aliados" element={<Aliados />} />
         <Route path="/portal" element={<PortalAliado />} />
+        <Route path="/portal/interesados" element={<PortalInteresados />} />
+        <Route path="/portal/comisiones" element={<PortalComisiones />} />
         <Route path="/comisiones" element={<Comisiones />} />
         <Route path="/reportes" element={<Reportes />} />
         <Route path="/pagos" element={<Pagos />} />

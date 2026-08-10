@@ -26,11 +26,19 @@ export async function obtenerResumen(usuarioId) {
   );
   const totalLeads = Number(totales.totalLeads);
   const convertidos = Number(totales.convertidos ?? 0);
+  const [porEstado] = await bd.query(
+    `SELECT estado, COUNT(*) AS total FROM leads
+      WHERE aliado_id = ? AND institucion_id = ?
+      GROUP BY estado
+      ORDER BY FIELD(estado, 'nuevo', 'interesado', 'matriculado', 'perdido')`,
+    [aliado.id, aliado.institucion_id]
+  );
   const puntosPorLead = ajustes.leerNumero('PUNTOS_POR_LEAD', ALIADOS.PUNTOS_POR_LEAD);
   const puntosPorConversion = ajustes.leerNumero('PUNTOS_POR_CONVERSION', ALIADOS.PUNTOS_POR_CONVERSION);
   return {
     totalLeads,
     convertidos,
+    porEstado,
     puntos: totalLeads * puntosPorLead + convertidos * puntosPorConversion,
     puntosPorLead,
     puntosPorConversion,

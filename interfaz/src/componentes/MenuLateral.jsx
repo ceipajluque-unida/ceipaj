@@ -11,7 +11,9 @@ export const GRUPOS = [
   { titulo: 'Aliados', items: [
     { clave: 'aliados', ruta: '/aliados', texto: 'Aliados' },
     { clave: 'comisiones', ruta: '/comisiones', texto: 'Comisiones' },
-    { clave: 'portal', ruta: '/portal', texto: 'Mi portal' },
+    { clave: 'portal', ruta: '/portal', texto: 'Mi portal', fin: true },
+    { clave: 'portal-interesados', modulo: 'portal', icono: 'leads', ruta: '/portal/interesados', texto: 'Mis interesados' },
+    { clave: 'portal-comisiones', modulo: 'portal', icono: 'comisiones', insignia: 'portal', ruta: '/portal/comisiones', texto: 'Mis comisiones' },
   ] },
 
   { titulo: 'Plataforma', items: [
@@ -33,33 +35,33 @@ export const NOMBRE_MODULO = Object.fromEntries(
 );
 
 export const MODULO_POR_RUTA = Object.fromEntries(
-  GRUPOS.flatMap((grupo) => grupo.items).map((item) => [item.ruta, item.clave])
+  GRUPOS.flatMap((grupo) => grupo.items).map((item) => [item.ruta, item.modulo ?? item.clave])
 );
 
 export default function MenuLateral({ puedeVer, bloqueados, plan, badges }) {
   return (
     <nav aria-label="Menú principal">
       {GRUPOS.map((grupo, indice) => {
-        const items = grupo.items.filter((item) => puedeVer(item.clave));
+        const items = grupo.items.filter((item) => puedeVer(item.modulo ?? item.clave));
         if (items.length === 0) return null;
         return (
           <div className="grupo-nav" key={grupo.titulo ?? indice}>
             {grupo.titulo && <span className="grupo-titulo">{grupo.titulo}</span>}
             <ul className="lista-nav">
               {items.map((item) => {
-                const trabado = bloqueados.includes(item.clave);
+                const trabado = bloqueados.includes(item.modulo ?? item.clave);
                 return (
                   <li key={item.clave}>
-                    <NavLink to={trabado ? '/suscripcion' : item.ruta} end={item.ruta === '/'}
+                    <NavLink to={trabado ? '/suscripcion' : item.ruta} end={item.ruta === '/' || Boolean(item.fin)}
                       className={({ isActive }) => `${isActive && !trabado ? 'activo' : ''} ${trabado ? 'trabado' : ''}`}
                       title={trabado ? `El plan ${plan?.texto ?? ''} no incluye este módulo` : undefined}>
-                      <span className="icono"><Icono nombre={item.clave} /></span>{item.texto}
+                      <span className="icono"><Icono nombre={item.icono ?? item.clave} /></span>{item.texto}
                       {trabado && (
                         <span className="candado" aria-hidden="true"><Icono nombre="candado" tam={14} /></span>
                       )}
                       {trabado && <span className="oculto-visual"> no incluido en tu plan</span>}
-                      {!trabado && badges[item.clave] > 0 && (
-                        <span className="badge">{badges[item.clave]}<span className="oculto-visual"> pendientes</span></span>
+                      {!trabado && badges[item.insignia ?? item.clave] > 0 && (
+                        <span className="badge">{badges[item.insignia ?? item.clave]}<span className="oculto-visual"> pendientes</span></span>
                       )}
                     </NavLink>
                   </li>

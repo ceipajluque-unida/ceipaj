@@ -1,17 +1,16 @@
 import { useEffect, useState } from 'react';
-import { Button, Select, Table } from 'antd';
+import { Button, Table } from 'antd';
 import { llamarApi, usuarioActual } from '../servicios/api.js';
 import { confirmar, avisarError, toast } from '../servicios/avisos.js';
 import { guaranies, fecha, contar, legible } from '../servicios/formato.js';
-
-const FILTROS_VACIOS = { aliado: '', estado: '' };
+import Modal from '../componentes/Modal.jsx';
+import Barras from '../componentes/Barras.jsx';
 
 export default function Comisiones() {
   const esAdministrador = usuarioActual()?.rol === 'administrador';
   const [datos, setDatos] = useState(null);
   const [cargaError, setCargaError] = useState(null);
-  const [pestana, setPestana] = useState('resumen');
-  const [filtros, setFiltros] = useState(FILTROS_VACIOS);
+  const [aliadoElegido, setAliadoElegido] = useState(null);
 
   async function cargar() {
     try {
@@ -23,17 +22,17 @@ export default function Comisiones() {
   }
   useEffect(() => { cargar(); }, []);
 
-  async function marcarPagada(comision) {
+  async function pagar(comision) {
     const ok = await confirmar({
-      titulo: 'Marcar la comisión como pagada?',
-      texto: `Se registra el pago de ${guaranies(comision.monto)} a ${comision.aliado}.`,
-      confirmar: 'Sí, marcar pagada',
+      titulo: `Pagar la comisión de ${comision.aliado}?`,
+      texto: `${guaranies(comision.monto)} por la matrícula de ${comision.lead}. Queda registrada como pagada.`,
+      confirmar: 'Sí, pagar',
     });
     if (!ok) return;
     try {
       await llamarApi(`/api/comisiones/${comision.id}/estado`, { metodo: 'PUT', cuerpo: { estado: 'pagada' } });
       await cargar();
-      toast('Comisión marcada como pagada.');
+      toast('Comisión pagada.');
     } catch (excepcion) {
       avisarError(excepcion.message);
     }
@@ -45,7 +44,6 @@ export default function Comisiones() {
     return (
       <>
         {cargaError && <p className="error">{cargaError}</p>}
-
         <header className="encabezado-pagina"><h2>Comisiones de aliados</h2></header>
         <section className="panel">
           <p className="nota">Todavía no hay comisiones.</p>
@@ -59,36 +57,35 @@ export default function Comisiones() {
     { pendiente: 0, pagada: 0 }
   );
   const pendientes = datos.comisiones.filter((comision) => comision.estado === 'pendiente').length;
-
-  const opcionesAliado = datos.resumen.map((fila) => ({ value: fila.aliado_id, label: fila.aliado }));
-
-  const hayFiltros = Boolean(filtros.aliado || filtros.estado);
-  const visibles = datos.comisiones.filter((comision) => {
-    if (filtros.aliado && comision.aliado_id !== filtros.aliado) return false;
-    if (filtros.estado && comision.estado !== filtros.estado) return false;
-    return true;
-  });
-  const filtrar = (clave) => (valor) => setFiltros({ ...filtros, [clave]: valor });
+  const delElegido = aliadoElegido
+    ? datos.comisiones.filter((comision) => comision.aliado_id === aliadoElegido.aliado_id)
+    : [];
 
   const columnasResumen = [
     { title: 'Aliado', dataIndex: 'aliado', key: 'aliado' },
-    { title: 'Comisiones', dataIndex: 'cantidad', key: 'cantidad' },
-    { title: 'Falta pagar', dataIndex: 'pendiente', key: 'pendiente', render: (valor) => guaranies(valor) },
-    { title: 'Ya pagado', dataIndex: 'pagada', key: 'pagada', render: (valor) => guaranies(valor) },
+    { title: 'Comisiones', dataIndex: 'cantidad', key: 'cantidad', align: 'center' },
+    { title: 'Pendiente de pago', dataIndex: 'pendiente', key: 'pendiente', render: (valor) => guaranies(valor) },
+    { title: 'Pagado', dataIndex: 'pagada', key: 'pagada', render: (valor) => guaranies(valor) },
+    {
+      title: <span className="oculto-visual">Acciones</span>,
+      key: 'acciones',
+      render: (_, fila) => (
+        <Button size="small" onClick={() => setAliadoElegido(fila)}>Ver detalle</Button>
+      ),
+    },
   ];
 
   const columnasDetalle = [
-    { title: 'Aliado', dataIndex: 'aliado', key: 'aliado' },
     { title: 'Interesado matriculado', dataIndex: 'lead', key: 'lead' },
     { title: 'Monto', dataIndex: 'monto', key: 'monto', render: (valor) => guaranies(valor) },
     {
       title: 'Estado',
       dataIndex: 'estado',
       key: 'estado',
-      render: (valor) => <span className={`estado estado-${valor}`}>{legible(valor)}</span>,
+      render: (valor) => <span className={`estado estado-${valor}`}>{valor === 'pagada' ? 'Pagada' : 'Pendiente de pago'}</span>,
     },
     {
-      title: 'Generada',
+      title: 'Generada el',
       dataIndex: 'creado_en',
       key: 'creado_en',
       render: (valor) => <span className="sin-cortar">{fecha(valor)}</span>,
@@ -97,31 +94,25 @@ export default function Comisiones() {
       title: <span className="oculto-visual">Acciones</span>,
       key: 'acciones',
       render: (_, comision) => (comision.estado !== 'pendiente' ? null : (
-        <div className="acciones">
-          <Button
-            size="small"
-            aria-label={`Marcar como pagada la comisión de ${comision.aliado}`}
-            onClick={() => marcarPagada(comision)}
-          >
-            Marcar pagada
-          </Button>
-        </div>
+        <Button size="small" type="primary" onClick={() => pagar(comision)}>Pagar</Button>
       )),
     }] : []),
   ];
 
   return (
     <>
+      {cargaError && <p className="error">{cargaError}</p>}
+
       <header className="encabezado-pagina"><h2>Comisiones de aliados</h2></header>
 
       <section className="cuadricula sep-abajo">
         <article className="indicador">
-          <h3>Falta pagar</h3>
+          <h3>Pendiente de pago</h3>
           <p className="cifra">{guaranies(totales.pendiente)}</p>
-          <p className="nota">{contar(pendientes, 'comisión pendiente', 'comisiones pendientes')}</p>
+          <p className="nota">{contar(pendientes, 'comisión por pagar', 'comisiones por pagar')}</p>
         </article>
         <article className="indicador">
-          <h3>Ya pagado</h3>
+          <h3>Pagado</h3>
           <p className="cifra">{guaranies(totales.pagada)}</p>
         </article>
         <article className="indicador">
@@ -131,53 +122,31 @@ export default function Comisiones() {
         </article>
       </section>
 
-      <nav className="pestanas">
-        <Button type="text" className={pestana === 'resumen' ? 'activa' : ''} onClick={() => setPestana('resumen')}>Resumen por aliado</Button>
-        <Button type="text" className={pestana === 'detalle' ? 'activa' : ''} onClick={() => setPestana('detalle')}>Detalle</Button>
-      </nav>
+      <section className="panel sep-abajo">
+        <h3>Pagado y pendiente</h3>
+        <Barras filas={[
+          { clave: 'pendiente', etiqueta: 'Pendiente de pago', total: totales.pendiente, texto: guaranies(totales.pendiente) },
+          { clave: 'pagada', etiqueta: 'Pagado', total: totales.pagada, texto: guaranies(totales.pagada) },
+        ]} />
+      </section>
 
-      {pestana === 'resumen' && (
-        <section className="panel">
-          <div className="tabla-envoltura">
-            <Table columns={columnasResumen} dataSource={datos.resumen} rowKey="aliado_id" size="small" pagination={false} />
-          </div>
-        </section>
-      )}
+      <section className="panel">
+        <h3>Resumen por aliado</h3>
+        <div className="tabla-envoltura">
+          <Table columns={columnasResumen} dataSource={datos.resumen} rowKey="aliado_id" size="small" pagination={false} />
+        </div>
+      </section>
 
-      {pestana === 'detalle' && (
-        <section className="panel">
-          <div className="fila-formulario">
-            <label>Aliado
-              <Select
-                value={filtros.aliado}
-                options={[{ value: '', label: 'Todos' }, ...opcionesAliado]}
-                onChange={filtrar('aliado')}
-              />
-            </label>
-            <label>Estado
-              <Select
-                value={filtros.estado}
-                options={[
-                  { value: '', label: 'Todos' },
-                  { value: 'pendiente', label: 'Pendientes' },
-                  { value: 'pagada', label: 'Pagadas' },
-                ]}
-                onChange={filtrar('estado')}
-              />
-            </label>
-            {hayFiltros && (
-              <Button onClick={() => setFiltros(FILTROS_VACIOS)}>Limpiar filtros</Button>
-            )}
-          </div>
-
-          {visibles.length === 0 && <p className="nota">Ninguna comisión coincide con esos filtros.</p>}
-          {visibles.length > 0 && (
-            <div className="tabla-envoltura">
-              <Table columns={columnasDetalle} dataSource={visibles} rowKey="id" size="small" pagination={false} />
-            </div>
-          )}
-        </section>
-      )}
+      <Modal
+        abierto={Boolean(aliadoElegido)}
+        titulo={`Comisiones de ${aliadoElegido?.aliado ?? ''}`}
+        alCerrar={() => setAliadoElegido(null)}
+        ancho={760}
+      >
+        <div className="tabla-envoltura">
+          <Table columns={columnasDetalle} dataSource={delElegido} rowKey="id" size="small" pagination={false} />
+        </div>
+      </Modal>
     </>
   );
 }
