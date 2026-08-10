@@ -84,7 +84,7 @@ export default function Pagos() {
         <h2>Pagos a la plataforma</h2>
         {esAdministrador && (
           <Button disabled={conciliando} onClick={conciliar}>
-            {conciliando ? 'Consultando…' : 'Conciliar pagos'}
+            {conciliando ? 'Consultando…' : 'Actualizar estados'}
           </Button>
         )}
       </header>

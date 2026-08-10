@@ -62,6 +62,16 @@ export async function crearLead({ nombre, cedula, telefono, correo, canal, conse
   return lead;
 }
 
+export function montoDeComision() {
+  const tipo = ajustes.leer('COMISION_TIPO', ALIADOS.COMISION_TIPO);
+  if (tipo === 'porcentaje') {
+    const porcentaje = ajustes.leerNumero('COMISION_PORCENTAJE', ALIADOS.COMISION_PORCENTAJE);
+    const matricula = ajustes.leerNumero('MATRICULA_REFERENCIA', ALIADOS.MATRICULA_REFERENCIA);
+    return Math.round((matricula * porcentaje) / 100);
+  }
+  return ajustes.leerNumero('COMISION_POR_CONVERSION', ALIADOS.COMISION_POR_CONVERSION);
+}
+
 export async function concretarMatricula(leadId, fecha, usuarioId, ip) {
   const institucionId = institucionDelPedido();
   const [[lead]] = await bd.query(
@@ -85,7 +95,7 @@ export async function concretarMatricula(leadId, fecha, usuarioId, ip) {
     if (lead.aliado_id) {
       await conexion.query(
         'INSERT INTO comisiones (aliado_id, lead_id, monto) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE id = id',
-        [lead.aliado_id, lead.id, ajustes.leerNumero('COMISION_POR_CONVERSION', ALIADOS.COMISION_POR_CONVERSION)]
+        [lead.aliado_id, lead.id, montoDeComision()]
       );
     }
     await conexion.commit();

@@ -61,7 +61,7 @@ export const CATALOGO = [
   { categoria: 'Institucional', ajustes: [
     { clave: 'INSTITUCION_NOMBRE', etiqueta: 'Nombre', tipo: 'texto', porDefecto: '' },
     { clave: 'INSTITUCION_CIUDAD', etiqueta: 'Ciudad', tipo: 'texto', porDefecto: '' },
-    { clave: 'ACADEMICO_CLAVE_ENTRADA', etiqueta: 'Clave del sistema académico', tipo: 'secreto', porDefecto: '', generable: true },
+    { clave: 'ACADEMICO_CLAVE_ENTRADA', etiqueta: 'Clave que usa el sistema académico para enviar matriculados', tipo: 'secreto', porDefecto: '', generable: true },
   ] },
   { categoria: 'Datos del proveedor', ajustes: [
     { clave: 'RECIBO_EMISOR_NOMBRE', etiqueta: 'Razón social', tipo: 'texto', porDefecto: '' },
@@ -105,11 +105,22 @@ export const CATALOGO = [
     { clave: 'TWILIO_VERIFY_SID', etiqueta: 'Verify Service SID', tipo: 'texto', porDefecto: SMS.TWILIO_VERIFY_SID },
   ] },
   { categoria: 'Reglas del negocio', ajustes: [
-    { clave: 'DIAS_SIN_SEGUIMIENTO_PARA_ALERTA', etiqueta: 'Días sin contacto para alertar', tipo: 'numero', min: 1, max: 365, porDefecto: LIMITES.DIAS_SIN_SEGUIMIENTO_PARA_ALERTA },
-    { clave: 'DIAS_SIN_ACOMPANAMIENTO_RIESGO', etiqueta: 'Días sin acompañamiento para marcar riesgo', tipo: 'numero', min: 1, max: 365, porDefecto: LIMITES.DIAS_SIN_ACOMPANAMIENTO_RIESGO },
-    { clave: 'PUNTOS_POR_LEAD', etiqueta: 'Puntos por interesado', tipo: 'numero', min: 0, max: 10000, porDefecto: ALIADOS.PUNTOS_POR_LEAD },
-    { clave: 'PUNTOS_POR_CONVERSION', etiqueta: 'Puntos por matriculado', tipo: 'numero', min: 0, max: 10000, porDefecto: ALIADOS.PUNTOS_POR_CONVERSION },
-    { clave: 'COMISION_POR_CONVERSION', etiqueta: 'Comisión por matriculado', tipo: 'numero', moneda: true, min: 0, max: 100000000, porDefecto: ALIADOS.COMISION_POR_CONVERSION },
+    { clave: 'DIAS_SIN_SEGUIMIENTO_PARA_ALERTA', etiqueta: 'Días sin contactar a un interesado antes de alertar', tipo: 'numero', min: 1, max: 365, porDefecto: LIMITES.DIAS_SIN_SEGUIMIENTO_PARA_ALERTA },
+    { clave: 'DIAS_SIN_ACOMPANAMIENTO_RIESGO', etiqueta: 'Días sin acompañar a un matriculado antes de marcarlo en riesgo', tipo: 'numero', min: 1, max: 365, porDefecto: LIMITES.DIAS_SIN_ACOMPANAMIENTO_RIESGO },
+    { clave: 'PUNTOS_POR_LEAD', etiqueta: 'Puntos que suma el aliado por cada interesado que recomienda', tipo: 'numero', min: 0, max: 10000, porDefecto: ALIADOS.PUNTOS_POR_LEAD },
+    { clave: 'PUNTOS_POR_CONVERSION', etiqueta: 'Puntos que suma el aliado cuando su recomendado se matricula', tipo: 'numero', min: 0, max: 10000, porDefecto: ALIADOS.PUNTOS_POR_CONVERSION },
+    { clave: 'COMISION_TIPO', etiqueta: 'Cómo se calcula la comisión del aliado', tipo: 'opcion',
+      opciones: [
+        { valor: 'monto', texto: 'Monto fijo por matriculado' },
+        { valor: 'porcentaje', texto: 'Porcentaje del valor de la matrícula' },
+      ],
+      porDefecto: ALIADOS.COMISION_TIPO },
+    { clave: 'COMISION_POR_CONVERSION', etiqueta: 'Comisión por matriculado', tipo: 'numero', moneda: true, min: 0, max: 100000000, porDefecto: ALIADOS.COMISION_POR_CONVERSION,
+      depende: { clave: 'COMISION_TIPO', valor: 'monto' } },
+    { clave: 'COMISION_PORCENTAJE', etiqueta: 'Porcentaje de comisión (%)', tipo: 'numero', min: 0, max: 100, porDefecto: ALIADOS.COMISION_PORCENTAJE,
+      depende: { clave: 'COMISION_TIPO', valor: 'porcentaje' } },
+    { clave: 'MATRICULA_REFERENCIA', etiqueta: 'Valor de la matrícula que se toma de base', tipo: 'numero', moneda: true, min: 0, max: 100000000, porDefecto: ALIADOS.MATRICULA_REFERENCIA,
+      depende: { clave: 'COMISION_TIPO', valor: 'porcentaje' } },
   ] },
   { categoria: 'Suscripción y cobros', ajustes: [
     { clave: 'PASARELA_PROVEEDOR', etiqueta: 'Pasarela', tipo: 'opcion',

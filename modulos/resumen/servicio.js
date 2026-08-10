@@ -52,14 +52,18 @@ export async function contarBadges(rol) {
 
   if (puede('pagos')) {
     const [[fila]] = await bd.query(
-      "SELECT COUNT(*) AS total FROM pagos WHERE estado = 'pendiente' AND institucion_id = ?",
+      "SELECT COUNT(*) AS total FROM pagos WHERE estado = 'pendiente' AND plan IS NULL AND institucion_id = ?",
       [institucion()]
     );
     badges.pagos = Number(fila.total);
   }
 
   if (puede('suscripcion')) {
-    badges.suscripcion = await contarPorVencer();
+    const [[fila]] = await bd.query(
+      "SELECT COUNT(*) AS total FROM pagos WHERE estado = 'pendiente' AND plan IS NOT NULL AND institucion_id = ?",
+      [institucion()]
+    );
+    badges.suscripcion = await contarPorVencer() + Number(fila.total);
   }
 
   return badges;

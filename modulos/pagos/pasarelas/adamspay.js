@@ -1,5 +1,5 @@
 import { createHash, timingSafeEqual, randomUUID } from 'node:crypto';
-import { ADAMSPAY, PASARELA, ESTADOS_PAGO } from '../../../configuracion/ajustes.js';
+import { ADAMSPAY, PASARELA, ESTADOS_PAGO, APLICACION } from '../../../configuracion/ajustes.js';
 import * as ajustes from '../../../servidor/ajustesSistema.js';
 import { ErrorVisible } from '../../../servidor/errores.js';
 
@@ -96,6 +96,7 @@ export async function crearCobro({ concepto, monto }) {
           start: inicio.toISOString().slice(0, 19) + 'Z',
           end: fin.toISOString().slice(0, 19) + 'Z',
         },
+        returnUrl: `${ajustes.leer('APP_URL', APLICACION.URL).replace(/\/$/, '')}/pago-finalizado`,
       },
     },
   });

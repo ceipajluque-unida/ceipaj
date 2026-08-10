@@ -411,3 +411,5 @@ tbody tr:hover td { background: var(--panel-2); }
 .detalle-institucion h4 { margin: 0; }
 
 .boton-vista-previa { margin-top: 0.45rem; width: fit-content; }
+
+.pantalla-suelta { min-height: 100vh; display: grid; place-items: center; background: var(--fondo); }

@@ -7,6 +7,7 @@ import Ingreso from './paginas/Ingreso.jsx';
 import RecuperarClave from './paginas/RecuperarClave.jsx';
 import RestablecerClave from './paginas/RestablecerClave.jsx';
 import Privacidad from './paginas/Privacidad.jsx';
+import PagoFinalizado from './paginas/PagoFinalizado.jsx';
 import CambioClave from './paginas/CambioClave.jsx';
 import PantallaPrincipal from './paginas/PantallaPrincipal.jsx';
 import Leads from './paginas/Leads.jsx';
@@ -71,6 +72,7 @@ export default function Aplicacion() {
       <Route path="/recuperar" element={<RutaDeAcceso><RecuperarClave /></RutaDeAcceso>} />
       <Route path="/restablecer" element={<RutaDeAcceso><RestablecerClave /></RutaDeAcceso>} />
       <Route path="/privacidad" element={<Privacidad />} />
+      <Route path="/pago-finalizado" element={<PagoFinalizado />} />
       <Route element={<RutaProtegida><Diseno /></RutaProtegida>}>
         <Route path="/" element={<PantallaPrincipal />} />
         <Route path="/leads" element={<Leads />} />

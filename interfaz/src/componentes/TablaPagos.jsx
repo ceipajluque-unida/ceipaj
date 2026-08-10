@@ -1,5 +1,5 @@
 import { Button, Table } from 'antd';
-import { guaranies, legible } from '../servicios/formato.js';
+import { guaranies, legible, fechaHora } from '../servicios/formato.js';
 
 const TEXTO_ESTADO = { pendiente: 'Pendiente', exitoso: 'Pagado', rechazado: 'Rechazado' };
 
@@ -15,6 +15,18 @@ export default function TablaPagos({ pagos, textoMedio, esAdministrador, bajando
       render: (valor, pago) => valor ?? textoMedio(pago.medio_pago),
     },
     { title: 'Monto', dataIndex: 'monto', key: 'monto', render: (valor) => guaranies(valor) },
+    {
+      title: 'Creado el',
+      dataIndex: 'creado_en',
+      key: 'creado_en',
+      render: (valor) => <span className="sin-cortar">{fechaHora(valor)}</span>,
+    },
+    {
+      title: 'Pagado el',
+      dataIndex: 'fecha_pago',
+      key: 'fecha_pago',
+      render: (valor) => (valor ? <span className="sin-cortar">{fechaHora(valor)}</span> : '—'),
+    },
     {
       title: 'Estado',
       dataIndex: 'estado',

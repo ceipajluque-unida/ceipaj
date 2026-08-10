@@ -248,7 +248,10 @@ export const CARGOS_ALIADO = ['docente', 'directivo', 'otro referente'];
 export const ALIADOS = {
   PUNTOS_POR_LEAD: 10,
   PUNTOS_POR_CONVERSION: 50,
+  COMISION_TIPO: 'monto',
   COMISION_POR_CONVERSION: 100000,
+  COMISION_PORCENTAJE: 10,
+  MATRICULA_REFERENCIA: 0,
 };
 
 export const LIMITES = {

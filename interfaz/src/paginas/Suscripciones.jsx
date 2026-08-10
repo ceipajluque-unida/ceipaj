@@ -130,7 +130,7 @@ export default function Suscripciones() {
       key: 'estado',
       render: (valor) => <span className={`estado estado-${valor}`}>{legible(valor)}</span>,
     },
-    { title: 'Pago', dataIndex: 'referencia', key: 'referencia', render: (valor) => valor ?? '—' },
+    { title: 'Referencia de pago', dataIndex: 'referencia', key: 'referencia', render: (valor) => valor ?? '—' },
   ];
 
   const opcionesMedio = [

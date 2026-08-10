@@ -147,10 +147,12 @@ export default function Usuarios() {
         )}
       </section>
 
-      <Modal abierto={abierto} titulo={editando ? `Editar ${editando.nombre}` : 'Nuevo usuario'} alCerrar={() => setAbierto(false)} ancho={520}>
+      <Modal abierto={abierto} titulo={editando ? `Editar ${editando.nombre}` : 'Nuevo usuario'} alCerrar={() => setAbierto(false)} ancho={620}>
         <section className="panel">
         <h3>Roles y accesos del plan</h3>
-        <RolesInstitucion ruta="/api/usuarios/roles" />
+        <div className="tabla-envoltura">
+          <RolesInstitucion ruta="/api/usuarios/roles" />
+        </div>
       </section>
 
       <FormularioUsuario
