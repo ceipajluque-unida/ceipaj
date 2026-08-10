@@ -41,8 +41,7 @@ function emisor() {
 
 export function leyendasDelRecibo() {
   return [
-    `Este recibo electrónico acredita únicamente la recepción del importe indicado y ha sido generado por el ${ajustes.leer('PLATAFORMA_NOMBRE', PLATAFORMA.NOMBRE)}. La fecha y la hora de emisión salen del reloj del servidor.`,
-    ajustes.leer('RECIBO_LEYENDA', RECIBO.LEYENDA),
+    `Este recibo electrónico acredita únicamente la recepción del importe indicado y ha sido generado por el ${ajustes.leer('PLATAFORMA_NOMBRE', PLATAFORMA.NOMBRE)}. ${ajustes.leer('RECIBO_LEYENDA', RECIBO.LEYENDA)}`,
   ];
 }
 

@@ -134,9 +134,8 @@ export const RECIBO = {
   EMISOR_CORREO: process.env.RECIBO_EMISOR_CORREO ?? '',
   SERIE: process.env.RECIBO_SERIE ?? 'REC',
 
-  LEYENDA: 'DOCUMENTO NO TRIBUTARIO — NO VÁLIDO PARA CRÉDITO FISCAL. Este comprobante acredita '
-    + 'únicamente la recepción del pago y no constituye Comprobante de Venta ni Documento Tributario '
-    + 'Electrónico conforme al Decreto N.º 6.539/2005 y al Decreto N.º 872/2023 (SIFEN).',
+  LEYENDA: 'Documento no tributario, no válido para crédito fiscal: no constituye Comprobante de Venta '
+    + 'ni Documento Tributario Electrónico conforme al Decreto N.º 6.539/2005 y al Decreto N.º 872/2023 (SIFEN).',
 };
 
 export const SMS = {
