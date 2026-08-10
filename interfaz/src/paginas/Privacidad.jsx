@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Skeleton } from 'antd';
 import { haySesion, llamarApi } from '../servicios/api.js';
-import { comoHtml } from '../servicios/markdownSimple.jsx';
+import { comoHtml } from '../servicios/textoLegal.jsx';
 import { useInstitucion } from '../contextos/institucion.jsx';
 
 export default function Privacidad() {

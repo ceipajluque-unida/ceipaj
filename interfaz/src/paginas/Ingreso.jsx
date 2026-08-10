@@ -5,7 +5,7 @@ import { guardarSesion, llamarApi, tokenDispositivo, guardarDispositivo, olvidar
 import Captcha from '../componentes/Captcha.jsx';
 import Legales from '../componentes/Legales.jsx';
 import { useInstitucion } from '../contextos/institucion.jsx';
-import { comoHtml } from '../servicios/markdownSimple.jsx';
+import { comoHtml } from '../servicios/textoLegal.jsx';
 
 const VELO = 'linear-gradient(rgba(20, 38, 58, 0.86), rgba(20, 38, 58, 0.86))';
 

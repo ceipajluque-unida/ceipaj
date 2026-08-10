@@ -16,6 +16,21 @@ async function asegurarColumna(conexion, tabla, columna, definicion) {
   }
 }
 
+async function aplanarTextosLegales(conexion) {
+  const [filas] = await conexion.query(
+    "SELECT institucion_id, clave, valor FROM ajustes_sistema WHERE clave IN ('TEXTO_POLITICA', 'TEXTO_TERMINOS', 'TEXTO_AVISO_PRIVACIDAD', 'TEXTO_CONSENTIMIENTO')"
+  );
+  for (const fila of filas) {
+    const plano = String(fila.valor ?? '').replace(/^## /gm, '').replace(/**([^*]+)**/g, '$1');
+    if (plano === fila.valor) continue;
+    await conexion.query(
+      'UPDATE ajustes_sistema SET valor = ? WHERE institucion_id = ? AND clave = ?',
+      [plano, fila.institucion_id, fila.clave]
+    );
+    console.log(`- texto legal "${fila.clave}" pasado a texto plano`);
+  }
+}
+
 async function asegurarTipo(conexion, tabla, columna, tipoEsperado, definicion) {
   const [filas] = await conexion.query(
     'SELECT COLUMN_TYPE AS tipo FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = ?',
@@ -168,6 +183,7 @@ async function migrar() {
   await asegurarUnico(conexion, 'leads', 'uk_leads_institucion_cedula', 'institucion_id,cedula', 'cedula');
   await asegurarUnico(conexion, 'academico_matriculados', 'uk_matriculados_institucion_cedula', 'institucion_id,cedula', 'cedula');
   await sembrarPlanes(conexion);
+  await aplanarTextosLegales(conexion);
 
   await conexion.end();
   console.log(`base "${BASE_DATOS.NOMBRE}" lista con todas las tablas del sistema.`);

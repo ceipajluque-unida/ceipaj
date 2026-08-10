@@ -158,7 +158,8 @@ export async function activarPorPago({ pagoId, institucionId, plan, monto, usuar
   const [existe] = await conexion.query('SELECT id FROM suscripciones WHERE pago_id = ?', [pagoId]);
   if (existe.length > 0) return existe[0];
 
-  const meses = mesesPorDefecto();
+  const [[planFila]] = await conexion.query('SELECT meses FROM planes WHERE clave = ?', [plan]);
+  const meses = Number(planFila?.meses) || mesesPorDefecto();
 
   const [vigentes] = await conexion.query(
     `SELECT id, plan, monto, fecha_fin FROM suscripciones

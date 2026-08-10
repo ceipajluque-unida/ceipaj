@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Modal, Skeleton } from 'antd';
 import { llamarApi } from '../servicios/api.js';
-import { comoHtml } from '../servicios/markdownSimple.jsx';
+import { comoHtml } from '../servicios/textoLegal.jsx';
 
 export default function Legales({ variante = 'pie', texto = 'Ver la política de privacidad' }) {
   const [abierto, setAbierto] = useState(null);
