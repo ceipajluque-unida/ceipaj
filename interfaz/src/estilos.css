@@ -406,3 +406,6 @@ tbody tr:hover td { background: var(--panel-2); }
 
 .campo-con-boton { display: flex; gap: 0.5rem; }
 .campo-con-boton > :first-child { flex: 1; }
+
+.detalle-institucion { display: grid; gap: 1.1rem; padding: 0.4rem 0.2rem; }
+.detalle-institucion h4 { margin: 0; }

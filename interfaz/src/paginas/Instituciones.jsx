@@ -6,6 +6,7 @@ import { fecha, legible } from '../servicios/formato.js';
 import FormularioInstitucion from '../componentes/FormularioInstitucion.jsx';
 import AltaAdministrador from '../componentes/AltaAdministrador.jsx';
 import RolesInstitucion from '../componentes/RolesInstitucion.jsx';
+import UsuariosInstitucion from '../componentes/UsuariosInstitucion.jsx';
 
 const FORMULARIO_VACIO = { nombre: '', ciudad: '', correoContacto: '', telefono: '', direccion: '' };
 
@@ -63,10 +64,10 @@ export default function Instituciones() {
   async function cambiarActivo(institucion) {
     const desactivar = institucion.activo;
     const ok = await confirmar({
-      titulo: desactivar ? '¿Suspender la institución?' : '¿Reactivar la institución?',
+      titulo: desactivar ? `¿Suspender ${institucion.nombre}?` : `¿Reactivar ${institucion.nombre}?`,
       texto: desactivar
-        ? `Nadie de ${institucion.nombre} va a poder ingresar hasta reactivarla. Sus datos quedan intactos.`
-        : `${institucion.nombre} vuelve a tener acceso al sistema.`,
+        ? 'Se corta el ingreso de todos sus usuarios hasta reactivarla. Los datos no se tocan.'
+        : 'Sus usuarios vuelven a poder ingresar.',
       confirmar: desactivar ? 'Sí, suspender' : 'Sí, reactivar',
       peligro: desactivar,
     });
@@ -151,7 +152,12 @@ export default function Instituciones() {
               pagination={false}
               scroll={{ x: 'max-content' }}
               expandable={{
-                expandedRowRender: (institucion) => <RolesInstitucion institucionId={institucion.id} />,
+                expandedRowRender: (institucion) => (
+                  <div className="detalle-institucion">
+                    <RolesInstitucion institucionId={institucion.id} />
+                    <UsuariosInstitucion institucion={institucion} />
+                  </div>
+                ),
                 rowExpandable: () => true,
               }}
             />
