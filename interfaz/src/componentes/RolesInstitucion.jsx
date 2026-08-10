@@ -3,13 +3,13 @@ import { Table, Tag } from 'antd';
 import { llamarApi } from '../servicios/api.js';
 import { legible, nombreModulo, contar } from '../servicios/formato.js';
 
-export default function RolesInstitucion({ institucionId }) {
+export default function RolesInstitucion({ institucionId, ruta }) {
   const [detalle, setDetalle] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    llamarApi(`/api/instituciones/${institucionId}/roles`).then(setDetalle).catch((e) => setError(e.message));
-  }, [institucionId]);
+    llamarApi(ruta ?? `/api/instituciones/${institucionId}/roles`).then(setDetalle).catch((e) => setError(e.message));
+  }, [institucionId, ruta]);
 
   if (error) return <p className="error">{error}</p>;
   if (!detalle) return <p className="nota">Cargando…</p>;

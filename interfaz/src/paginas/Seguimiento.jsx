@@ -182,7 +182,7 @@ export default function Seguimiento() {
         {elegido && (
           <>
             <p className="nota">
-              Cédula {elegido.cedula} — teléfono {elegido.telefono || 'sin cargar'} — {dias(elegido.dias_sin_accion)} sin acompañamiento
+              Cédula {elegido.cedula}, teléfono {elegido.telefono || 'sin cargar'}
             </p>
             <form onSubmit={registrarAccion}>
               <div className="fila-formulario">
@@ -197,7 +197,7 @@ export default function Seguimiento() {
                   />
                 </label>
                 <label>Detalle
-                  <Input placeholder="Qué se hizo o qué se acordó" value={formulario.detalle} onChange={(evento) => setFormulario({ ...formulario, detalle: evento.target.value })} />
+                  <Input placeholder="Se lo llamó y confirmó que sigue asistiendo" value={formulario.detalle} onChange={(evento) => setFormulario({ ...formulario, detalle: evento.target.value })} />
                 </label>
               </div>
               {error && <p className="error">{error}</p>}

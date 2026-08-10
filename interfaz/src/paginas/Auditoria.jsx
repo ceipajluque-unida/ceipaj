@@ -86,7 +86,7 @@ export default function Auditoria() {
             <div className="paginacion">
               <Button size="small" disabled={datos.pagina <= 1} onClick={() => cambiar('pagina', datos.pagina - 1)}>Anterior</Button>
               <span className="nota">
-                Página {datos.pagina} de {datos.paginas} — {contar(datos.total, 'movimiento', 'movimientos')}
+                Página {datos.pagina} de {datos.paginas}, {contar(datos.total, 'movimiento', 'movimientos')}
               </span>
               <Button size="small" disabled={datos.pagina >= datos.paginas} onClick={() => cambiar('pagina', datos.pagina + 1)}>Siguiente</Button>
             </div>

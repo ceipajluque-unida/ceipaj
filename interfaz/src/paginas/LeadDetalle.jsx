@@ -9,7 +9,7 @@ import FormularioLead from '../componentes/FormularioLead.jsx';
 import InteraccionLead from '../componentes/InteraccionLead.jsx';
 
 const TEXTO_PASO = {
-  interesado: 'Marcar como interesado',
+  interesado: 'Confirmar interés',
   matriculado: 'Marcar como matriculado',
   perdido: 'Marcar como perdido',
   nuevo: 'Volver a nuevo',
@@ -73,7 +73,7 @@ export default function LeadDetalle() {
             {lead.nombre} <span className={`estado estado-${lead.estado}`}>{legible(lead.estado)}</span>
             {!lead.activo && <span className="etiqueta">dado de baja</span>}
           </h2>
-          <p className="nota">Cédula {lead.cedula} — llegó por {legible(lead.canal)}</p>
+          <p className="nota">Cédula {lead.cedula}, canal de origen {legible(lead.canal)}</p>
         </div>
         <div className="acciones">
           <Button onClick={() => navegar('/leads')}>Volver al listado</Button>
@@ -97,7 +97,7 @@ export default function LeadDetalle() {
               <div><dt>Teléfono</dt><dd>{lead.telefono || '—'}</dd></div>
               <div><dt>Correo</dt><dd>{lead.correo || '—'}</dd></div>
               <div><dt>Canal</dt><dd>{legible(lead.canal)}</dd></div>
-              <div><dt>Aliado que lo trajo</dt><dd>{lead.aliado ?? '—'}</dd></div>
+              <div><dt>Aliado que lo recomendó</dt><dd>{lead.aliado ?? '—'}</dd></div>
               <div><dt>Registrado</dt><dd>{fechaHora(lead.creado_en)}</dd></div>
             </dl>
             <div className="acciones separado"><Button type="primary" onClick={() => setModalDatos(true)}>Editar datos</Button></div>
@@ -128,7 +128,7 @@ export default function LeadDetalle() {
           <h3>Historial de contactos</h3>
           {lead.interacciones.length === 0 ? (
             <div className="vacio">
-              <p>Todavía no hay ningún contacto anotado con {primerNombre}.</p>
+              <p>No se ha contactado aún con {primerNombre}.</p>
               <Button type="primary" className="boton-crear" onClick={() => setModalInteraccion(true)}>+ Registrar interacción</Button>
             </div>
           ) : (

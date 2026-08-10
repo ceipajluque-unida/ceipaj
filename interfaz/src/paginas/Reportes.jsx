@@ -47,7 +47,7 @@ export default function Reportes() {
       enlace.download = `${tabla}-${new Date().toISOString().slice(0, 10)}.${formato}`;
       enlace.click();
       URL.revokeObjectURL(url);
-      toast('Listo, fijate en tus descargas.');
+      toast('Reporte descargado.');
     } catch (excepcion) {
       avisarError(excepcion.message);
     } finally {
@@ -59,7 +59,7 @@ export default function Reportes() {
 
   const columnasAliados = [
     { title: 'Aliado', dataIndex: 'aliado', key: 'aliado' },
-    { title: 'Institución', dataIndex: 'institucion', key: 'institucion' },
+    { title: 'Trabaja en', dataIndex: 'institucion', key: 'institucion' },
     { title: 'Interesados', dataIndex: 'leads', key: 'leads' },
     { title: 'Matriculados', dataIndex: 'convertidos', key: 'convertidos' },
     { title: 'Puntos', dataIndex: 'puntos', key: 'puntos', render: (valor) => <strong>{valor}</strong> },
@@ -76,7 +76,7 @@ export default function Reportes() {
             <Button
               key={formato.clave}
               size="small"
-              aria-label={`Bajar ${tabla.titulo} en ${formato.texto}`}
+              aria-label={`Descargar ${tabla.titulo} en ${formato.texto}`}
               disabled={bajando !== null}
               onClick={() => descargar(tabla.clave, formato.clave)}
             >
@@ -96,7 +96,6 @@ export default function Reportes() {
         <article className="indicador">
           <h3>Interesados</h3>
           <p className="cifra">{datos.totalLeads}</p>
-          <p className="nota">Registrados en total</p>
         </article>
         <article className="indicador">
           <h3>Matriculados</h3>
@@ -129,7 +128,7 @@ export default function Reportes() {
       </section>
 
       <section className="panel">
-        <h3>Bajar información</h3>
+        <h3>Descargar información</h3>
         <div className="tabla-envoltura">
           <Table
             columns={columnasDescargas}

@@ -23,7 +23,7 @@ export default function Conversion() {
   async function sincronizar() {
     const ok = await confirmar({
       titulo: 'Sincronizar con el sistema académico?',
-      texto: 'Los interesados que coincidan por cédula pasan a Matriculado y, si los trajo un aliado, se le genera la comisión.',
+      texto: 'El interesado que coincida por cédula pasa a matriculado y, si lo recomendó un aliado, se genera su comisión.',
       confirmar: 'Sí, sincronizar',
     });
     if (!ok) return;
@@ -96,7 +96,7 @@ export default function Conversion() {
   return (
     <>
       <header className="encabezado-pagina">
-        <h2>Conversión</h2>
+        <h2>Conversión a matriculados</h2>
         <div className="acciones">
           <Button onClick={abrirImportacion}>Importar planilla</Button>
           <Button type="primary" onClick={sincronizar} disabled={sincronizando}>
@@ -152,7 +152,7 @@ export default function Conversion() {
           </label>
           <p className="ayuda">
             Columnas: <strong>cedula;nombre;fecha_inscripcion</strong>{' '}
-            <Button type="link" onClick={bajarEjemplo}>Bajar planilla de ejemplo</Button>
+            <Button type="link" onClick={bajarEjemplo}>Descargar planilla de ejemplo</Button>
           </p>
           {error && <p className="error">{error}</p>}
           <div className="acciones">

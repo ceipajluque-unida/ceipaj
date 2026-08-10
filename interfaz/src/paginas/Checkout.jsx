@@ -60,7 +60,7 @@ export default function Checkout() {
           <Result
             status="success"
             title="Pago acreditado"
-            subTitle={`Referencia ${pedido.referencia} — ${guaranies(pedido.monto)}`}
+            subTitle={`Referencia ${pedido.referencia}, ${guaranies(pedido.monto)}`}
             extra={[
               <Button key="pagos" type="primary" onClick={() => navegar('/pagos')}>Ver el comprobante</Button>,
               <Button key="susc" onClick={() => navegar('/suscripcion')}>Ir a Suscripción</Button>,

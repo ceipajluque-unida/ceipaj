@@ -131,8 +131,8 @@ export default function Diseno() {
                 title={plan.vigente ? 'Plan contratado' : 'Sin suscripción vigente: el sistema funciona con el plan mínimo'}>
                 Plan {plan.texto}
                 {plan.vigente
-                  ? plan.diasRestantes !== null && <span className="chip-detalle"> — {plan.diasRestantes} d</span>
-                  : <span className="chip-detalle"> — sin contratar</span>}
+                  ? plan.diasRestantes !== null && <span className="chip-detalle">, {plan.diasRestantes} d</span>
+                  : <span className="chip-detalle">, sin contratar</span>}
               </NavLink>
             )}
             <MenuUsuario usuario={usuario} />

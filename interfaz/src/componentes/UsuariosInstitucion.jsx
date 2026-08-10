@@ -115,7 +115,7 @@ export default function UsuariosInstitucion({ institucion }) {
     <>
       <h4>Usuarios registrados</h4>
       {usuarios.length === 0 ? (
-        <p className="nota">Todavía no tiene usuarios. El botón «Administrador» crea el primero.</p>
+        <p className="nota">Todavía no tiene usuarios.</p>
       ) : (
         <Table className="tabla-roles" columns={columnas} dataSource={usuarios} rowKey="id" size="small" pagination={false} />
       )}

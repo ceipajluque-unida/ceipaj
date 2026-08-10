@@ -165,7 +165,7 @@ export default function Perfil() {
       <section className="panel">
         <h3>Equipos de confianza</h3>
         {equipos.length === 0 && (
-          <p className="nota">Todavía no hay equipos marcados. Se marcan al ingresar, con «No volver a pedirme el código en este equipo».</p>
+          <p className="nota">Todavía no hay equipos marcados.</p>
         )}
         {equipos.length > 0 && (
           <div className="tabla-envoltura">

@@ -104,7 +104,7 @@ export default function PortalAliado() {
       <section className="panel">
         <h3>Mis interesados</h3>
         {leads.length === 0 && (
-          <p className="nota">Todavía no recomendaste a nadie. Empezá con el botón de arriba.</p>
+          <p className="nota">Todavía no recomendaste a nadie.</p>
         )}
         {leads.length > 0 && (
           <div className="tabla-envoltura">

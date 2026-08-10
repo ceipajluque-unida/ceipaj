@@ -54,8 +54,8 @@ export default function TarjetasPlanes({ planes, vigente, cambios = {}, esAdmini
                   onClick={() => alElegir(plan, cambio)}
                 >
                   {esElActual ? 'Renovar por otro período' : ETIQUETA_CAMBIO[cambio?.tipo] ?? 'Contratar'}
-                  {cambio?.tipo === 'mejora' && ` — ${guaranies(cambio.aPagar)}`}
-                  {cambio?.tipo === 'reduccion' && ' — sin cargo'}
+                  {cambio?.tipo === 'mejora' && ` por ${guaranies(cambio.aPagar)}`}
+                  {cambio?.tipo === 'reduccion' && ', sin cargo'}
                 </Button>
               </>
             )}

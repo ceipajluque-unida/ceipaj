@@ -115,7 +115,7 @@ export default function Pagos() {
         </div>
 
         {pagos.length === 0 && (
-          <p className="nota">Todavía no hay pagos. Se generan al contratar o renovar un plan desde Suscripción.</p>
+          <p className="nota">Todavía no hay pagos.</p>
         )}
         {pagos.length > 0 && visibles.length === 0 && <p className="nota">Ningún pago coincide con esos filtros.</p>}
         {visibles.length > 0 && (

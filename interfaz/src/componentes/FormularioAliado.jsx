@@ -14,7 +14,7 @@ export default function FormularioAliado({ abierto, formulario, alCambiar, cargo
           <label>Correo<Input type="email" value={formulario.correo} onChange={campo('correo')} required /></label>
         </div>
         <div className="fila-formulario">
-          <label>Institución<Input value={formulario.institucion} onChange={campo('institucion')} required /></label>
+          <label>Institución donde trabaja<Input value={formulario.institucion} onChange={campo('institucion')} required /></label>
           <label>Cargo
             <Select
               value={formulario.cargo || undefined}

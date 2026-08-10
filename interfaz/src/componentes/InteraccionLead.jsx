@@ -53,7 +53,7 @@ export default function InteraccionLead({ abierto, lead, tipos, alCerrar, alGuar
           />
         </label>
         <label>Detalle
-          <Input.TextArea placeholder="Qué se conversó y qué quedó pendiente" value={interaccion.detalle} onChange={campo('detalle')} />
+          <Input.TextArea placeholder="Preguntó por los horarios y quedó en venir el lunes" value={interaccion.detalle} onChange={campo('detalle')} />
         </label>
         {error && <p className="error">{error}</p>}
         <div className="acciones">

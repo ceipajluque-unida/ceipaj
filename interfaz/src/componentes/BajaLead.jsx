@@ -70,7 +70,7 @@ export default function BajaLead({ lead, alActualizar }) {
 
   return (
     <section className="panel">
-      <h3>Consentimiento y baja</h3>
+      <h3>Consentimiento y situación</h3>
       <dl className="datos-perfil">
         <div>
           <dt>Consentimiento</dt>
@@ -80,14 +80,19 @@ export default function BajaLead({ lead, alActualizar }) {
             </span>
           </dd>
         </div>
-        <div><dt>Lo dio el</dt><dd>{lead.consentimiento_fecha ? fechaHora(lead.consentimiento_fecha) : '—'}</dd></div>
+        <div><dt>Otorgado el</dt><dd>{lead.consentimiento_fecha ? fechaHora(lead.consentimiento_fecha) : '—'}</dd></div>
         <div><dt>Versión del texto</dt><dd>{lead.consentimiento_version || '—'}</dd></div>
         {lead.consentimiento_revocado_en && (
-          <div><dt>Lo revocó el</dt><dd>{fechaHora(lead.consentimiento_revocado_en)}</dd></div>
+          <div><dt>Revocado el</dt><dd>{fechaHora(lead.consentimiento_revocado_en)}</dd></div>
         )}
         <div>
           <dt>Situación</dt>
-          <dd>{lead.activo ? 'Activo' : `Dado de baja — ${lead.motivo_baja || 'sin motivo anotado'}`}</dd>
+          <dd>
+            <span className={`estado estado-${lead.activo ? 'matriculado' : 'perdido'}`}>
+              {lead.activo ? 'Activo' : 'Dado de baja'}
+            </span>
+            {!lead.activo && lead.motivo_baja && <span className="nota"> {lead.motivo_baja}</span>}
+          </dd>
         </div>
       </dl>
 
@@ -97,7 +102,6 @@ export default function BajaLead({ lead, alActualizar }) {
           : <Button type="primary" onClick={reactivar}>Reactivar</Button>}
         {Boolean(lead.consentimiento_datos) && <Button danger onClick={revocar}>Revocar consentimiento</Button>}
       </div>
-      <p className="nota">Los interesados no se borran: la baja los saca del seguimiento pero conserva su historial.</p>
 
       <Modal abierto={abierto} titulo={`Dar de baja a ${lead.nombre}`} alCerrar={() => setAbierto(false)} ancho={460}>
         <form onSubmit={darDeBaja}>
@@ -108,7 +112,6 @@ export default function BajaLead({ lead, alActualizar }) {
               placeholder="Por qué se lo saca del seguimiento"
             />
           </label>
-          <p className="nota">Queda registrado con tu usuario y lo podés reactivar más adelante.</p>
           {error && <p className="error">{error}</p>}
           <div className="acciones">
             <Button type="primary" danger htmlType="submit" disabled={guardando}>

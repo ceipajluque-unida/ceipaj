@@ -5,6 +5,7 @@ import { confirmar, avisarError, toast, mostrarClave } from '../servicios/avisos
 import { contar, legible } from '../servicios/formato.js';
 import Modal from '../componentes/Modal.jsx';
 import FormularioUsuario from '../componentes/FormularioUsuario.jsx';
+import RolesInstitucion from '../componentes/RolesInstitucion.jsx';
 import TablaUsuarios from '../componentes/TablaUsuarios.jsx';
 
 const ROLES_INTERNOS = ['administrador', 'comercial', 'direccion'];
@@ -147,7 +148,12 @@ export default function Usuarios() {
       </section>
 
       <Modal abierto={abierto} titulo={editando ? `Editar ${editando.nombre}` : 'Nuevo usuario'} alCerrar={() => setAbierto(false)} ancho={520}>
-        <FormularioUsuario
+        <section className="panel">
+        <h3>Roles y accesos del plan</h3>
+        <RolesInstitucion ruta="/api/usuarios/roles" />
+      </section>
+
+      <FormularioUsuario
           formulario={formulario}
           alCambiar={setFormulario}
           roles={ROLES_INTERNOS}

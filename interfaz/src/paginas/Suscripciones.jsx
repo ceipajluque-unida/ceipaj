@@ -230,7 +230,7 @@ export default function Suscripciones() {
             </p>
           )}
           {planElegido?.cambio?.tipo === 'renovacion' && (
-            <p className="nota">Se suma al final del período actual, así que no perdés los días que te quedan.</p>
+            <p className="nota">Arranca al terminar el período actual.</p>
           )}
           <label>Medio de pago
             <Select value={medio} options={opcionesMedio} onChange={setMedio} />

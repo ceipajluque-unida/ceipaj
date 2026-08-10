@@ -80,7 +80,7 @@ export default function VentanaPago({ cobro, alAcreditar, alCerrar }) {
       <header className="pago-cabecera">
         <div>
           <h3>Completá el pago</h3>
-          <p className="nota">{cobro.concepto} — {guaranies(cobro.monto)} — {cobro.referencia}</p>
+          <p className="nota">{cobro.concepto}, {guaranies(cobro.monto)}, referencia {cobro.referencia}</p>
         </div>
         <Button size="small" onClick={alCerrar}>Cancelar</Button>
       </header>

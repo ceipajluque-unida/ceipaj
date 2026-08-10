@@ -52,25 +52,24 @@ export default function FormularioLead({ abierto, lead, canales, aliados = [], a
         </div>
         <div className="fila-formulario">
           <label>Correo<Input type="email" value={datos.correo} onChange={campo('correo')} /></label>
-          <label>Canal
-            <Select value={datos.canal} options={opcionesCanal} onChange={(valor) => setDatos({ ...datos, canal: valor })} />
+          <label>Canal de origen
+            <Select value={datos.canal} options={opcionesCanal}
+              onChange={(valor) => setDatos({ ...datos, canal: valor, aliadoId: valor === 'aliado' ? datos.aliadoId : '' })} />
           </label>
         </div>
 
-        {aliados.length > 0 && (
-          <label>Lo recomendó un aliado?
+        {datos.canal === 'aliado' && aliados.length > 0 && (
+          <label>Aliado que lo recomendó
             <Select
               allowClear
               showSearch
               optionFilterProp="label"
               placeholder="Ninguno"
+              disabled={lead.estado === 'matriculado'}
               value={datos.aliadoId || undefined}
               options={aliados.map((a) => ({ value: a.id, label: a.nombre }))}
               onChange={(valor) => setDatos({ ...datos, aliadoId: valor ?? '' })}
             />
-            {lead.estado === 'matriculado' && (
-              <span className="nota">Ya está matriculado: su comisión se generó y el aliado no se cambia.</span>
-            )}
           </label>
         )}
         {error && <p className="error">{error}</p>}
