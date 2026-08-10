@@ -102,7 +102,7 @@ export default function PantallaPrincipal() {
 
       <section className="dos-columnas separado">
         <article className="panel">
-          <h3>¿Por dónde llegan?</h3>
+          <h3>Por dónde llegan?</h3>
           {datos.leadsPorCanal.length === 0 ? (
             <p className="nota">Todavía no hay interesados cargados.</p>
           ) : (

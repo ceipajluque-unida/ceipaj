@@ -74,7 +74,7 @@ export default function Aliados() {
 
   async function reenviarAcceso(aliado) {
     const ok = await confirmar({
-      titulo: '¿Reenviar el acceso?',
+      titulo: 'Reenviar el acceso?',
       texto: `Se genera una clave nueva para ${aliado.nombre} y la anterior deja de servir.`,
       confirmar: 'Sí, reenviar',
     });
@@ -92,7 +92,7 @@ export default function Aliados() {
   async function cambiarActivo(aliado) {
     const desactivar = aliado.activo;
     const ok = await confirmar({
-      titulo: desactivar ? '¿Desactivar aliado?' : '¿Activar aliado?',
+      titulo: desactivar ? 'Desactivar aliado?' : 'Activar aliado?',
       texto: desactivar ? `${aliado.nombre} no podrá ingresar a su portal hasta reactivarlo.` : `${aliado.nombre} podrá ingresar de nuevo a su portal.`,
       confirmar: desactivar ? 'Sí, desactivar' : 'Sí, activar',
       peligro: desactivar,

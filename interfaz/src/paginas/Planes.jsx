@@ -66,7 +66,7 @@ export default function Planes() {
 
   async function apagar(plan) {
     const ok = await confirmar({
-      titulo: `¿Dejar de ofrecer el plan ${plan.texto}?`,
+      titulo: `Dejar de ofrecer el plan ${plan.texto}?`,
       texto: 'Las suscripciones contratadas aplican hasta su vencimiento.',
       confirmar: 'Sí, dar de baja',
       peligro: true,

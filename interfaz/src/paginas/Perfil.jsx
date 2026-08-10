@@ -20,7 +20,7 @@ export default function Perfil() {
 
   async function quitarEquipo(equipo) {
     const ok = await confirmar({
-      titulo: `¿Quitar ${equipo.nombre}?`,
+      titulo: `Quitar ${equipo.nombre}?`,
       texto: 'La próxima vez que entres desde ahí se vuelve a pedir el código.',
       confirmar: 'Sí, quitar',
       peligro: true,

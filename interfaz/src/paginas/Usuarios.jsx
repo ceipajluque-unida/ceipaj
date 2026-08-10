@@ -70,7 +70,7 @@ export default function Usuarios() {
 
   async function cambiarRol(usuario, rol) {
     const ok = await confirmar({
-      titulo: '¿Cambiar el rol?',
+      titulo: 'Cambiar el rol?',
       texto: `${usuario.nombre} pasa a ${legible(rol)} y se le corta la sesión que tenga abierta.`,
       confirmar: 'Sí, cambiar',
     });
@@ -85,7 +85,7 @@ export default function Usuarios() {
   async function cambiarActivo(usuario) {
     const desactivar = usuario.activo;
     const ok = await confirmar({
-      titulo: desactivar ? '¿Desactivar usuario?' : '¿Activar usuario?',
+      titulo: desactivar ? 'Desactivar usuario?' : 'Activar usuario?',
       texto: desactivar ? `${usuario.nombre} no podrá volver a ingresar hasta reactivarlo.` : `${usuario.nombre} podrá ingresar de nuevo.`,
       confirmar: desactivar ? 'Sí, desactivar' : 'Sí, activar',
       peligro: desactivar,
@@ -99,7 +99,7 @@ export default function Usuarios() {
   }
 
   async function restablecer(usuario) {
-    const ok = await confirmar({ titulo: '¿Restablecer la clave?', texto: `Se genera una clave temporal nueva para ${usuario.nombre}.`, confirmar: 'Sí, restablecer' });
+    const ok = await confirmar({ titulo: 'Restablecer la clave?', texto: `Se genera una clave temporal nueva para ${usuario.nombre}.`, confirmar: 'Sí, restablecer' });
     if (!ok) return;
     try {
       const respuesta = await llamarApi(`/api/usuarios/${usuario.id}/restablecer-clave`, { metodo: 'PUT' });

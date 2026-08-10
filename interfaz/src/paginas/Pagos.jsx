@@ -81,10 +81,7 @@ export default function Pagos() {
       {cargaError && <p className="error">{cargaError}</p>}
 
       <header className="encabezado-pagina">
-        <div>
-          <h2>Pagos a la plataforma</h2>
-          <p className="nota">Las transacciones con la pasarela y sus recibos. Los planes se contratan desde Suscripción.</p>
-        </div>
+        <h2>Pagos a la plataforma</h2>
         {esAdministrador && (
           <Button disabled={conciliando} onClick={conciliar}>
             {conciliando ? 'Consultando…' : 'Conciliar pagos'}

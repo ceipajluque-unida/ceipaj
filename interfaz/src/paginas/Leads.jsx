@@ -164,16 +164,16 @@ export default function Leads() {
             <label>Teléfono<Input value={formulario.telefono} onChange={campo('telefono')} placeholder="09XX XXXXXX" /></label>
             <label>Correo<Input type="email" value={formulario.correo} onChange={campo('correo')} /></label>
           </div>
-          <label>¿Por dónde llegó?
+          <label>Canal de origen
             <Select
               value={formulario.canal}
               options={[{ value: '', label: 'Elegí un canal' }, ...canales]}
-              onChange={(valor) => setFormulario({ ...formulario, canal: valor })}
+              onChange={(valor) => setFormulario({ ...formulario, canal: valor, aliadoId: valor === 'aliado' ? formulario.aliadoId : '' })}
             />
           </label>
 
-          {opciones.aliados?.length > 0 && (
-            <label>¿Lo recomendó un aliado?
+          {formulario.canal === 'aliado' && opciones.aliados?.length > 0 && (
+            <label>Aliado que lo recomendó
               <Select
                 allowClear
                 showSearch
@@ -183,7 +183,6 @@ export default function Leads() {
                 options={opciones.aliados.map((a) => ({ value: a.id, label: a.nombre }))}
                 onChange={(valor) => setFormulario({ ...formulario, aliadoId: valor ?? '' })}
               />
-              <span className="nota">Le suma sus puntos y, si se matricula, su comisión.</span>
             </label>
           )}
           <Checkbox

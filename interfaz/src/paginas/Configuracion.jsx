@@ -197,7 +197,6 @@ export default function Configuracion() {
         {grupo.categoria === 'Correo' && (
           <section className="prueba-envio">
             <h3>Probar el envío</h3>
-            <p className="nota">Se manda un correo real, para comprobar que la cuenta quedó bien configurada.</p>
             <div className="fila-formulario">
               <label>Mandar un correo de prueba a
                 <Input type="email" value={destinoCorreo} onChange={(e) => setDestinoCorreo(e.target.value)} placeholder="correo@ejemplo.com" />
@@ -212,7 +211,6 @@ export default function Configuracion() {
         {grupo.categoria === 'SMS' && (
           <section className="prueba-envio">
             <h3>Probar el envío</h3>
-            <p className="nota">Con una cuenta gratuita de Twilio solo llegan mensajes a números verificados en su panel.</p>
             <div className="fila-formulario">
               <label>Mandar un SMS de prueba a
                 <Input value={destinoSms} onChange={(e) => setDestinoSms(e.target.value)} placeholder="+595981123456" />

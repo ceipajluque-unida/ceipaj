@@ -51,7 +51,7 @@ export default function Suscripciones() {
 
   async function bajarDePlan(plan, cambio) {
     const ok = await confirmar({
-      titulo: `¿Pasar al plan ${plan.texto}?`,
+      titulo: `Pasar al plan ${plan.texto}?`,
       texto: `El saldo de ${guaranies(cambio.credito)} que te queda del plan ${cambio.planActual} se convierte en `
         + `${contar(cambio.diasQueCubre, 'día', 'días')} del plan ${plan.texto}. El cambio es inmediato y no se cobra nada.`,
       confirmar: 'Sí, cambiar',
@@ -95,7 +95,7 @@ export default function Suscripciones() {
 
   async function cancelar(vigente) {
     const ok = await confirmar({
-      titulo: '¿Dar de baja la renovación?',
+      titulo: 'Dar de baja la renovación?',
       texto: `Vas a seguir usando el plan ${vigente.texto_plan} con todo lo que incluye hasta el `
         + `${fecha(vigente.fecha_fin)}, que es el período que ya pagaste. Desde esa fecha el sistema `
         + 'pasa al plan mínimo. No hay reembolso por los días sin usar.',

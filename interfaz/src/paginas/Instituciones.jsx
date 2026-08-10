@@ -64,7 +64,7 @@ export default function Instituciones() {
   async function cambiarActivo(institucion) {
     const desactivar = institucion.activo;
     const ok = await confirmar({
-      titulo: desactivar ? `¿Suspender ${institucion.nombre}?` : `¿Reactivar ${institucion.nombre}?`,
+      titulo: desactivar ? `Suspender ${institucion.nombre}?` : `Reactivar ${institucion.nombre}?`,
       texto: desactivar
         ? 'Se corta el ingreso de todos sus usuarios hasta reactivarla. Los datos no se tocan.'
         : 'Sus usuarios vuelven a poder ingresar.',

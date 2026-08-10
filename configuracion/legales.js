@@ -6,7 +6,7 @@ export const AVISO_PRIVACIDAD =
   + 'captación, seguimiento y fidelización de estudiantes propias de este sistema. El suministro '
   + 'de la información solicitada es voluntario. Para más información, consulte la Política de Privacidad.';
 
-export const POLITICA_PRIVACIDAD = `## 1. Objeto
+export const POLITICA_PRIVACIDAD = `1. Objeto
 
 La presente Política de Privacidad establece los criterios aplicables al tratamiento de los datos personales gestionados por el Sistema de Información Gerencial, desarrollado con fines académicos, de investigación y validación en el marco del Trabajo Final de Grado de la carrera de Ingeniería en Sistemas de la Universidad de la Integración de las Américas (UNIDA), para el Centro Educativo Integral para Adultos y Jóvenes (CEIPAJ). En caso de que la solución sea implementada en un entorno real o de producción, corresponderá a CEIPAJ revisar y adecuar esta Política, identificar al responsable del tratamiento y establecer las condiciones aplicables conforme a la Ley N.º 7593/2025.
 
@@ -81,7 +81,7 @@ El uso del sistema implica que el usuario ha sido informado sobre la presente Po
 
 La presente Política constituye un modelo de referencia para el sistema desarrollado en el marco del Trabajo Final de Grado de la carrera de Ingeniería en Sistemas de la Universidad de la Integración de las Américas (UNIDA). En caso de implementación en un entorno operativo, CEIPAJ deberá revisar y adecuar esta Política conforme a la Ley N.º 7593/2025 y demás normativa aplicable.`;
 
-export const TERMINOS_Y_CONDICIONES = `## 1. Objeto
+export const TERMINOS_Y_CONDICIONES = `1. Objeto
 
 Los presentes Términos y Condiciones regulan el acceso y uso del Sistema de Información Gerencial, desarrollado como Trabajo Final de Grado de la carrera de Ingeniería en Sistemas de la Universidad de la Integración de las Américas (UNIDA) para el Centro Educativo Integral para Adultos y Jóvenes (CEIPAJ). Constituye una solución con fines académicos, de investigación y de demostración de competencias profesionales. En caso de implementación en un entorno operativo, estos Términos deberán ser revisados y adecuados por CEIPAJ.
 

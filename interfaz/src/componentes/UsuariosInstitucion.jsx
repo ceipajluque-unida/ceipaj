@@ -51,7 +51,7 @@ export default function UsuariosInstitucion({ institucion }) {
 
   async function restablecer(usuario) {
     const ok = await confirmar({
-      titulo: `¿Restablecer la contraseña de ${usuario.nombre}?`,
+      titulo: `Restablecer la contraseña de ${usuario.nombre}?`,
       texto: 'La actual deja de servir en el momento.',
       confirmar: 'Sí, restablecer',
       peligro: true,
@@ -67,7 +67,7 @@ export default function UsuariosInstitucion({ institucion }) {
   async function cambiarActivo(usuario) {
     const desactivar = Boolean(usuario.activo);
     const ok = await confirmar({
-      titulo: desactivar ? `¿Desactivar a ${usuario.nombre}?` : `¿Reactivar a ${usuario.nombre}?`,
+      titulo: desactivar ? `Desactivar a ${usuario.nombre}?` : `Reactivar a ${usuario.nombre}?`,
       texto: desactivar ? 'No va a poder ingresar hasta reactivarlo.' : 'Vuelve a poder ingresar.',
       confirmar: desactivar ? 'Sí, desactivar' : 'Sí, reactivar',
       peligro: desactivar,

@@ -25,7 +25,7 @@ export default function Comisiones() {
 
   async function marcarPagada(comision) {
     const ok = await confirmar({
-      titulo: '¿Marcar la comisión como pagada?',
+      titulo: 'Marcar la comisión como pagada?',
       texto: `Se registra el pago de ${guaranies(comision.monto)} a ${comision.aliado}.`,
       confirmar: 'Sí, marcar pagada',
     });

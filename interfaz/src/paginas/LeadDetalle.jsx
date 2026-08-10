@@ -43,7 +43,7 @@ export default function LeadDetalle() {
   async function cambiarEstado(estado) {
     const fuerte = estado === 'perdido' || estado === 'matriculado';
     const ok = await confirmar({
-      titulo: `¿Pasarlo a ${legible(estado)}?`,
+      titulo: `Pasarlo a ${legible(estado)}?`,
       texto: estado === 'matriculado'
         ? 'Matriculado es el último estado, después no se puede volver atrás.'
         : estado === 'perdido'

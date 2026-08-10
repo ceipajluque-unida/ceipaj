@@ -22,7 +22,7 @@ export default function Conversion() {
 
   async function sincronizar() {
     const ok = await confirmar({
-      titulo: '¿Sincronizar con el sistema académico?',
+      titulo: 'Sincronizar con el sistema académico?',
       texto: 'Los interesados que coincidan por cédula pasan a Matriculado y, si los trajo un aliado, se le genera la comisión.',
       confirmar: 'Sí, sincronizar',
     });

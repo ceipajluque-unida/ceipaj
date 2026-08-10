@@ -37,7 +37,7 @@ export default function BajaLead({ lead, alActualizar }) {
 
   async function reactivar() {
     const ok = await confirmar({
-      titulo: '¿Reactivar al interesado?',
+      titulo: 'Reactivar al interesado?',
       texto: `${lead.nombre} vuelve al listado y a las alertas de seguimiento.`,
       confirmar: 'Sí, reactivar',
     });
@@ -53,7 +53,7 @@ export default function BajaLead({ lead, alActualizar }) {
 
   async function revocar() {
     const ok = await confirmar({
-      titulo: '¿Revocar el consentimiento?',
+      titulo: 'Revocar el consentimiento?',
       texto: `Es un derecho del titular (Ley 7593). ${lead.nombre} deja de poder ser contactado y queda dado de baja; sus datos se conservan solo como registro.`,
       confirmar: 'Sí, revocar',
       peligro: true,

@@ -58,7 +58,7 @@ export default function FormularioLead({ abierto, lead, canales, aliados = [], a
         </div>
 
         {aliados.length > 0 && (
-          <label>¿Lo recomendó un aliado?
+          <label>Lo recomendó un aliado?
             <Select
               allowClear
               showSearch

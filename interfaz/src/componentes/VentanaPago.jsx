@@ -112,7 +112,7 @@ export default function VentanaPago({ cobro, alAcreditar, alCerrar }) {
 
       {cobro.urlPago && cobro.incrustado && (
         <p className="nota">
-          ¿No se ve el formulario de pago?{' '}
+          No se ve el formulario de pago?{' '}
           <a href={cobro.urlPago} target="_blank" rel="noreferrer">Abrilo en una pestaña nueva</a>.
         </p>
       )}
