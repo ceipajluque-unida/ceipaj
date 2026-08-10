@@ -11,7 +11,7 @@ import { SEGURIDAD, ROLES, METODOS_2FA } from '../../configuracion/ajustes.js';
 import { emitirCodigo, verificarCodigo as verificarCodigoContacto, invalidar as invalidarCodigo } from './codigos.js';
 import { correoConfigurado, verificarSmtp } from '../../servidor/correo.js';
 import { verifyConfigurado, verificarConfiguracion } from '../../servidor/verify.js';
-import { validarTelefono } from '../../comun/validar.js';
+import { validarTelefono, validarCorreo } from '../../comun/validar.js';
 import { clave as frenoClave, codigo2fa as frenoCodigo } from './bloqueos.js';
 import * as dispositivos from './dispositivos.js';
 import { avisarIngresoDesdeEquipoNuevo } from './avisoAcceso.js';
@@ -271,20 +271,23 @@ export async function cambiarMetodo2fa({ usuarioId, metodo, telefono }, ip) {
   return { metodo, otpauth };
 }
 
-export async function actualizarPerfil({ usuarioId, rol, nombre, correo, telefono, direccion }, ip) {
-  if (rol !== ROLES.ADMINISTRADOR) throw new ErrorVisible('Solo el administrador puede editar los datos del perfil.', 403);
+export async function actualizarPerfil({ usuarioId, nombre, correo, telefono, direccion }, ip) {
+  const nombreLimpio = String(nombre ?? '').trim();
+  if (!nombreLimpio) throw new ErrorVisible('El nombre es obligatorio.');
   const correoLimpio = String(correo ?? '').trim().toLowerCase();
+  if (!validarCorreo(correoLimpio)) throw new ErrorVisible('El correo no es válido.');
+  const tel = String(telefono ?? '').trim() || null;
+  if (tel && !validarTelefono(tel)) throw new ErrorVisible('El celular no es válido.');
+  const dir = String(direccion ?? '').trim() || null;
   const [[repetido]] = await bd.query('SELECT id FROM usuarios WHERE correo = ? AND id <> ?', [correoLimpio, usuarioId]);
   if (repetido) throw new ErrorVisible('Ese correo ya lo usa otra cuenta.');
-  const tel = String(telefono ?? '').trim() || null;
-  const dir = String(direccion ?? '').trim() || null;
   try {
     await bd.query('UPDATE usuarios SET nombre = ?, correo = ?, telefono = ?, direccion = ? WHERE id = ?',
-      [String(nombre).trim(), correoLimpio, tel, dir, usuarioId]);
+      [nombreLimpio, correoLimpio, tel, dir, usuarioId]);
   } catch (error) {
     if (error.code === 'ER_DUP_ENTRY') throw new ErrorVisible('Ese correo ya lo usa otra cuenta.');
     throw error;
   }
   await registrarAuditoria({ usuarioId, accion: 'perfil_actualizado', ip });
-  return { nombre: String(nombre).trim(), correo: correoLimpio, telefono: tel ?? '', direccion: dir ?? '' };
+  return { nombre: nombreLimpio, correo: correoLimpio, telefono: tel ?? '', direccion: dir ?? '' };
 }

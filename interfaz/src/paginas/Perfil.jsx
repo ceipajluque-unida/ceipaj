@@ -14,16 +14,14 @@ export default function Perfil() {
   const [error, setError] = useState(null);
   const [equipos, setEquipos] = useState([]);
 
-  const esAdmin = perfil?.usuario.rol === 'administrador';
-
   async function cargarEquipos() {
     try { setEquipos(await llamarApi('/api/autenticacion/dispositivos')); } catch { setEquipos([]); }
   }
 
   async function quitarEquipo(equipo) {
     const ok = await confirmar({
-      titulo: '¿Quitar este equipo?',
-      texto: `La próxima vez que entres desde ${equipo.nombre} te vamos a pedir el código otra vez.`,
+      titulo: `¿Quitar ${equipo.nombre}?`,
+      texto: 'La próxima vez que entres desde ahí se vuelve a pedir el código.',
       confirmar: 'Sí, quitar',
       peligro: true,
     });
@@ -58,7 +56,7 @@ export default function Perfil() {
       const r = await llamarApi('/api/autenticacion/perfil', { metodo: 'PUT', cuerpo: datos });
 
       guardarSesion(tokenActual(), { ...usuarioActual(), nombre: r.nombre, correo: r.correo });
-      toast('Datos del perfil actualizados.');
+      toast('Perfil actualizado.');
       await cargar();
     } catch (excepcion) {
       avisarError(excepcion.message);
@@ -117,40 +115,30 @@ export default function Perfil() {
 
       <section className="panel">
         <h3>Datos de la cuenta</h3>
-        {esAdmin ? (
-          <form onSubmit={guardarDatos}>
-            <label>Nombre completo (nombres y apellidos)
-              <Input value={datos.nombre} onChange={(e) => setDatos({ ...datos, nombre: e.target.value })} required />
+        <form onSubmit={guardarDatos}>
+          <label>Nombre completo
+            <Input value={datos.nombre} onChange={(e) => setDatos({ ...datos, nombre: e.target.value })} required />
+          </label>
+          <div className="fila-formulario">
+            <label>Correo
+              <Input type="email" value={datos.correo} onChange={(e) => setDatos({ ...datos, correo: e.target.value })} required />
             </label>
-            <div className="fila-formulario">
-              <label>Correo
-                <Input type="email" value={datos.correo} onChange={(e) => setDatos({ ...datos, correo: e.target.value })} required />
-              </label>
-              <label>Celular
-                <Input value={datos.telefono} onChange={(e) => setDatos({ ...datos, telefono: e.target.value })} placeholder="+59598..." />
-              </label>
-            </div>
-            <label>Dirección
-              <Input value={datos.direccion} onChange={(e) => setDatos({ ...datos, direccion: e.target.value })} placeholder="Barrio, calle, ciudad" />
+            <label>Celular
+              <Input value={datos.telefono} onChange={(e) => setDatos({ ...datos, telefono: e.target.value })} placeholder="0981 123 456" />
             </label>
-            <div className="menu-fila">
-              <span className="nota">Rol: <span className="rol-chip">{legible(perfil.usuario.rol)}</span></span>
-              <Button type="primary" htmlType="submit" disabled={guardando}>{guardando ? 'Guardando…' : 'Guardar cambios'}</Button>
-            </div>
-          </form>
-        ) : (
-          <dl className="datos-perfil">
-            <div><dt>Nombre completo</dt><dd>{perfil.usuario.nombre}</dd></div>
-            <div><dt>Correo</dt><dd>{perfil.usuario.correo ?? '—'}</dd></div>
-            <div><dt>Celular</dt><dd>{datos.telefono || '—'}</dd></div>
-            <div><dt>Dirección</dt><dd>{datos.direccion || '—'}</dd></div>
-            <div><dt>Rol</dt><dd><span className="rol-chip">{legible(perfil.usuario.rol)}</span></dd></div>
-          </dl>
-        )}
+          </div>
+          <label>Dirección
+            <Input value={datos.direccion} onChange={(e) => setDatos({ ...datos, direccion: e.target.value })} placeholder="Barrio, calle, ciudad" />
+          </label>
+          <div className="menu-fila">
+            <span className="nota">Rol: <span className="rol-chip">{legible(perfil.usuario.rol)}</span></span>
+            <Button type="primary" htmlType="submit" disabled={guardando}>{guardando ? 'Guardando…' : 'Guardar cambios'}</Button>
+          </div>
+        </form>
       </section>
 
       <section className="panel">
-        <h3>Verificación en dos pasos (2FA)</h3>
+        <h3>Verificación en dos pasos</h3>
         <form onSubmit={guardarMetodo}>
           <div className="fila-formulario">
             <label>Método
@@ -161,7 +149,7 @@ export default function Perfil() {
               />
             </label>
             {metodo === 'sms' && (
-              <label>Celular (para el SMS)<Input value={datos.telefono} onChange={(e) => setDatos({ ...datos, telefono: e.target.value })} placeholder="+59598..." /></label>
+              <label>Celular para el SMS<Input value={datos.telefono} onChange={(e) => setDatos({ ...datos, telefono: e.target.value })} placeholder="0981 123 456" /></label>
             )}
             <Button type="primary" htmlType="submit" disabled={validando}>{validando ? 'Validando…' : 'Actualizar método'}</Button>
           </div>
@@ -177,7 +165,7 @@ export default function Perfil() {
       <section className="panel">
         <h3>Equipos de confianza</h3>
         {equipos.length === 0 && (
-          <p className="nota">Ninguno. Al verificar el código podés marcar un equipo para no tener que escribirlo cada vez.</p>
+          <p className="nota">Todavía no hay equipos marcados. Se marcan al ingresar, con «No volver a pedirme el código en este equipo».</p>
         )}
         {equipos.length > 0 && (
           <div className="tabla-envoltura">

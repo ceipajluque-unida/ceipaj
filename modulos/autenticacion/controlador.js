@@ -136,7 +136,7 @@ export async function actualizarPerfil(req, res) {
   if (!validarCorreo(correo)) throw new ErrorVisible('El correo no es válido.');
   if (String(telefono ?? '').trim() && !validarTelefono(telefono)) throw new ErrorVisible('El celular no es válido.');
   const datos = await servicio.actualizarPerfil(
-    { usuarioId: req.usuario.id, rol: req.usuario.rol, nombre, correo, telefono, direccion },
+    { usuarioId: req.usuario.id, nombre, correo, telefono, direccion },
     req.ip
   );
   res.json(datos);
