@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Button, Input, InputNumber, Select, Switch } from 'antd';
+import { Button, Input, InputNumber, Modal, Select, Switch } from 'antd';
 import { llamarApi } from '../servicios/api.js';
 import { avisarError, avisarExito, toast } from '../servicios/avisos.js';
 import { contar, conMiles, sinMiles } from '../servicios/formato.js';
 import FondoIngreso from '../componentes/FondoIngreso.jsx';
 import { useTema } from '../contextos/tema.jsx';
+import { comoHtml } from '../servicios/textoLegal.jsx';
 
 function generarClave() {
   const bytes = new Uint8Array(24);
@@ -22,6 +23,7 @@ export default function Configuracion() {
   const [destinoCorreo, setDestinoCorreo] = useState('');
   const [destinoSms, setDestinoSms] = useState('');
   const [enviando, setEnviando] = useState(null);
+  const [vistaPrevia, setVistaPrevia] = useState(null);
 
   async function cargar() {
     const datos = await llamarApi('/api/configuracion');
@@ -98,12 +100,22 @@ export default function Configuracion() {
       );
     }
     if (ajuste.tipo === 'parrafo' || ajuste.tipo === 'documento') {
-      return (
+      const area = (
         <Input.TextArea
           value={valor}
           rows={ajuste.tipo === 'documento' ? 16 : 3}
           onChange={(e) => editar(ajuste.clave, e.target.value)}
         />
+      );
+      if (ajuste.tipo !== 'documento') return area;
+      return (
+        <>
+          {area}
+          <Button size="small" className="boton-vista-previa"
+            onClick={() => setVistaPrevia({ titulo: ajuste.etiqueta, texto: valor })}>
+            Ver cómo queda
+          </Button>
+        </>
       );
     }
     if (ajuste.tipo === 'secreto') {
@@ -213,6 +225,17 @@ export default function Configuracion() {
         )}
       </section>
       </div>
+
+      <Modal
+        open={Boolean(vistaPrevia)}
+        title={vistaPrevia?.titulo}
+        onCancel={() => setVistaPrevia(null)}
+        footer={null}
+        width={860}
+        styles={{ body: { maxHeight: '70vh', overflowY: 'auto' } }}
+      >
+        <article className="documento-legal">{comoHtml(vistaPrevia?.texto)}</article>
+      </Modal>
     </>
   );
 }

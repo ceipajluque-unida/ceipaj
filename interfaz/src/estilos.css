@@ -409,3 +409,5 @@ tbody tr:hover td { background: var(--panel-2); }
 
 .detalle-institucion { display: grid; gap: 1.1rem; padding: 0.4rem 0.2rem; }
 .detalle-institucion h4 { margin: 0; }
+
+.boton-vista-previa { margin-top: 0.45rem; width: fit-content; }
