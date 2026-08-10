@@ -1,7 +1,6 @@
 import { bd } from '../../servidor/bd/conexion.js';
 import { ErrorVisible } from '../../servidor/errores.js';
 import { institucionActual } from '../../servidor/contexto.js';
-import { PASARELA } from '../../configuracion/ajustes.js';
 import { guaraniesEnLetras } from '../../comun/numeroALetras.js';
 import { dibujarRecibo } from '../pagos/reciboPdf.js';
 import { enGuaranies, fechaYHora, fechaCorta, leyendasDelRecibo } from '../pagos/recibo.js';
@@ -90,7 +89,7 @@ export function generarReciboComision(comision, emision) {
     monto: {
       items: [{ descripcion: `Comisión por la matrícula de ${comision.interesado}`, importe: enGuaranies(comision.monto) }],
       total: enGuaranies(comision.monto),
-      moneda: `Guaraníes (${PASARELA.MONEDA})`,
+      moneda: 'Guaraníes',
       enLetras: guaraniesEnLetras(comision.monto),
     },
     formaPago: null,

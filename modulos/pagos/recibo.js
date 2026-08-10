@@ -1,5 +1,5 @@
 import { bd } from '../../servidor/bd/conexion.js';
-import { RECIBO, PLATAFORMA, PASARELA } from '../../configuracion/ajustes.js';
+import { RECIBO, PLATAFORMA } from '../../configuracion/ajustes.js';
 import * as ajustes from '../../servidor/ajustesSistema.js';
 import { guaraniesEnLetras } from '../../comun/numeroALetras.js';
 import { dibujarRecibo } from './reciboPdf.js';
@@ -106,7 +106,7 @@ export async function generarRecibo(pago, emision) {
     monto: {
       items: [{ descripcion: pago.concepto, importe: enGuaranies(pago.monto) }],
       total: enGuaranies(pago.monto),
-      moneda: `Guaraníes (${PASARELA.MONEDA})`,
+      moneda: 'Guaraníes',
       enLetras: guaraniesEnLetras(pago.monto),
     },
     formaPago: { opciones: OPCIONES_FORMA, marcada, detalle: detalleForma },
