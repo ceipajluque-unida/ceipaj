@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Table } from 'antd';
+import { Button, Table } from 'antd';
 import { llamarApi } from '../servicios/api.js';
-import { avisarError } from '../servicios/avisos.js';
+import { descargarArchivo } from '../servicios/descargas.js';
+import { avisarError, toast } from '../servicios/avisos.js';
 import { fecha, guaranies } from '../servicios/formato.js';
 
 export default function PortalComisiones() {
@@ -29,7 +30,22 @@ export default function PortalComisiones() {
       title: 'Generada el', dataIndex: 'creado_en', key: 'creado_en',
       render: (valor) => <span className="sin-cortar">{fecha(valor)}</span>,
     },
+    {
+      title: <span className="oculto-visual">Acciones</span>, key: 'acciones',
+      render: (_, comision) => (comision.estado !== 'pagada' ? null : (
+        <Button size="small" onClick={() => bajarRecibo(comision)}>Recibo</Button>
+      )),
+    },
   ];
+
+  async function bajarRecibo(comision) {
+    try {
+      await descargarArchivo(`/api/portal/comisiones/${comision.id}/recibo`, `recibo-COM-${comision.id}.pdf`);
+      toast('Recibo descargado.');
+    } catch (excepcion) {
+      avisarError(excepcion.message);
+    }
+  }
 
   return (
     <>

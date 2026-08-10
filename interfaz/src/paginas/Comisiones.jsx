@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Button, Table } from 'antd';
 import { llamarApi, usuarioActual } from '../servicios/api.js';
+import { descargarArchivo } from '../servicios/descargas.js';
 import { confirmar, avisarError, toast } from '../servicios/avisos.js';
 import { guaranies, fecha, contar, legible } from '../servicios/formato.js';
 import Modal from '../componentes/Modal.jsx';
@@ -21,6 +22,15 @@ export default function Comisiones() {
     }
   }
   useEffect(() => { cargar(); }, []);
+
+  async function bajarRecibo(comision) {
+    try {
+      await descargarArchivo(`/api/comisiones/${comision.id}/recibo`, `recibo-COM-${comision.id}.pdf`);
+      toast('Recibo descargado.');
+    } catch (excepcion) {
+      avisarError(excepcion.message);
+    }
+  }
 
   async function pagar(comision) {
     const ok = await confirmar({
@@ -90,13 +100,20 @@ export default function Comisiones() {
       key: 'creado_en',
       render: (valor) => <span className="sin-cortar">{fecha(valor)}</span>,
     },
-    ...(esAdministrador ? [{
+    {
       title: <span className="oculto-visual">Acciones</span>,
       key: 'acciones',
-      render: (_, comision) => (comision.estado !== 'pendiente' ? null : (
-        <Button size="small" type="primary" onClick={() => pagar(comision)}>Pagar</Button>
-      )),
-    }] : []),
+      render: (_, comision) => (
+        <div className="acciones">
+          {esAdministrador && comision.estado === 'pendiente' && (
+            <Button size="small" type="primary" onClick={() => pagar(comision)}>Pagar</Button>
+          )}
+          {comision.estado === 'pagada' && (
+            <Button size="small" onClick={() => bajarRecibo(comision)}>Recibo</Button>
+          )}
+        </div>
+      ),
+    },
   ];
 
   return (

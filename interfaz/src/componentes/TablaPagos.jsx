@@ -45,7 +45,7 @@ export default function TablaPagos({ pagos, textoMedio, esAdministrador, bajando
               aria-label={`Descargar el recibo del cobro ${pago.referencia}`}
               onClick={() => alBajarRecibo(pago.referencia)}
             >
-              {bajando === pago.referencia ? 'Bajando…' : 'Recibo'}
+              {bajando === pago.referencia ? 'Descargando…' : 'Recibo'}
             </Button>
           )}
           {esAdministrador && pago.estado === 'pendiente' && pago.url_pago && (

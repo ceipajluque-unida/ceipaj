@@ -96,6 +96,10 @@ export async function buscarPago(referencia) {
   return pago;
 }
 
+export async function marcarReciboEmitido(id, cuando) {
+  await bd.query('UPDATE pagos SET recibo_emitido_en = ? WHERE id = ? AND recibo_emitido_en IS NULL', [cuando, id]);
+}
+
 export async function listarMedios() {
   const proveedor = pasarelaActiva();
   if (typeof proveedor.listarMedios !== 'function' || !proveedor.configurado?.()) return MEDIOS_PAGO;

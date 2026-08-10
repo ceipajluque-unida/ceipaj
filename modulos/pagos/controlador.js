@@ -86,11 +86,18 @@ export async function recibo(req, res) {
   if (pago.estado !== ESTADOS_PAGO.EXITOSO) {
     throw new ErrorVisible('El recibo se emite recién cuando el pago está acreditado.', 409);
   }
-  const pdf = await generarRecibo(pago);
+  const ahora = new Date();
+  const primera = !pago.recibo_emitido_en;
+  if (primera) await servicio.marcarReciboEmitido(pago.id, ahora);
+  const pdf = await generarRecibo(pago, {
+    ahora,
+    estado: primera ? 'Emitido' : 'Reimpreso',
+    emitidoEn: pago.recibo_emitido_en ?? ahora,
+  });
   await registrarAuditoria({
     usuarioId: req.usuario.id,
-    accion: 'recibo_descargado',
-    detalle: `${pago.referencia} — recibo ${numeroDeRecibo(pago)}`,
+    accion: primera ? 'recibo_emitido' : 'recibo_reimpreso',
+    detalle: `${pago.referencia}, recibo ${numeroDeRecibo(pago)}`,
     ip: req.ip,
   });
 

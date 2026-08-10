@@ -7,4 +7,6 @@ export const rutasComisiones = Router();
 
 rutasComisiones.get('/', autenticar, permitirRoles(...PERMISOS.comisiones), controlador.listar);
 
+rutasComisiones.get('/:id/recibo', autenticar, permitirRoles(...PERMISOS.comisiones), controlador.recibo);
+
 rutasComisiones.put('/:id/estado', autenticar, permitirRoles(...PERMISOS_ESCRITURA.comisiones), controlador.pagar);

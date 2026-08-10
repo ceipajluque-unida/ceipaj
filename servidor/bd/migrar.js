@@ -142,6 +142,8 @@ async function migrar() {
   await asegurarColumna(conexion, 'usuarios', 'sesion_version', 'INT UNSIGNED NOT NULL DEFAULT 0 AFTER clave_actualizada_en');
   await asegurarColumna(conexion, 'usuarios', 'actualizado_en', 'DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP AFTER creado_en');
   await asegurarColumna(conexion, 'pagos', 'medio_pago', 'VARCHAR(20) NULL AFTER proveedor');
+  await asegurarColumna(conexion, 'pagos', 'recibo_emitido_en', 'DATETIME NULL');
+  await asegurarColumna(conexion, 'comisiones', 'recibo_emitido_en', 'DATETIME NULL');
   await asegurarColumna(conexion, 'pagos', 'plan', 'VARCHAR(20) NULL AFTER medio_pago');
   await asegurarColumna(conexion, 'pagos', 'identificador_externo', 'VARCHAR(120) NULL AFTER plan');
   await asegurarColumna(conexion, 'pagos', 'url_pago', 'VARCHAR(300) NULL AFTER identificador_externo');
