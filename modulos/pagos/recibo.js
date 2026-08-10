@@ -5,6 +5,8 @@ import { guaraniesEnLetras } from '../../comun/numeroALetras.js';
 import { dibujarRecibo } from './reciboPdf.js';
 
 const OPCIONES_FORMA = ['Efectivo', 'Transferencia bancaria', 'Tarjeta de crédito/débito', 'Depósito bancario', 'Billetera electrónica', 'Otro medio de pago'];
+const NOMBRE_PROVEEDOR = { pagopar: 'Pagopar', adamspay: 'AdamsPay', simulada: 'Pasarela de prueba' };
+
 const FORMA_POR_MEDIO = {
   tarjeta: 'Tarjeta de crédito/débito',
   transferencia: 'Transferencia bancaria',
@@ -62,16 +64,20 @@ export async function generarRecibo(pago, emision) {
   ];
   if (periodo) concepto.push(['Período', `${fechaCorta(periodo.fecha_inicio)} a ${fechaCorta(periodo.fecha_fin)}`]);
 
+  const nombreProveedor = NOMBRE_PROVEEDOR[pago.proveedor] ?? pago.proveedor;
   const trazabilidad = [
     ['Pago registrado el', fechaYHora(pago.creado_en)],
     ['Acreditado el', pago.fecha_pago ? fechaYHora(pago.fecha_pago) : '—'],
-    ['Procesado por', pago.proveedor],
+    ['Procesado por', nombreProveedor],
   ];
   if (pago.comprobante_externo) trazabilidad.push(['Comprobante de la pasarela', pago.comprobante_externo]);
   if (emision.estado === 'Reimpreso') trazabilidad.push(['Emitido originalmente el', fechaYHora(emision.emitidoEn)]);
 
   const marcada = FORMA_POR_MEDIO[pago.medio_pago] ?? 'Otro medio de pago';
-  const detalleForma = pago.forma_pago_externa && pago.forma_pago_externa !== marcada ? pago.forma_pago_externa : null;
+  const externa = pago.forma_pago_externa;
+  const detalleForma = externa && externa !== marcada && externa !== nombreProveedor
+    ? `Informado por ${nombreProveedor}: ${externa}`
+    : null;
 
   return dibujarRecibo({
     titulo: 'RECIBO ELECTRÓNICO DE DINERO',

@@ -117,7 +117,7 @@ function cajaDeFormaDePago(doc, y, izq, ancho, formaPago) {
   }
   if (formaPago.detalle) {
     doc.font('Helvetica').fontSize(8.5).fillColor(GRIS)
-      .text(`Detalle informado por la pasarela: ${formaPago.detalle}`, izq + 10, cursor + 2, { lineBreak: false });
+      .text(formaPago.detalle, izq + 10, cursor + 2, { lineBreak: false });
   }
   return y + alto + 10;
 }
