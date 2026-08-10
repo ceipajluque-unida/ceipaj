@@ -7,7 +7,7 @@ import { obtenerIndicadores } from '../reportes/servicio.js';
 export const rutasResumen = Router();
 
 rutasResumen.get('/badges', autenticar, async (req, res) => {
-  res.json(await contarBadges(req.usuario.rol));
+  res.json(await contarBadges(req.usuario));
 });
 
 rutasResumen.get('/indicadores', autenticar, permitirRoles(...PERMISOS.reportes), async (req, res) => {

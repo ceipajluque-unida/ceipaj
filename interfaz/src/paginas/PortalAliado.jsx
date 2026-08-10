@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Button, Checkbox, Input, Table } from 'antd';
 import { llamarApi, usuarioActual } from '../servicios/api.js';
 import { avisarError, toast } from '../servicios/avisos.js';
-import { contar, fecha, legible } from '../servicios/formato.js';
+import { contar, fecha, guaranies, legible } from '../servicios/formato.js';
 import Modal from '../componentes/Modal.jsx';
 import Legales from '../componentes/Legales.jsx';
 
@@ -19,6 +19,7 @@ export default function PortalAliado() {
   const usuario = usuarioActual();
   const [resumen, setResumen] = useState(null);
   const [leads, setLeads] = useState([]);
+  const [comisiones, setComisiones] = useState([]);
   const [avisoConsentimiento, setAvisoConsentimiento] = useState('');
   const [abierto, setAbierto] = useState(false);
   const [formulario, setFormulario] = useState(FORMULARIO_VACIO);
@@ -28,6 +29,7 @@ export default function PortalAliado() {
   async function cargar() {
     setResumen(await llamarApi('/api/portal/resumen'));
     setLeads(await llamarApi('/api/portal/leads'));
+    setComisiones(await llamarApi('/api/portal/comisiones'));
   }
 
   useEffect(() => {
@@ -109,6 +111,39 @@ export default function PortalAliado() {
         {leads.length > 0 && (
           <div className="tabla-envoltura">
             <Table columns={columnas} dataSource={leads} rowKey="id" size="small" pagination={false} />
+          </div>
+        )}
+      </section>
+
+      <section className="panel">
+        <h3>Mis comisiones</h3>
+        {comisiones.length === 0 && (
+          <p className="nota">Todavía no hay comisiones.</p>
+        )}
+        {comisiones.length > 0 && (
+          <div className="tabla-envoltura">
+            <Table
+              columns={[
+                { title: 'Interesado', dataIndex: 'interesado', key: 'interesado' },
+                { title: 'Monto', dataIndex: 'monto', key: 'monto', render: (valor) => guaranies(valor) },
+                {
+                  title: 'Estado', dataIndex: 'estado', key: 'estado',
+                  render: (valor) => (
+                    <span className={`estado estado-${valor}`}>
+                      {valor === 'pagada' ? 'Pagada' : 'Pendiente de pago'}
+                    </span>
+                  ),
+                },
+                {
+                  title: 'Generada el', dataIndex: 'creado_en', key: 'creado_en',
+                  render: (valor) => <span className="sin-cortar">{fecha(valor)}</span>,
+                },
+              ]}
+              dataSource={comisiones}
+              rowKey="id"
+              size="small"
+              pagination={false}
+            />
           </div>
         )}
       </section>

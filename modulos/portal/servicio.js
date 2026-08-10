@@ -46,6 +46,17 @@ export async function listarMisLeads(usuarioId) {
   return filas;
 }
 
+export async function listarMisComisiones(usuarioId) {
+  const aliado = await aliadoDelUsuario(usuarioId);
+  const [filas] = await bd.query(
+    `SELECT c.id, c.monto, c.estado, c.creado_en, l.nombre AS interesado
+       FROM comisiones c JOIN leads l ON l.id = c.lead_id
+      WHERE c.aliado_id = ? ORDER BY c.creado_en DESC LIMIT 100`,
+    [aliado.id]
+  );
+  return filas;
+}
+
 export async function registrarLead(usuarioId, { nombre, cedula, telefono, correo, consentimiento }, ip) {
   const aliado = await aliadoDelUsuario(usuarioId);
   return crearLead(

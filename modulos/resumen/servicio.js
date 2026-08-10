@@ -6,7 +6,8 @@ import { PERMISOS } from '../../configuracion/permisos.js';
 import { LIMITES, ESTADOS_LEAD } from '../../configuracion/ajustes.js';
 import { contarPorVencer } from '../suscripciones/servicio.js';
 
-export async function contarBadges(rol) {
+export async function contarBadges(usuario) {
+  const rol = usuario.rol;
   const puede = (modulo) => PERMISOS[modulo]?.includes(rol);
   const badges = {};
 
@@ -56,6 +57,16 @@ export async function contarBadges(rol) {
       [institucion()]
     );
     badges.pagos = Number(fila.total);
+  }
+
+  if (puede('portal')) {
+    const [[fila]] = await bd.query(
+      `SELECT COUNT(*) AS total FROM comisiones c
+         JOIN aliados a ON a.id = c.aliado_id
+        WHERE c.estado = 'pendiente' AND a.usuario_id = ? AND a.institucion_id = ?`,
+      [usuario.id, institucion()]
+    );
+    badges.portal = Number(fila.total);
   }
 
   if (puede('suscripcion')) {
