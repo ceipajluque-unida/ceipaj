@@ -9,6 +9,7 @@ import { institucionActual } from '../../servidor/contexto.js';
 import { generarClaveTemporal } from '../../comun/claves.js';
 import { renovarClave } from '../usuarios/credenciales.js';
 import { enviarAcceso } from './acceso.js';
+import { revisarCupoAliados } from './guardas.js';
 
 function institucionDelPedido() {
   const id = institucionActual();
@@ -33,6 +34,7 @@ export async function obtenerAliado(id) {
 
 export async function crearAliado({ nombre, correo, institucion, cargo, telefono }, solicitante, ip) {
   const institucionId = institucionDelPedido();
+  await revisarCupoAliados();
   const claveTemporal = generarClaveTemporal();
   const claveHash = await bcrypt.hash(claveTemporal, SEGURIDAD.RONDAS_BCRYPT);
   const secreto = authenticator.generateSecret();
@@ -115,6 +117,8 @@ export async function reenviarAcceso(id, solicitante, ip) {
 export async function cambiarActivoAliado(aliadoId, activo, solicitante, ip) {
   const institucionId = institucionDelPedido();
   const aliado = await buscarAliado(aliadoId);
+  // reactivar también pasa por el cupo, si no el tope se esquivaba desactivando y reactivando
+  if (activo && !Number(aliado.activo)) await revisarCupoAliados();
   await bd.query('UPDATE usuarios SET activo = ? WHERE id = ? AND institucion_id = ?',
     [activo ? 1 : 0, aliado.usuario_id, institucionId]);
   await registrarAuditoria({

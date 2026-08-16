@@ -45,7 +45,8 @@ export default function Suscripciones() {
   async function abrirPago(plan, cambio) {
     if (cambio?.tipo === 'reduccion') return bajarDePlan(plan, cambio);
     setPlanElegido({ ...plan, cambio });
-    setMedio('');
+    // con un solo medio no hay nada que elegir: queda seleccionado solo
+    setMedio(medios.length === 1 ? medios[0].valor : '');
     setError(null);
   }
 
@@ -232,9 +233,13 @@ export default function Suscripciones() {
           {planElegido?.cambio?.tipo === 'renovacion' && (
             <p className="nota">Arranca al terminar el período actual.</p>
           )}
-          <label>Medio de pago
-            <Select value={medio} options={opcionesMedio} onChange={setMedio} />
-          </label>
+          {medios.length === 1 ? (
+            <p className="nota">{medios[0].texto}.</p>
+          ) : (
+            <label>Medio de pago
+              <Select value={medio} options={opcionesMedio} onChange={setMedio} />
+            </label>
+          )}
           {error && <p className="error">{error}</p>}
           <div className="acciones">
             <Button type="primary" htmlType="submit" disabled={pagando}>{pagando ? 'Generando el pago…' : 'Ir a pagar'}</Button>

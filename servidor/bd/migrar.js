@@ -102,8 +102,8 @@ async function sembrarPlanes(conexion) {
   if (Number(total) === 0) {
     for (const [orden, plan] of PLANES_SUSCRIPCION.entries()) {
       await conexion.query(
-        'INSERT INTO planes (clave, titulo, precio, meses, incluye, max_usuarios, modulos_incluidos, orden) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        [plan.valor, plan.texto, plan.precio, plan.meses, plan.incluye.join('\n'), plan.maxUsuarios, plan.modulos.join('\n'), orden]
+        'INSERT INTO planes (clave, titulo, precio, meses, incluye, max_usuarios, max_aliados, modulos_incluidos, orden) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [plan.valor, plan.texto, plan.precio, plan.meses, plan.incluye.join('\n'), plan.maxUsuarios, plan.maxAliados, plan.modulos.join('\n'), orden]
       );
     }
     console.log(`planes cargados: ${PLANES_SUSCRIPCION.length}`);
@@ -116,6 +116,29 @@ async function sembrarPlanes(conexion) {
       [plan.maxUsuarios, plan.modulos.join('\n'), plan.valor]
     );
     if (resultado.affectedRows > 0) console.log(`límites completados en el plan ${plan.valor}`);
+    if (plan.maxAliados !== null) {
+      await conexion.query(
+        'UPDATE planes SET max_aliados = ? WHERE clave = ? AND max_aliados IS NULL',
+        [plan.maxAliados, plan.valor]
+      );
+    }
+  }
+}
+
+// 16/08: la tabla 19 de la tesis manda; los tres planes sembrados con los valores
+// viejos se pisan una sola vez (el filtro por precio viejo hace el paso idempotente
+// y respeta lo que el proveedor edite después)
+async function emparejarPlanesConTesis(conexion) {
+  const preciosViejos = { basico: 250000, estandar: 450000, avanzado: 750000 };
+  for (const plan of PLANES_SUSCRIPCION) {
+    if (!preciosViejos[plan.valor]) continue;
+    const [resultado] = await conexion.query(
+      `UPDATE planes SET precio = ?, max_usuarios = ?, max_aliados = ?, modulos_incluidos = ?, incluye = ?
+        WHERE clave = ? AND precio = ?`,
+      [plan.precio, plan.maxUsuarios, plan.maxAliados, plan.modulos.join('\n'), plan.incluye.join('\n'),
+       plan.valor, preciosViejos[plan.valor]]
+    );
+    if (resultado.affectedRows > 0) console.log(`plan ${plan.valor} emparejado con la tabla 19 de la tesis`);
   }
 }
 
@@ -160,7 +183,8 @@ async function migrar() {
   await asegurarColumna(conexion, 'leads', 'motivo_baja', 'VARCHAR(200) NULL AFTER activo');
   await asegurarColumna(conexion, 'suscripciones', 'cancelada_en', 'DATETIME NULL AFTER pago_id');
   await asegurarColumna(conexion, 'planes', 'max_usuarios', 'INT UNSIGNED NULL AFTER incluye');
-  await asegurarColumna(conexion, 'planes', 'modulos_incluidos', 'TEXT NULL AFTER max_usuarios');
+  await asegurarColumna(conexion, 'planes', 'max_aliados', 'INT UNSIGNED NULL AFTER max_usuarios');
+  await asegurarColumna(conexion, 'planes', 'modulos_incluidos', 'TEXT NULL AFTER max_aliados');
 
   await asegurarTipo(conexion, 'ajustes_sistema', 'valor', 'mediumtext', 'MEDIUMTEXT NULL');
 
@@ -185,6 +209,7 @@ async function migrar() {
   await asegurarUnico(conexion, 'leads', 'uk_leads_institucion_cedula', 'institucion_id,cedula', 'cedula');
   await asegurarUnico(conexion, 'academico_matriculados', 'uk_matriculados_institucion_cedula', 'institucion_id,cedula', 'cedula');
   await sembrarPlanes(conexion);
+  await emparejarPlanesConTesis(conexion);
   await aplanarTextosLegales(conexion);
 
   await conexion.end();

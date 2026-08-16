@@ -1,10 +1,13 @@
 import { createHash, timingSafeEqual, randomUUID } from 'node:crypto';
-import { PAGOPAR, ESTADOS_PAGO, MEDIOS_PAGO } from '../../../configuracion/ajustes.js';
+import { PAGOPAR, ESTADOS_PAGO } from '../../../configuracion/ajustes.js';
 import * as ajustes from '../../../servidor/ajustesSistema.js';
 import { ErrorVisible } from '../../../servidor/errores.js';
-import { armarPedido, formaDePago } from './pagoparPedido.js';
+import { armarPedido } from './pagoparPedido.js';
 import { estadoDePedido, datosDelPago, explicar } from './pagoparRespuestas.js';
-import { enCache, conEspera } from './freno.js';
+import { conEspera } from './freno.js';
+
+// el checkout va en ventana aparte, como adamspay: la pasarela no se incrusta
+export const INCRUSTABLE = false;
 
 function credenciales() {
   return {
@@ -63,6 +66,7 @@ export async function crearCobro({ concepto, monto, medio, comprador }) {
     comprador,
     publico,
     token: firmar(referencia, String(montoEntero)),
+    tipo: ajustes.leer('PAGOPAR_TIPO_PEDIDO', PAGOPAR.TIPO_PEDIDO),
   });
   const resultado = await llamar('/comercios/2.0/iniciar-transaccion', pedido);
   const hash = resultado?.[0]?.data;
@@ -73,7 +77,9 @@ export async function crearCobro({ concepto, monto, medio, comprador }) {
     estado: ESTADOS_PAGO.PENDIENTE,
     identificadorExterno: hash,
 
-    urlPago: `${PAGOPAR.CHECKOUT}/${hash}?forma_pago=${formaDePago(medio)}`,
+    // sin forma_pago en la url: el checkout de pagopar muestra todos los
+    // medios habilitados del comercio y la persona elige ahí
+    urlPago: `${PAGOPAR.CHECKOUT}/${hash}`,
   };
 }
 
@@ -106,31 +112,8 @@ export async function consultarEstado(identificadorExterno) {
   return { estado: estadoDePedido(datos), ...datosDelPago(datos) };
 }
 
+// el medio se elige en el propio checkout de pagopar, así siempre se ofrecen
+// los que el comercio de verdad tiene habilitados; de paso no se consulta su api
 export async function listarMedios() {
-  const { publico } = credenciales();
-  const habilitados = await enCache(`medios:${publico}`, PAGOPAR.MINUTOS_CACHE_MEDIOS * 60, async () => {
-    const resultado = await llamar('/forma-pago/1.1/traer', {
-      token: firmar('FORMA-PAGO'),
-      token_publico: publico,
-    });
-    return new Map((resultado ?? []).map((forma) => [Number(forma.forma_pago), forma]));
-  });
-
-  const yaPuestos = new Set();
-  return MEDIOS_PAGO
-    .filter((opcion) => {
-      const forma = formaDePago(opcion.valor);
-
-      if (!habilitados.has(forma) || yaPuestos.has(forma)) return false;
-      yaPuestos.add(forma);
-      return true;
-    })
-    .map((opcion) => {
-      const real = habilitados.get(formaDePago(opcion.valor));
-      return {
-        valor: opcion.valor,
-        texto: real.titulo || opcion.texto,
-        montoMinimo: Number(real.monto_minimo) || 0,
-      };
-    });
+  return [{ valor: 'pagopar', texto: 'Pagopar (el medio se elige al pagar)', montoMinimo: PAGOPAR.MONTO_MINIMO, ventanaPropia: true }];
 }

@@ -239,6 +239,7 @@ CREATE TABLE IF NOT EXISTS planes (
   meses TINYINT UNSIGNED NOT NULL DEFAULT 1,
   incluye TEXT NULL, -- una línea por punto
   max_usuarios INT UNSIGNED NULL, -- cuántos usuarios internos admite; nulo es sin tope
+  max_aliados INT UNSIGNED NULL, -- cuántos aliados activos admite; nulo es sin tope
   modulos_incluidos TEXT NULL, -- una clave de módulo por línea; vacío es todos
   imagen VARCHAR(200) NULL, -- archivo subido, dentro de subidas/planes
   activo TINYINT(1) NOT NULL DEFAULT 1,

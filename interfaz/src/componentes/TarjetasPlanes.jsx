@@ -32,6 +32,7 @@ export default function TarjetasPlanes({ planes, vigente, cambios = {}, esAdmini
             <p className="nota">{textoPeriodo(plan.meses)}</p>
             <ul className="lista-plan">
               <li>{plan.maxUsuarios ? `Hasta ${contar(plan.maxUsuarios, 'usuario', 'usuarios')}` : 'Usuarios sin límite'}</li>
+              <li>{plan.maxAliados ? `Hasta ${contar(plan.maxAliados, 'aliado institucional', 'aliados institucionales')}` : 'Aliados ilimitados'}</li>
               <li>{plan.modulos?.length ? `Módulos: ${plan.modulos.map(legible).join(', ')}` : 'Todos los módulos'}</li>
               {plan.incluye.map((punto) => <li key={punto}>{punto}</li>)}
             </ul>

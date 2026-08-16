@@ -1,5 +1,5 @@
 import { bd } from './bd/conexion.js';
-import { INSTITUCION, PLATAFORMA, SEGURIDAD, CORREO, SMS, LIMITES, ALIADOS, METODOS_2FA, POLITICA_CLAVE, APLICACION, PLANES_SUSCRIPCION, SUSCRIPCION, PASARELA, ADAMSPAY, RECIBO, ACADEMICO, LEGALES, COLORES_SISTEMA } from '../configuracion/ajustes.js';
+import { INSTITUCION, PLATAFORMA, SEGURIDAD, CORREO, SMS, LIMITES, ALIADOS, METODOS_2FA, POLITICA_CLAVE, APLICACION, PLANES_SUSCRIPCION, SUSCRIPCION, PASARELA, PAGOPAR, ADAMSPAY, RECIBO, ACADEMICO, LEGALES, COLORES_SISTEMA } from '../configuracion/ajustes.js';
 import { POLITICA_PRIVACIDAD, TERMINOS_Y_CONDICIONES, AVISO_PRIVACIDAD, PRESENTACION_LOGIN } from '../configuracion/legales.js';
 import { AMBITO, ambitoDe } from '../configuracion/ambitos.js';
 import { institucionActual, PLATAFORMA as ID_PLATAFORMA } from './contexto.js';
@@ -129,6 +129,10 @@ export const CATALOGO = [
     { clave: 'PAGOPAR_TOKEN_PUBLICO', etiqueta: 'Token público', tipo: 'texto', porDefecto: '',
       depende: { clave: 'PASARELA_PROVEEDOR', valor: 'pagopar' } },
     { clave: 'PAGOPAR_TOKEN_PRIVADO', etiqueta: 'Token privado', tipo: 'secreto', porDefecto: '',
+      depende: { clave: 'PASARELA_PROVEEDOR', valor: 'pagopar' } },
+    { clave: 'PAGOPAR_TIPO_PEDIDO', etiqueta: 'Cómo se declara el pedido', tipo: 'opcion',
+      opciones: PAGOPAR.TIPOS_PEDIDO, porDefecto: PAGOPAR.TIPO_PEDIDO,
+      ayuda: 'Si Pagopar todavía no habilitó el comercio para vender servicios, "Producto físico" declara el cobro como una entrega que se retira en el local del emisor y pasa esa validación. Volver a "Servicio" cuando llegue la habilitación.',
       depende: { clave: 'PASARELA_PROVEEDOR', valor: 'pagopar' } },
     { clave: 'ADAMSPAY_API_KEY', etiqueta: 'Api key', tipo: 'texto', porDefecto: '',
       depende: { clave: 'PASARELA_PROVEEDOR', valor: 'adamspay' } },

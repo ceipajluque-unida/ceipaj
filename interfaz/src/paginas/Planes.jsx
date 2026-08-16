@@ -7,8 +7,8 @@ import ImagenPlan from '../componentes/ImagenPlan.jsx';
 import FormularioPlan from '../componentes/FormularioPlan.jsx';
 
 const FORMULARIO_VACIO = {
-  titulo: '', descripcion: '', precio: 250000, meses: 1,
-  incluye: '', maxUsuarios: null, modulos: [], activo: true,
+  titulo: '', descripcion: '', precio: 600000, meses: 1,
+  incluye: '', maxUsuarios: null, maxAliados: null, modulos: [], activo: true,
 };
 
 export default function Planes() {
@@ -40,7 +40,8 @@ export default function Planes() {
     setEditando(plan);
     setFormulario({
       titulo: plan.texto, descripcion: plan.descripcion ?? '', precio: plan.precio, meses: plan.meses,
-      incluye: plan.incluye.join('\n'), maxUsuarios: plan.maxUsuarios, modulos: plan.modulos, activo: plan.activo,
+      incluye: plan.incluye.join('\n'), maxUsuarios: plan.maxUsuarios, maxAliados: plan.maxAliados,
+      modulos: plan.modulos, activo: plan.activo,
     });
     setAbierto(true);
   }
@@ -85,6 +86,10 @@ export default function Planes() {
     { title: 'Duración', dataIndex: 'meses', key: 'meses', render: (valor) => contar(valor, 'mes', 'meses') },
     {
       title: 'Usuarios internos', dataIndex: 'maxUsuarios', key: 'maxUsuarios',
+      render: (valor) => (valor === null ? 'Sin tope' : `Hasta ${valor}`),
+    },
+    {
+      title: 'Aliados', dataIndex: 'maxAliados', key: 'maxAliados',
       render: (valor) => (valor === null ? 'Sin tope' : `Hasta ${valor}`),
     },
     {

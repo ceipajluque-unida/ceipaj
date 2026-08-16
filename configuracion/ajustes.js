@@ -101,6 +101,19 @@ export const PAGOPAR = {
 
   MS_ENTRE_LLAMADAS: 400,
   MINUTOS_CACHE_MEDIOS: 15,
+  // mínimo común de los medios del comercio, verificado contra su api en julio
+  MONTO_MINIMO: 1000,
+
+  // mientras el comercio no esté habilitado para servicios virtuales,
+  // el pedido se puede declarar como producto físico que se retira en el local
+  TIPO_PEDIDO: 'servicio',
+  TIPOS_PEDIDO: [
+    { valor: 'servicio', texto: 'Servicio (lo correcto para la suscripción)' },
+    { valor: 'fisico', texto: 'Producto físico (muestra, sin habilitación de servicios)' },
+  ],
+  CATEGORIA_SERVICIO: '909',
+  CATEGORIA_FISICO: '980',
+  MEDIDAS_FISICO: { peso: '1', largo: '1', ancho: '1', alto: '1' },
 };
 
 export const ADAMSPAY = {
@@ -197,33 +210,38 @@ export const MEDIOS_PAGO = [
 
 export const MODULOS_NUCLEO = ['usuarios', 'configuracion', 'suscripcion', 'pagos', 'auditoria'];
 
+// según la tabla 19 de la tesis: todos los planes incluyen todos los módulos
+// y se diferencian por los topes de usuarios y aliados y por el soporte
 export const PLANES_SUSCRIPCION = [
   {
     valor: 'basico',
     texto: 'Básico',
-    precio: 250000,
+    precio: 600000,
     meses: 1,
     maxUsuarios: 3,
-    modulos: ['leads', 'seguimiento'],
-    incluye: ['Gestión de interesados', 'Seguimiento y alertas'],
+    maxAliados: 10,
+    modulos: [],
+    incluye: ['Soporte estándar'],
   },
   {
     valor: 'estandar',
     texto: 'Estándar',
-    precio: 450000,
+    precio: 1200000,
     meses: 1,
     maxUsuarios: 8,
-    modulos: ['leads', 'seguimiento', 'aliados', 'portal', 'comisiones', 'reportes'],
-    incluye: ['Todo lo del plan Básico', 'Aliados institucionales y comisiones', 'Reportes con exportación'],
+    maxAliados: 25,
+    modulos: [],
+    incluye: ['Soporte estándar'],
   },
   {
     valor: 'avanzado',
     texto: 'Avanzado',
-    precio: 750000,
+    precio: 2200000,
     meses: 1,
     maxUsuarios: null,
+    maxAliados: null,
     modulos: [],
-    incluye: ['Todo lo del plan Estándar', 'Conversión con el sistema académico', 'Tablero gerencial completo'],
+    incluye: ['Soporte prioritario'],
   },
 ];
 

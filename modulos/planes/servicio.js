@@ -15,16 +15,17 @@ function armar(fila) {
     meses: Number(fila.meses),
     incluye: aLista(fila.incluye),
     maxUsuarios: fila.max_usuarios === null ? null : Number(fila.max_usuarios),
+    maxAliados: fila.max_aliados === null ? null : Number(fila.max_aliados),
     modulos: aLista(fila.modulos_incluidos),
     imagen: fila.imagen,
     activo: Boolean(fila.activo),
   };
 }
 
-function topeUsuarios(valor) {
+function tope(valor, campo) {
   if (valor === null || valor === undefined || valor === '') return null;
   const numero = Math.trunc(Number(valor));
-  if (!Number.isInteger(numero) || numero < 1) throw new ErrorVisible('El tope de usuarios va vacío (sin límite) o en un número entero mayor que cero.');
+  if (!Number.isInteger(numero) || numero < 1) throw new ErrorVisible(`El tope de ${campo} va vacío (sin límite) o en un número entero mayor que cero.`);
   return numero;
 }
 
@@ -59,11 +60,11 @@ export async function crear(datos, usuario, ip) {
   if (existe.length > 0) clave = `${clave}-${Date.now().toString().slice(-4)}`;
 
   const [resultado] = await bd.query(
-    `INSERT INTO planes (clave, titulo, descripcion, precio, meses, incluye, max_usuarios, modulos_incluidos, orden)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, (SELECT COALESCE(MAX(o.orden), 0) + 1 FROM (SELECT orden FROM planes) o))`,
+    `INSERT INTO planes (clave, titulo, descripcion, precio, meses, incluye, max_usuarios, max_aliados, modulos_incluidos, orden)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, (SELECT COALESCE(MAX(o.orden), 0) + 1 FROM (SELECT orden FROM planes) o))`,
     [clave, titulo.slice(0, 80), String(datos?.descripcion ?? '').slice(0, 300) || null,
      precio, Math.max(1, Number(datos?.meses) || 1), (datos?.incluye ?? []).join('\n'),
-     topeUsuarios(datos?.maxUsuarios), (datos?.modulos ?? []).join('\n')]
+     tope(datos?.maxUsuarios, 'usuarios'), tope(datos?.maxAliados, 'aliados'), (datos?.modulos ?? []).join('\n')]
   );
   await registrarAuditoria({ usuarioId: usuario.id, accion: 'plan_creado', detalle: titulo, ip });
   return { id: resultado.insertId, valor: clave };
@@ -75,12 +76,19 @@ export async function editar(id, datos, usuario, ip) {
   if (!titulo) throw new ErrorVisible('El plan necesita un título.');
   if (!Number.isInteger(precio) || precio <= 0) throw new ErrorVisible('El precio va en guaraníes enteros.');
 
+  // desactivar por edición pasa por las mismas guardas que la baja
+  if (datos?.activo === false) {
+    const [[actual]] = await bd.query('SELECT clave, activo FROM planes WHERE id = ?', [id]);
+    if (!actual) throw new ErrorVisible('El plan no existe.', 404);
+    if (actual.activo) await exigirBajaPermitida(actual.clave);
+  }
+
   const [resultado] = await bd.query(
     `UPDATE planes SET titulo = ?, descripcion = ?, precio = ?, meses = ?, incluye = ?,
-            max_usuarios = ?, modulos_incluidos = ?, activo = ? WHERE id = ?`,
+            max_usuarios = ?, max_aliados = ?, modulos_incluidos = ?, activo = ? WHERE id = ?`,
     [titulo.slice(0, 80), String(datos?.descripcion ?? '').slice(0, 300) || null, precio,
      Math.max(1, Number(datos?.meses) || 1), (datos?.incluye ?? []).join('\n'),
-     topeUsuarios(datos?.maxUsuarios), (datos?.modulos ?? []).join('\n'),
+     tope(datos?.maxUsuarios, 'usuarios'), tope(datos?.maxAliados, 'aliados'), (datos?.modulos ?? []).join('\n'),
      datos?.activo === false ? 0 : 1, id]
   );
   if (resultado.affectedRows === 0) throw new ErrorVisible('El plan no existe.', 404);
@@ -88,16 +96,14 @@ export async function editar(id, datos, usuario, ip) {
   return { id };
 }
 
-export async function apagar(id, usuario, ip) {
-  const [[plan]] = await bd.query('SELECT clave FROM planes WHERE id = ?', [id]);
-  if (!plan) throw new ErrorVisible('El plan no existe.', 404);
-  if (plan.clave === SUSCRIPCION.PLAN_AL_VENCER) {
+async function exigirBajaPermitida(clave) {
+  if (clave === SUSCRIPCION.PLAN_AL_VENCER) {
     throw new ErrorVisible('No se puede dar de baja este plan: es al que cae el sistema cuando vence la suscripción.', 409);
   }
   const [[{ enUso }]] = await bd.query(
     `SELECT COUNT(*) AS enUso FROM suscripciones
       WHERE plan = ? AND estado = 'activa' AND fecha_fin > NOW()`,
-    [plan.clave]
+    [clave]
   );
   if (Number(enUso) > 0) {
     throw new ErrorVisible(
@@ -105,6 +111,12 @@ export async function apagar(id, usuario, ip) {
       409
     );
   }
+}
+
+export async function apagar(id, usuario, ip) {
+  const [[plan]] = await bd.query('SELECT clave FROM planes WHERE id = ?', [id]);
+  if (!plan) throw new ErrorVisible('El plan no existe.', 404);
+  await exigirBajaPermitida(plan.clave);
   const [resultado] = await bd.query('UPDATE planes SET activo = 0 WHERE id = ?', [id]);
   if (resultado.affectedRows === 0) throw new ErrorVisible('El plan no existe.', 404);
   await registrarAuditoria({ usuarioId: usuario.id, accion: 'plan_apagado', detalle: String(id), ip });

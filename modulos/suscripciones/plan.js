@@ -12,7 +12,7 @@ export function limpiarCachePlan(institucionId = institucionActual()) {
 }
 
 const PLAN_DEL_PROVEEDOR = {
-  clave: 'proveedor', texto: 'Proveedor', modulos: [], maxUsuarios: null, encontrado: true,
+  clave: 'proveedor', texto: 'Proveedor', modulos: [], maxUsuarios: null, maxAliados: null, encontrado: true,
   vigente: true, fechaFin: null, diasRestantes: null,
 };
 
@@ -32,6 +32,7 @@ async function resolver(institucionId) {
     texto: plan?.texto ?? minimo.texto,
     modulos: plan ? plan.modulos : minimo.modulos,
     maxUsuarios: plan ? plan.maxUsuarios : minimo.maxUsuarios,
+    maxAliados: plan ? plan.maxAliados : minimo.maxAliados,
     encontrado: Boolean(plan),
     vigente: Boolean(vigente),
     fechaFin: vigente?.fecha_fin ?? null,
@@ -53,7 +54,9 @@ export async function planEnVigor() {
 export function moduloIncluido(plan, modulo) {
   if (MODULOS_NUCLEO.includes(modulo)) return true;
   if (!plan) return true;
-  if (plan.modulos.length === 0) return plan.encontrado !== false;
+  // lista vacía = todos los módulos; un plan no encontrado cae al mínimo,
+  // que desde la tabla 19 también incluye todo (limitan los topes, no los módulos)
+  if (plan.modulos.length === 0) return true;
   return plan.modulos.includes(modulo);
 }
 
