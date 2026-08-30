@@ -25,6 +25,7 @@ export default function Diseno() {
   const usuario = usuarioActual();
   const ubicacion = useLocation();
   const [modulos, setModulos] = useState(null);
+  const [bloqueados, setBloqueados] = useState([]);
   const [plan, setPlan] = useState(null);
   const [correoActivo, setCorreoActivo] = useState(false);
   const [badges, setBadges] = useState({});
@@ -42,6 +43,7 @@ export default function Diseno() {
       llamarApi('/api/autenticacion/perfil')
         .then((respuesta) => {
           setModulos(respuesta.modulos);
+          setBloqueados(respuesta.modulosBloqueados ?? []);
           guardarNombresDeRol(respuesta.roles);
           setPlan(respuesta.plan ?? null);
           setCorreoActivo(Boolean(respuesta.correoActivo));
@@ -82,23 +84,22 @@ export default function Diseno() {
 
   if (raiz === '/panel' && inicio !== '/panel') return <Navigate to={inicio} replace />;
 
-  const motivo = !moduloPedido || puedeVer(moduloPedido) ? null : 'rol';
+  // dos motivos distintos: el rol no entra nunca, el plan se destraba pagando
+  const motivo = !moduloPedido || puedeVer(moduloPedido)
+    ? (moduloPedido && bloqueados.includes(moduloPedido) ? 'plan' : null)
+    : 'rol';
 
   if (motivo) {
-    const destino = inicio;
+    const destino = motivo === 'plan' ? '/suscripcion' : inicio;
     const seRepite = destino === ubicacion.pathname || destino === raiz;
     if (!seRepite) {
-      return <Navigate to={destino} replace state={{ sinAcceso: { motivo, plan: plan?.texto, modulo: NOMBRE_MODULO[moduloPedido] } }} />;
+      return (
+        <Navigate to={destino} replace
+          state={{ sinAcceso: { motivo, plan: plan?.texto, modulo: NOMBRE_MODULO[moduloPedido] } }} />
+      );
     }
 
-    return (
-      <SinSalida
-        motivo={motivo}
-        plan={plan?.texto}
-        modulo={NOMBRE_MODULO[moduloPedido]}
-        institucion={esProveedor ? 'Panel del proveedor' : institucion.nombre}
-      />
-    );
+    return <SinSalida motivo={motivo} plan={plan?.texto} modulo={NOMBRE_MODULO[moduloPedido]} />;
   }
 
   return (
@@ -111,7 +112,7 @@ export default function Diseno() {
           <span className="marca-logo"><Icono nombre="marca" tam={24} /></span>
           <span>{esProveedor ? 'Panel del proveedor' : institucion.nombre}</span>
         </div>
-        <MenuLateral puedeVer={puedeVer} plan={plan} badges={badges} />
+        <MenuLateral puedeVer={puedeVer} bloqueados={bloqueados} plan={plan} badges={badges} />
       </aside>
 
       <div className="principal">

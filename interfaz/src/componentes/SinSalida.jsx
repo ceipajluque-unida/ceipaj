@@ -1,7 +1,7 @@
 import { Button, Result } from 'antd';
 import { salir } from './Diseno.jsx';
 
-export default function SinSalida({ motivo, plan, modulo, institucion }) {
+export default function SinSalida({ motivo, plan, modulo }) {
   const porPlan = motivo === 'plan';
 
   return (
@@ -11,8 +11,8 @@ export default function SinSalida({ motivo, plan, modulo, institucion }) {
           status="warning"
           title={`${modulo ?? 'Tu sección'} no está disponible`}
           subTitle={porPlan
-            ? `El plan ${plan ?? 'contratado'} de ${institucion} no habilita esta sección. `
-              + 'Escribile a la institución para que la habilite.'
+            ? `El plan ${plan ?? 'contratado'} no incluye esta sección. `
+              + 'Pedile a quien administra el sistema que cambie de plan desde Suscripción.'
             : 'Tu cuenta no tiene ninguna sección habilitada. Pedíle a quien administra el sistema que revise tus permisos.'}
           extra={[
             <Button key="reintentar" type="primary" onClick={() => window.location.reload()}>Reintentar</Button>,

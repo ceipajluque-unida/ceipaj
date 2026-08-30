@@ -219,11 +219,26 @@ export const MEDIOS_PAGO = [
   { valor: 'billetera', texto: 'Billetera electrónica' },
 ];
 
+// los módulos que un plan NUNCA puede bloquear: si el vencimiento tapara Pagos
+// o Suscripción, la institución no tendría por dónde renovar
 export const MODULOS_NUCLEO = ['usuarios', 'configuracion', 'suscripcion', 'pagos', 'auditoria'];
 
-// según la tabla 19 de la tesis: todos los planes incluyen todos los módulos
-// y se diferencian por los topes de usuarios y aliados y por el soporte
+// semilla de los planes. los módulos son el punto de partida: el proveedor los
+// edita desde la pantalla Planes. lista vacía = el plan habilita todos.
 export const PLANES_SUSCRIPCION = [
+  // el plan al que cae una institución sin suscripción vigente. deja consultar
+  // lo que ya se cargó y nada más: sin aliados, sin comisiones y sin reportes.
+  // no se cobra, así que su precio es cero y no pasa por la pasarela.
+  {
+    valor: 'free',
+    texto: 'Free',
+    precio: 0,
+    meses: 1,
+    maxUsuarios: 1,
+    maxAliados: 0,
+    modulos: ['leads'],
+    incluye: ['Consulta de los interesados ya cargados', 'Sin costo'],
+  },
   {
     valor: 'basico',
     texto: 'Básico',
@@ -231,7 +246,7 @@ export const PLANES_SUSCRIPCION = [
     meses: 1,
     maxUsuarios: 3,
     maxAliados: 10,
-    modulos: [],
+    modulos: ['leads', 'seguimiento', 'aliados', 'portal'],
     incluye: ['Soporte estándar'],
   },
   {
@@ -241,7 +256,7 @@ export const PLANES_SUSCRIPCION = [
     meses: 1,
     maxUsuarios: 8,
     maxAliados: 25,
-    modulos: [],
+    modulos: ['leads', 'seguimiento', 'aliados', 'portal', 'comisiones', 'reportes'],
     incluye: ['Soporte estándar'],
   },
   {
@@ -266,7 +281,7 @@ export const SUSCRIPCION = {
   DIAS_AVISO_VENCIMIENTO: 7,
   HORAS_CONTROL_VENCIMIENTO: 12,
 
-  PLAN_AL_VENCER: 'basico',
+  PLAN_AL_VENCER: 'free',
 
   SEGUNDOS_CACHE_PLAN: Number(process.env.CACHE_PLAN_SEGUNDOS ?? 20),
 };

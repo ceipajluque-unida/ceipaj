@@ -1,8 +1,8 @@
-import { Button, Input, InputNumber, Switch } from 'antd';
-import { conMiles, sinMiles } from '../servicios/formato.js';
+import { Button, Checkbox, Input, InputNumber, Switch } from 'antd';
+import { conMiles, sinMiles, nombreModulo } from '../servicios/formato.js';
 import Modal from './Modal.jsx';
 
-export default function FormularioPlan({ abierto, editando, formulario, error, cargando, alCambiar, alEnviar, alCerrar }) {
+export default function FormularioPlan({ abierto, editando, modulos = [], formulario, error, cargando, alCambiar, alEnviar, alCerrar }) {
   const campo = (clave) => (evento) => alCambiar({ ...formulario, [clave]: evento.target.value });
 
   return (
@@ -34,6 +34,25 @@ export default function FormularioPlan({ abierto, editando, formulario, error, c
           </label>
         </div>
 
+        <fieldset className="grupo-casillas">
+          <legend>Secciones que habilita este plan (ninguna marcada = todas)</legend>
+          <div className="casillas">
+            {modulos.map((modulo) => (
+              <Checkbox
+                key={modulo}
+                checked={formulario.modulos.includes(modulo)}
+                onChange={(evento) => alCambiar({
+                  ...formulario,
+                  modulos: evento.target.checked
+                    ? [...formulario.modulos, modulo]
+                    : formulario.modulos.filter((m) => m !== modulo),
+                })}
+              >
+                {nombreModulo(modulo)}
+              </Checkbox>
+            ))}
+          </div>
+        </fieldset>
         <label><span>Detalle de lo que incluye (uno por línea)</span>
           <Input.TextArea value={formulario.incluye} onChange={campo('incluye')} rows={4} />
         </label>

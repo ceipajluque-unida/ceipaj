@@ -151,19 +151,54 @@ async function sembrarPlanes(conexion) {
   if (Number(total) === 0) {
     for (const [orden, plan] of PLANES_SUSCRIPCION.entries()) {
       await conexion.query(
-        'INSERT INTO planes (clave, titulo, precio, meses, incluye, max_usuarios, max_aliados, orden) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        [plan.valor, plan.texto, plan.precio, plan.meses, plan.incluye.join('\n'), plan.maxUsuarios, plan.maxAliados, orden]
+        'INSERT INTO planes (clave, titulo, precio, meses, incluye, max_usuarios, max_aliados, modulos_incluidos, orden) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [plan.valor, plan.texto, plan.precio, plan.meses, plan.incluye.join('\n'), plan.maxUsuarios, plan.maxAliados, plan.modulos.join(String.fromCharCode(10)), orden]
       );
     }
     console.log(`planes cargados: ${PLANES_SUSCRIPCION.length}`);
     return;
   }
-  for (const plan of PLANES_SUSCRIPCION) {
+  for (const [orden, plan] of PLANES_SUSCRIPCION.entries()) {
+    // los planes de la semilla que todavia no estan en la base se agregan; los
+    // que ya estan no se tocan, para respetar lo que el proveedor haya editado
+    const [[{ existe }]] = await conexion.query(
+      'SELECT COUNT(*) AS existe FROM planes WHERE clave = ?', [plan.valor]
+    );
+    if (Number(existe) === 0) {
+      await conexion.query(
+        'INSERT INTO planes (clave, titulo, precio, meses, incluye, max_usuarios, max_aliados, modulos_incluidos, orden) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [plan.valor, plan.texto, plan.precio, plan.meses, plan.incluye.join(String.fromCharCode(10)),
+         plan.maxUsuarios, plan.maxAliados, plan.modulos.join(String.fromCharCode(10)), orden]
+      );
+      console.log('plan agregado: ' + plan.valor);
+      // al entrar un plan nuevo adelante, los de la semilla se reacomodan en el
+      // orden en que se los presenta. los planes propios del proveedor no se tocan.
+      for (const [posicion, otro] of PLANES_SUSCRIPCION.entries()) {
+        await conexion.query('UPDATE planes SET orden = ? WHERE clave = ?', [posicion, otro.valor]);
+      }
+      continue;
+    }
     const [resultado] = await conexion.query(
       'UPDATE planes SET max_usuarios = ? WHERE clave = ? AND max_usuarios IS NULL',
       [plan.maxUsuarios, plan.valor]
     );
     if (resultado.affectedRows > 0) console.log(`límites completados en el plan ${plan.valor}`);
+    // el Básico se sembró sin Aliados y su tope de 10 aliados no quería decir
+    // nada. se corrige una sola vez: el filtro por el valor viejo lo hace idempotente
+    if (plan.valor === 'basico') {
+      const [ajuste] = await conexion.query(
+        'UPDATE planes SET modulos_incluidos = ? WHERE clave = ? AND modulos_incluidos = ?',
+        [plan.modulos.join(String.fromCharCode(10)), plan.valor, ['leads', 'seguimiento'].join(String.fromCharCode(10))]
+      );
+      if (ajuste.affectedRows > 0) console.log('el plan básico suma aliados y portal, que su tope ya suponía');
+    }
+    // solo cuando nunca se definieron: al vaciarlos desde la pantalla se guarda
+    // una cadena vacía, que quiere decir "todos" y este paso no vuelve a tocar
+    const [conModulos] = await conexion.query(
+      'UPDATE planes SET modulos_incluidos = ? WHERE clave = ? AND modulos_incluidos IS NULL',
+      [plan.modulos.join(String.fromCharCode(10)), plan.valor]
+    );
+    if (conModulos.affectedRows > 0) console.log(`módulos sembrados en el plan ${plan.valor}`);
     if (plan.maxAliados !== null) {
       await conexion.query(
         'UPDATE planes SET max_aliados = ? WHERE clave = ? AND max_aliados IS NULL',
@@ -251,13 +286,15 @@ async function migrar() {
   await asegurarColumna(conexion, 'suscripciones', 'cancelada_en', 'DATETIME NULL AFTER pago_id');
   await asegurarColumna(conexion, 'planes', 'max_usuarios', 'INT UNSIGNED NULL AFTER incluye');
   await asegurarColumna(conexion, 'planes', 'max_aliados', 'INT UNSIGNED NULL AFTER max_usuarios');
+  await asegurarColumna(conexion, 'planes', 'modulos_incluidos', 'TEXT NULL AFTER max_aliados');
   await asegurarColumna(conexion, 'usuarios', 'sin_2fa', "TINYINT(1) NOT NULL DEFAULT 0 AFTER activado_2fa");
   await asegurarColumna(conexion, 'suscripciones', 'motivo_cierre', 'VARCHAR(20) NULL AFTER cancelada_en');
   // dejar de renovar y despues llegar a la fecha es un vencimiento, no una baja:
   // una version anterior de este paso las confundia
   await conexion.query(
     "UPDATE suscripciones SET motivo_cierre = 'vencimiento' "
-    + "WHERE motivo_cierre = 'baja' AND (cancelada_en IS NULL OR fecha_fin > cancelada_en)"
+    + "WHERE motivo_cierre = 'baja' AND baja_en IS NULL "
+    + "  AND (cancelada_en IS NULL OR fecha_fin > cancelada_en)"
   );
   // las que ya estaban cerradas y no tienen motivo: si llegaron a su fecha, fue
   // vencimiento; si se cortaron antes, fue una baja
@@ -266,6 +303,23 @@ async function migrar() {
        WHEN cancelada_en IS NOT NULL AND fecha_fin <= cancelada_en THEN 'baja'
        ELSE 'vencimiento' END
       WHERE estado <> 'activa' AND motivo_cierre IS NULL`
+  );
+
+  await asegurarColumna(conexion, 'suscripciones', 'baja_en', 'DATETIME NULL AFTER motivo_cierre');
+  await asegurarColumna(conexion, 'suscripciones', 'baja_por', 'INT UNSIGNED NULL AFTER baja_en');
+  await asegurarColumna(conexion, 'suscripciones', 'motivo_baja', 'VARCHAR(200) NULL AFTER baja_por');
+  // las bajas anteriores solo quedaron en la auditoría: se rescatan de ahí para
+  // que la institución pueda ver por qué le cortaron el plan
+  await conexion.query(
+    `UPDATE suscripciones s
+        JOIN (SELECT CAST(TRIM(TRAILING ':' FROM SUBSTRING_INDEX(SUBSTRING_INDEX(detalle, ' ', 2), ' ', -1))
+                       AS UNSIGNED) AS suscripcion_id,
+                     MIN(fecha) AS fecha, MIN(usuario_id) AS usuario_id,
+                     SUBSTRING_INDEX(detalle, ': ', -1) AS motivo
+                FROM auditoria WHERE accion = 'suscripcion_dada_de_baja'
+               GROUP BY suscripcion_id, motivo) a ON a.suscripcion_id = s.id
+         SET s.baja_en = a.fecha, s.baja_por = a.usuario_id, s.motivo_baja = LEFT(a.motivo, 200)
+       WHERE s.motivo_cierre = 'baja' AND s.motivo_baja IS NULL`
   );
 
   await asegurarTipo(conexion, 'ajustes_sistema', 'valor', 'mediumtext', 'MEDIUMTEXT NULL');
@@ -296,8 +350,6 @@ async function migrar() {
   await asegurarClaveForanea(conexion, 'usuarios', 'fk_usuarios_rol',
     'FOREIGN KEY (rol) REFERENCES roles (clave) ON UPDATE CASCADE');
   await borrarAjustesRetirados(conexion);
-  // el plan ya no decide modulos: se retira cuando nada de arriba la usa
-  await quitarColumna(conexion, 'planes', 'modulos_incluidos');
 
   await conexion.end();
   console.log(`base "${BASE_DATOS.NOMBRE}" lista con todas las tablas del sistema.`);

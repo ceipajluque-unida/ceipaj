@@ -35,8 +35,9 @@ export async function suscripcionVigente() {
             DATEDIFF(fecha_fin, NOW()) AS dias_restantes,
             DATEDIFF(fecha_fin, fecha_inicio) AS dias_totales
        FROM suscripciones
-      WHERE institucion_id = ? AND estado = ? AND fecha_inicio <= NOW() AND fecha_fin > NOW()
-      ORDER BY fecha_inicio DESC LIMIT 1`,
+      WHERE institucion_id = ? AND estado = ? AND fecha_inicio <= fecha_fin
+        AND fecha_inicio <= NOW() AND fecha_fin > NOW()
+      ORDER BY fecha_fin DESC, id DESC LIMIT 1`,
     [institucionDelPedido(), ESTADOS_SUSCRIPCION.ACTIVA]
   );
   const vigente = filas[0];
@@ -88,96 +89,76 @@ export async function calcularCambio(claveDestino) {
     };
   }
 
-  const diasDelPeriodo = Math.max(1, Number(vigente.dias_totales) || 30);
-  const diasQueCubre = destino.precio > 0
-    ? Math.floor((credito * diasDelPeriodo) / destino.precio)
-    : diasDelPeriodo;
-
+  // mientras haya un plan vigente solo se sube. bajar obligaria a devolver plata
+  // o a recortar un periodo ya pagado, y ninguna de las dos cosas hace el sistema.
   return {
-    tipo: 'reduccion', plan: destino.valor, texto: destino.texto, precio: destino.precio,
-    aPagar: 0, credito, desde: null, diasQueCubre,
+    tipo: 'no_permitido', plan: destino.valor, texto: destino.texto, precio: destino.precio,
+    aPagar: 0, credito: 0, desde: null,
     diasRestantes: vigente.dias_restantes, planActual: actual?.texto ?? vigente.plan,
+    motivo: `El plan ${destino.texto} es más económico que el ${actual?.texto ?? vigente.plan}, que está vigente `
+      + `hasta el vencimiento. Se puede pasar a un plan superior cuando quieras; para bajar, esperá a que `
+      + `termine el período contratado.`,
   };
 }
 
-export async function aplicarReduccion(claveDestino, usuario, ip) {
-  const cambio = await calcularCambio(claveDestino);
-  if (cambio.tipo !== 'reduccion') {
-    throw new ErrorVisible('Ese plan no es una baja de categoría: se contrata pagando.', 409);
-  }
-  if (cambio.diasQueCubre < 1) {
-    throw new ErrorVisible('No queda saldo suficiente para cubrir un día del plan nuevo. Esperá al vencimiento o renová.', 409);
-  }
-  const institucionId = institucionDelPedido();
-  const vigente = await suscripcionVigente();
-
-  const conexion = await bd.getConnection();
-  try {
-    await conexion.beginTransaction();
-    await conexion.query(
-      `UPDATE suscripciones SET estado = ?, fecha_fin = NOW(), motivo_cierre = 'cambio_de_plan'
-        WHERE id = ? AND institucion_id = ?`,
-      [ESTADOS_SUSCRIPCION.CANCELADA, vigente.id, institucionId]
-    );
-    await conexion.query(
-      `INSERT INTO suscripciones (institucion_id, plan, estado, monto, fecha_inicio, fecha_fin, creado_por)
-       VALUES (?, ?, ?, ?, NOW(), DATE_ADD(NOW(), INTERVAL ? DAY), ?)`,
-      [institucionId, cambio.plan, ESTADOS_SUSCRIPCION.ACTIVA, cambio.credito, cambio.diasQueCubre, usuario.id]
-    );
-    await conexion.commit();
-  } catch (error) {
-    await conexion.rollback();
-    throw error;
-  } finally {
-    conexion.release();
-  }
-
-  await registrarAuditoria({
-    usuarioId: usuario.id,
-    accion: 'suscripcion_reducida',
-    detalle: `cambió el plan de ${vigente.plan} a ${cambio.plan}, saldo ${cambio.credito} por ${cambio.diasQueCubre} días`,
-    ip,
-  });
-  limpiarCachePlan(institucionId);
-  return { plan: cambio.plan, dias: cambio.diasQueCubre, credito: cambio.credito };
-}
-
-// varios periodos pueden estar activos a la vez (renovaciones encadenadas), pero
-// solo uno rige: el que cubre hoy y llega mas lejos. decirles a todos "Activa"
-// confunde, asi que cada uno informa su situacion real.
+// cada periodo informa su situacion real: decirles "Activa" a todos confunde
+// cuando conviven varios. el orden de las reglas importa y va de lo mas
+// especifico a lo mas general.
 function conSituacion(filas) {
   const ahora = Date.now();
-  const enVigencia = filas.filter((f) => f.estado === ESTADOS_SUSCRIPCION.ACTIVA
-    && new Date(f.fecha_inicio).getTime() <= ahora && new Date(f.fecha_fin).getTime() > ahora);
-  const rige = enVigencia.sort((a, b) => new Date(b.fecha_fin) - new Date(a.fecha_fin))[0];
+  const momento = (valor) => new Date(valor).getTime();
+  const coherente = (f) => momento(f.fecha_inicio) <= momento(f.fecha_fin);
+
+  const enVigencia = filas.filter((f) => f.estado === ESTADOS_SUSCRIPCION.ACTIVA && coherente(f)
+    && momento(f.fecha_inicio) <= ahora && momento(f.fecha_fin) > ahora);
+  const rige = enVigencia.sort((a, b) => momento(b.fecha_fin) - momento(a.fecha_fin))[0];
 
   return filas.map((f) => {
-    // el motivo manda: las que se cerraron antes de existir esta columna quedaron
-    // como vencidas aunque hubieran sido una baja, y el motivo las distingue
+    // un periodo que empieza despues de terminar es un dato roto, no una situacion:
+    // se avisa en vez de imprimir un rango al reves como si nada
+    if (!coherente(f)) return { ...f, situacion: 'inconsistente' };
     if (f.motivo_cierre === 'cambio_de_plan') return { ...f, situacion: 'reemplazada' };
     if (f.motivo_cierre === 'baja') return { ...f, situacion: 'dada_de_baja' };
     if (f.estado !== ESTADOS_SUSCRIPCION.ACTIVA) return { ...f, situacion: 'vencida' };
-    if (new Date(f.fecha_inicio).getTime() > ahora) return { ...f, situacion: 'programada' };
-    if (new Date(f.fecha_fin).getTime() <= ahora) return { ...f, situacion: 'vencida' };
-    return { ...f, situacion: rige && rige.id === f.id ? 'en_curso' : 'solapada' };
+    if (momento(f.fecha_inicio) > ahora) return { ...f, situacion: 'programada' };
+    if (momento(f.fecha_fin) <= ahora) return { ...f, situacion: 'vencida' };
+    return { ...f, situacion: rige && rige.id === f.id ? 'en_curso' : 'cubierta' };
   });
 }
 
 export async function listarSuscripciones() {
   const [filas] = await bd.query(
     `SELECT s.id, s.plan, s.estado, s.monto, s.fecha_inicio, s.fecha_fin,
-            s.cancelada_en, s.motivo_cierre, p.referencia, p.estado AS estado_pago
+            s.cancelada_en, s.motivo_cierre, s.baja_en, s.motivo_baja,
+            u.nombre AS baja_por_nombre, p.referencia, p.estado AS estado_pago
        FROM suscripciones s
        LEFT JOIN pagos p ON p.id = s.pago_id
+       LEFT JOIN usuarios u ON u.id = s.baja_por
       WHERE s.institucion_id = ?
-      ORDER BY s.fecha_inicio DESC LIMIT 50`,
+      ORDER BY s.fecha_inicio DESC, s.id DESC LIMIT 50`,
     [institucionDelPedido()]
   );
-  return conSituacion(filas);
+  // lo que importa va arriba: el que rige hoy, despues lo que todavia puede
+  // pasar, y al final el historial cerrado. ordenar solo por fecha dejaba el
+  // periodo vigente fuera de la primera pagina.
+  const PRIORIDAD = { en_curso: 0, programada: 1, cubierta: 2, inconsistente: 3 };
+  return conSituacion(filas).sort((a, b) => {
+    const pa = PRIORIDAD[a.situacion] ?? 9;
+    const pb = PRIORIDAD[b.situacion] ?? 9;
+    if (pa !== pb) return pa - pb;
+    return new Date(b.fecha_inicio) - new Date(a.fecha_inicio) || b.id - a.id;
+  });
 }
 
 export async function activarPorPago({ pagoId, institucionId, plan, monto, usuarioId }, ip, conexion = bd) {
-  if (!institucionId) throw new ErrorVisible('El pago no tiene institución: no se puede activar la suscripción.', 409);
+  if (!institucionId) {
+    throw new ErrorVisible(
+      'El pago se registró, pero no se pudo activar la suscripción porque no quedó asociado a ninguna '
+      + 'institución. Avisale al proveedor con el número de comprobante: el cobro está hecho y la '
+      + 'suscripción se activa a mano.',
+      409
+    );
+  }
   const [existe] = await conexion.query('SELECT id FROM suscripciones WHERE pago_id = ?', [pagoId]);
   if (existe.length > 0) return existe[0];
 
@@ -186,8 +167,8 @@ export async function activarPorPago({ pagoId, institucionId, plan, monto, usuar
 
   const [vigentes] = await conexion.query(
     `SELECT id, plan, monto, fecha_fin FROM suscripciones
-      WHERE institucion_id = ? AND estado = ? AND fecha_fin > NOW()
-      ORDER BY fecha_fin DESC LIMIT 1`,
+      WHERE institucion_id = ? AND estado = ? AND fecha_inicio <= NOW() AND fecha_fin > NOW()
+      ORDER BY fecha_fin DESC, id DESC LIMIT 1`,
     [institucionId, ESTADOS_SUSCRIPCION.ACTIVA]
   );
   const enCurso = vigentes[0];
@@ -198,7 +179,8 @@ export async function activarPorPago({ pagoId, institucionId, plan, monto, usuar
     const [[planViejo]] = await conexion.query('SELECT precio FROM planes WHERE clave = ?', [enCurso.plan]);
     if (Number(planNuevo?.precio ?? 0) > Number(planViejo?.precio ?? 0)) {
       await conexion.query(
-        `UPDATE suscripciones SET estado = ?, fecha_fin = NOW(), motivo_cierre = 'cambio_de_plan'
+        `UPDATE suscripciones SET estado = ?, fecha_fin = GREATEST(fecha_inicio, NOW()),
+                motivo_cierre = 'cambio_de_plan'
           WHERE id = ?`,
         [ESTADOS_SUSCRIPCION.CANCELADA, enCurso.id]
       );
@@ -240,10 +222,11 @@ export async function darDeBajaAhora(id, motivo, usuario, ip) {
 
   const institucionId = institucionDelPedido();
   const [resultado] = await bd.query(
-    `UPDATE suscripciones SET estado = ?, fecha_fin = NOW(), cancelada_en = COALESCE(cancelada_en, NOW()),
-            motivo_cierre = 'baja'
+    `UPDATE suscripciones SET estado = ?, fecha_fin = GREATEST(fecha_inicio, NOW()),
+            cancelada_en = COALESCE(cancelada_en, NOW()),
+            motivo_cierre = 'baja', baja_en = NOW(), baja_por = ?, motivo_baja = ?
       WHERE id = ? AND institucion_id = ? AND estado = ?`,
-    [ESTADOS_SUSCRIPCION.CANCELADA, id, institucionId, ESTADOS_SUSCRIPCION.ACTIVA]
+    [ESTADOS_SUSCRIPCION.CANCELADA, usuario.id, razon, id, institucionId, ESTADOS_SUSCRIPCION.ACTIVA]
   );
   if (resultado.affectedRows === 0) throw new ErrorVisible('La suscripción no existe o ya no estaba activa.', 404);
 

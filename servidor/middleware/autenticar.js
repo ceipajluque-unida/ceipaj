@@ -45,14 +45,34 @@ export function permitirRoles(...roles) {
 }
 
 // permiso por modulo: a diferencia de permitirRoles, resuelve en cada pedido,
-// asi un cambio en los roles se siente enseguida y no al reiniciar el servidor
-export function permitirModulo(modulo) {
+// asi un cambio en los roles o en los planes se siente enseguida y no al
+// reiniciar el servidor. son dos preguntas distintas y en este orden:
+//   1. el ROL de la persona, ¿entra a este módulo?   no -> 403
+//   2. el PLAN de la institución, ¿lo tiene contratado?   no -> 402
+// separadas a propósito: "no te corresponde" y "no lo pagaste" no son lo mismo,
+// ni para quien lo lee ni para lo que la pantalla tiene que ofrecer después.
+// porPlan en false deja solo la pregunta del rol. lo usa la pantalla de inicio:
+// sus cifras se leen con el permiso de Reportes, pero si el plan las tapara, la
+// institución más barata entraría y lo primero que vería sería un error.
+export function permitirModulo(modulo, { porPlan = true } = {}) {
   return async (req, res, siguiente) => {
     try {
       const { rolesDelModulo } = await import('../../modulos/roles/servicio.js');
       const permitidos = await rolesDelModulo(modulo);
       if (!permitidos.includes(req.usuario?.rol)) {
         return res.status(403).json({ error: 'Sin permiso para esta operación.' });
+      }
+
+      if (!porPlan) return siguiente();
+
+      const { planEnVigor, moduloIncluido } = await import('../../modulos/suscripciones/plan.js');
+      const plan = await planEnVigor();
+      if (!moduloIncluido(plan, modulo)) {
+        return res.status(402).json({
+          error: `El plan ${plan.texto} no incluye esta sección. Se habilita cambiando de plan desde Suscripción.`,
+          modulo,
+          plan: plan.clave,
+        });
       }
       return siguiente();
     } catch (excepcion) {

@@ -12,6 +12,7 @@ rutasPlanes.get('/', async (req, res) => res.json(await servicio.listarActivos()
 
 rutasPlanes.use(autenticar, permitirModulo('planes'));
 
+rutasPlanes.get('/modulos', (req, res) => res.json(servicio.catalogoModulos()));
 rutasPlanes.get('/todos', async (req, res) => res.json(await servicio.listarTodos()));
 rutasPlanes.post('/', async (req, res) => res.status(201).json(await servicio.crear(req.body, req.usuario, req.ip)));
 rutasPlanes.put('/:id', async (req, res) => res.json(await servicio.editar(req.params.id, req.body, req.usuario, req.ip)));

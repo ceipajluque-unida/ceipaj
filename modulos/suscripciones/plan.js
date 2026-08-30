@@ -12,7 +12,7 @@ export function limpiarCachePlan(institucionId = institucionActual()) {
 }
 
 const PLAN_DEL_PROVEEDOR = {
-  clave: 'proveedor', texto: 'Proveedor', maxUsuarios: null, maxAliados: null, encontrado: true,
+  clave: 'proveedor', texto: 'Proveedor', modulos: [], maxUsuarios: null, maxAliados: null, encontrado: true,
   vigente: true, fechaFin: null, diasRestantes: null,
 };
 
@@ -30,6 +30,7 @@ async function resolver(institucionId) {
   return {
     clave,
     texto: plan?.texto ?? minimo.texto,
+    modulos: plan ? plan.modulos : (minimo.modulos ?? []),
     maxUsuarios: plan ? plan.maxUsuarios : minimo.maxUsuarios,
     maxAliados: plan ? plan.maxAliados : minimo.maxAliados,
     encontrado: Boolean(plan),
@@ -48,4 +49,18 @@ export async function planEnVigor() {
   const plan = await resolver(institucionId);
   cache.set(institucionId, { plan, vence: ahora + SUSCRIPCION.SEGUNDOS_CACHE_PLAN * 1000 });
   return plan;
+}
+
+// el plan puede tapar un módulo, pero nunca los del núcleo: sin Pagos ni
+// Suscripción la institución no tendría por dónde renovar y quedaría trabada.
+// lista vacía = el plan habilita todos los módulos.
+export function moduloIncluido(plan, modulo) {
+  if (MODULOS_NUCLEO.includes(modulo)) return true;
+  if (!plan || plan.modulos.length === 0) return true;
+  return plan.modulos.includes(modulo);
+}
+
+export async function modulosHabilitados(claves) {
+  const plan = await planEnVigor();
+  return claves.filter((clave) => moduloIncluido(plan, clave));
 }

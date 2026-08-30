@@ -11,7 +11,7 @@ import * as politica from '../../servidor/politicaClave.js';
 import { ErrorVisible } from '../../servidor/errores.js';
 import * as captcha from '../../servidor/recaptcha.js';
 import { correoConfigurado } from '../../servidor/correo.js';
-import { planEnVigor } from '../suscripciones/plan.js';
+import { planEnVigor, moduloIncluido } from '../suscripciones/plan.js';
 
 export async function estado(req, res) {
   res.json({
@@ -132,6 +132,7 @@ export async function perfil(req, res) {
   res.json({
     usuario: { ...req.usuario, metodo_2fa: extra?.metodo_2fa ?? 'app', telefono: extra?.telefono ?? '', direccion: extra?.direccion ?? '' },
     modulos,
+    modulosBloqueados: modulos.filter((clave) => !moduloIncluido(plan, clave)),
     roles,
     plan: { clave: plan.clave, texto: plan.texto, vigente: plan.vigente, fechaFin: plan.fechaFin, diasRestantes: plan.diasRestantes },
     // al proveedor solo se le ofrece la app: el correo y el sms son ajustes

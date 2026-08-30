@@ -7,5 +7,4 @@ export const rutasSuscripciones = Router();
 
 rutasSuscripciones.get('/', autenticar, permitirModulo('suscripcion'), controlador.resumen);
 rutasSuscripciones.get('/planes', autenticar, permitirModulo('suscripcion'), controlador.planes);
-rutasSuscripciones.post('/reducir', autenticar, permitirRoles(...PERMISOS_ESCRITURA.suscripcion), controlador.reducir);
 rutasSuscripciones.post('/:id/cancelar', autenticar, permitirRoles(...PERMISOS_ESCRITURA.suscripcion), controlador.cancelar);

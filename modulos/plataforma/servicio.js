@@ -10,7 +10,8 @@ import { bd } from '../../servidor/bd/conexion.js';
 const PLAN_QUE_RIGE = `
   SELECT i.id AS institucion_id,
          (SELECT s.plan FROM suscripciones s
-           WHERE s.institucion_id = i.id AND s.estado = 'activa' AND s.fecha_fin > NOW()
+           WHERE s.institucion_id = i.id AND s.estado = 'activa'
+             AND s.fecha_inicio <= NOW() AND s.fecha_fin > NOW()
            ORDER BY s.fecha_fin DESC, s.id DESC LIMIT 1) AS plan
     FROM instituciones i`;
 
@@ -37,13 +38,11 @@ export async function resumen() {
       FROM (${PLAN_QUE_RIGE}) v
       JOIN planes pl ON pl.clave = v.plan`);
 
-  const pagos = Number(cifras.pagos);
   return {
     ...cifras,
     conPlanVigente: recurrente.conPlanVigente,
     sinPlanPago: Number(cifras.instituciones) - Number(recurrente.conPlanVigente),
     ingresoMensual: recurrente.ingresoMensual,
-    ticketPromedio: pagos > 0 ? Math.round(Number(cifras.recaudado) / pagos) : 0,
   };
 }
 
@@ -77,10 +76,12 @@ export async function porInstitucion() {
              WHERE a.institucion_id = i.id AND ua.activo = 1)                                AS aliados,
            (SELECT COUNT(*) FROM leads l WHERE l.institucion_id = i.id AND l.activo = 1)    AS interesados,
            (SELECT s.plan FROM suscripciones s
-             WHERE s.institucion_id = i.id AND s.estado = 'activa' AND s.fecha_fin > NOW()
+             WHERE s.institucion_id = i.id AND s.estado = 'activa'
+               AND s.fecha_inicio <= NOW() AND s.fecha_fin > NOW()
              ORDER BY s.fecha_fin DESC, s.id DESC LIMIT 1)                                  AS planVigente,
            (SELECT s.fecha_fin FROM suscripciones s
-             WHERE s.institucion_id = i.id AND s.estado = 'activa' AND s.fecha_fin > NOW()
+             WHERE s.institucion_id = i.id AND s.estado = 'activa'
+               AND s.fecha_inicio <= NOW() AND s.fecha_fin > NOW()
              ORDER BY s.fecha_fin DESC, s.id DESC LIMIT 1)                                  AS venceEl,
            (SELECT s.plan FROM suscripciones s WHERE s.institucion_id = i.id
              ORDER BY s.fecha_fin DESC, s.id DESC LIMIT 1)                                  AS ultimoPlan,

@@ -9,18 +9,14 @@ import VentanaPago from '../componentes/VentanaPago.jsx';
 import { abrirVentanaPago, llevarVentanaPagoA, cerrarVentanaPago } from '../servicios/ventanaPago.js';
 import { descargarArchivo } from '../servicios/descargas.js';
 import TarjetasPlanes, { ETIQUETA_CAMBIO } from '../componentes/TarjetasPlanes.jsx';
+import Estado from '../componentes/Estado.jsx';
+import { situacionDe } from '../servicios/situaciones.js';
 
 function textoPeriodo(meses) {
   if (meses === 1) return 'por mes';
   if (meses === 12) return 'por año';
   return `cada ${meses} meses`;
 }
-
-// el mismo vocabulario que ve el proveedor en la ficha de la institución
-const SITUACION = {
-  en_curso: 'En curso', programada: 'Programada', solapada: 'Solapada',
-  vencida: 'Vencida', dada_de_baja: 'Dada de baja', reemplazada: 'Reemplazada por otro plan',
-};
 
 export default function Suscripciones() {
   const navegar = useNavigate();
@@ -61,12 +57,12 @@ export default function Suscripciones() {
   }
 
   async function abrirPago(plan, cambio) {
-    if (cambio?.tipo === 'reduccion') return bajarDePlan(plan, cambio);
+    if (cambio?.tipo === 'no_permitido') return avisarError(cambio.motivo);
     // con un solo medio no hay nada que elegir: se confirma y se sale a la pasarela
     if (medios.length === 1) {
       const unico = medios[0];
       const ok = await confirmar({
-        titulo: `${ETIQUETA_CAMBIO[cambio?.tipo] ?? 'Contratar'} plan ${plan.texto}?`,
+        titulo: `¿${ETIQUETA_CAMBIO[cambio?.tipo] ?? 'Contratar'} plan ${plan.texto}?`,
         texto: resumenDelPago(plan, cambio),
         confirmar: 'Sí, ir a pagar',
       });
@@ -76,23 +72,6 @@ export default function Suscripciones() {
     setPlanElegido({ ...plan, cambio });
     setMedio('');
     setError(null);
-  }
-
-  async function bajarDePlan(plan, cambio) {
-    const ok = await confirmar({
-      titulo: `Pasar al plan ${plan.texto}?`,
-      texto: `El saldo de ${guaranies(cambio.credito)} que te queda del plan ${cambio.planActual} se convierte en `
-        + `${contar(cambio.diasQueCubre, 'día', 'días')} del plan ${plan.texto}. El cambio es inmediato y no se cobra nada.`,
-      confirmar: 'Sí, cambiar',
-    });
-    if (!ok) return;
-    try {
-      const r = await llamarApi('/api/suscripciones/reducir', { metodo: 'POST', cuerpo: { plan: plan.valor } });
-      await cargar();
-      toast(`Ya estás en el plan ${plan.texto}, por ${contar(r.dias, 'día', 'días')}.`);
-    } catch (excepcion) {
-      avisarError(excepcion.message);
-    }
   }
 
   async function procesarPago(plan, medioElegido) {
@@ -142,10 +121,11 @@ export default function Suscripciones() {
 
   async function cancelar(vigente) {
     const ok = await confirmar({
-      titulo: 'Dar de baja la renovación?',
+      titulo: '¿Dejar de renovar el plan?',
       texto: `Vas a seguir usando el plan ${vigente.texto_plan} con todo lo que incluye hasta el `
         + `${fecha(vigente.fecha_fin)}, que es el período que ya pagaste. Desde esa fecha el sistema `
-        + 'pasa al plan mínimo. No hay reembolso por los días sin usar.',
+        + 'pasa al plan Free, desde donde se puede consultar todo lo cargado. No hay reembolso por los '
+        + 'días sin usar.',
       confirmar: 'Sí, dar de baja',
       peligro: true,
     });
@@ -176,7 +156,7 @@ export default function Suscripciones() {
       dataIndex: 'estado',
       key: 'estado',
       render: (_, periodo) => (
-        <span className={`estado estado-${periodo.estado}`}>{SITUACION[periodo.situacion] ?? legible(periodo.estado)}</span>
+        <Estado tono={situacionDe(periodo.situacion).tono}>{situacionDe(periodo.situacion).texto}</Estado>
       ),
     },
     { title: 'Referencia de pago', dataIndex: 'referencia', key: 'referencia', render: (valor) => valor ?? '—' },
@@ -237,12 +217,12 @@ export default function Suscripciones() {
             {!vigente.renueva && (
               <p className="nota sep-arriba">
                 Diste de baja la renovación. El plan {vigente.texto_plan} sigue disponible hasta
-                el {fecha(vigente.fecha_fin)} y después el sistema pasa al plan mínimo.
+                el {fecha(vigente.fecha_fin)} y después el sistema pasa al plan Free.
               </p>
             )}
             {esAdministrador && vigente.renueva && (
               <div className="acciones sep-arriba">
-                <Button size="small" danger onClick={() => cancelar(vigente)}>Dar de baja la renovación</Button>
+                <Button size="small" onClick={() => cancelar(vigente)}>Dejar de renovar</Button>
               </div>
             )}
           </>
@@ -281,12 +261,6 @@ export default function Suscripciones() {
               El plan cuesta {guaranies(planElegido.precio)} y se te descuentan{' '}
               {guaranies(planElegido.cambio.credito)} por los {contar(planElegido.cambio.diasRestantes, 'día', 'días')}
               {' '}que quedan del plan {planElegido.cambio.planActual}.
-            </p>
-          )}
-          {planElegido?.cambio?.tipo === 'reduccion' && (
-            <p className="nota">
-              Como es un plan más económico, empieza el {fecha(planElegido.cambio.desde)}: el período que
-              ya pagaste se respeta hasta el final y no hay reembolso.
             </p>
           )}
           {planElegido?.cambio?.tipo === 'renovacion' && (

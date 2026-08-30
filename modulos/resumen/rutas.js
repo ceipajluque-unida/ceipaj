@@ -9,6 +9,8 @@ rutasResumen.get('/badges', autenticar, async (req, res) => {
   res.json(await contarBadges(req.usuario));
 });
 
-rutasResumen.get('/indicadores', autenticar, permitirModulo('reportes'), async (req, res) => {
+// las cifras del inicio se leen con el permiso de Reportes, pero el plan no las
+// tapa: la pantalla de inicio nunca puede recibir a nadie con un error
+rutasResumen.get('/indicadores', autenticar, permitirModulo('reportes', { porPlan: false }), async (req, res) => {
   res.json(await obtenerIndicadores());
 });

@@ -1,5 +1,5 @@
 import { Button } from 'antd';
-import { guaranies, contar } from '../servicios/formato.js';
+import { guaranies, contar, nombreModulo } from '../servicios/formato.js';
 
 const ESTILO_PORTADA = { width: '100%', height: 110, objectFit: 'cover', borderRadius: 10 };
 
@@ -7,7 +7,7 @@ export const ETIQUETA_CAMBIO = {
   alta: 'Contratar',
   renovacion: 'Renovar',
   mejora: 'Mejorar a este plan',
-  reduccion: 'Pasar a este plan',
+  no_permitido: 'No disponible con tu plan',
 };
 
 function textoPeriodo(meses) {
@@ -16,13 +16,12 @@ function textoPeriodo(meses) {
   return `cada ${meses} meses`;
 }
 
-// una sola cadena: como varios hijos, el botón de antd los separaba con su
-// espacio y quedaba "Pasar a este plan , sin cargo"
+// una sola cadena: como varios hijos, el botón de antd los separa con su
+// propio espacio y el texto sale partido
 function textoBoton(esElActual, cambio) {
   if (esElActual) return 'Renovar por otro período';
   const base = ETIQUETA_CAMBIO[cambio?.tipo] ?? 'Contratar';
   if (cambio?.tipo === 'mejora') return `${base} por ${guaranies(cambio.aPagar)}`;
-  if (cambio?.tipo === 'reduccion') return `${base}, sin cargo`;
   return base;
 }
 
@@ -43,9 +42,13 @@ export default function TarjetasPlanes({ planes, vigente, cambios = {}, esAdmini
             <ul className="lista-plan">
               <li>{plan.maxUsuarios ? `Hasta ${contar(plan.maxUsuarios, 'usuario', 'usuarios')}` : 'Usuarios sin límite'}</li>
               <li>{plan.maxAliados ? `Hasta ${contar(plan.maxAliados, 'aliado institucional', 'aliados institucionales')}` : 'Aliados ilimitados'}</li>
+              <li>{plan.modulos?.length ? `Secciones: ${plan.modulos.map(nombreModulo).join(', ')}` : 'Todas las secciones'}</li>
               {plan.incluye.map((punto) => <li key={punto}>{punto}</li>)}
             </ul>
-            {esAdministrador && (
+            {esAdministrador && plan.precio === 0 && (
+              <p className="nota">Es el plan al que vuelve la institución cuando no hay una suscripción vigente.</p>
+            )}
+            {esAdministrador && plan.precio > 0 && (
               <>
 
                 {cambio && !esElActual && cambio.credito > 0 && (
@@ -53,13 +56,10 @@ export default function TarjetasPlanes({ planes, vigente, cambios = {}, esAdmini
                     Se te descuentan {guaranies(cambio.credito)} por lo que queda del plan {cambio.planActual}.
                   </p>
                 )}
-                {cambio?.tipo === 'reduccion' && (
-                  <p className="nota">
-                    Tu saldo de {guaranies(cambio.credito)} cubre {contar(cambio.diasQueCubre, 'día', 'días')} de este plan.
-                  </p>
-                )}
+                {cambio?.tipo === 'no_permitido' && <p className="nota">{cambio.motivo}</p>}
                 <Button
                   type={esElActual ? 'default' : 'primary'}
+                  disabled={cambio?.tipo === 'no_permitido'}
                   aria-label={`${ETIQUETA_CAMBIO[cambio?.tipo] ?? 'Contratar'} el plan ${plan.texto}`}
                   onClick={() => alElegir(plan, cambio)}
                 >

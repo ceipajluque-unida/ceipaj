@@ -41,7 +41,7 @@ export const MODULO_POR_RUTA = Object.fromEntries(
   GRUPOS.flatMap((grupo) => grupo.items).map((item) => [item.ruta, item.modulo ?? item.clave])
 );
 
-export default function MenuLateral({ puedeVer, plan, badges }) {
+export default function MenuLateral({ puedeVer, bloqueados = [], plan, badges }) {
   return (
     <nav aria-label="Menú principal">
       {GRUPOS.map((grupo, indice) => {
@@ -52,13 +52,17 @@ export default function MenuLateral({ puedeVer, plan, badges }) {
             {grupo.titulo && <span className="grupo-titulo">{grupo.titulo}</span>}
             <ul className="lista-nav">
               {items.map((item) => {
+                const trabado = bloqueados.includes(item.modulo ?? item.clave);
                 return (
                   <li key={item.clave}>
-                    <NavLink to={item.ruta} end={Boolean(item.fin)}
-                      className={({ isActive }) => (isActive ? 'activo' : '')}
+                    <NavLink to={trabado ? '/suscripcion' : item.ruta} end={Boolean(item.fin)}
+                      className={({ isActive }) => `${isActive && !trabado ? 'activo' : ''} ${trabado ? 'trabado' : ''}`}
+                      title={trabado ? `El plan ${plan?.texto ?? ''} no incluye esta sección` : undefined}
                     >
                       <span className="icono"><Icono nombre={item.icono ?? item.clave} /></span>{item.texto}
-                      {badges[item.insignia ?? item.clave] > 0 && (
+                      {trabado && <span className="candado" aria-hidden="true"><Icono nombre="candado" tam={14} /></span>}
+                      {trabado && <span className="oculto-visual"> no incluido en tu plan</span>}
+                      {!trabado && badges[item.insignia ?? item.clave] > 0 && (
                         <span className="badge">{badges[item.insignia ?? item.clave]}<span className="oculto-visual"> pendientes</span></span>
                       )}
                     </NavLink>

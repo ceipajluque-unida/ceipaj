@@ -11,7 +11,8 @@ export default function AvisoSinAcceso() {
     if (!aviso) return;
     if (aviso.motivo === 'plan') {
       message.warning({
-        content: `${aviso.modulo ?? 'Esa sección'} no está disponible con el plan ${aviso.plan ?? 'contratado'}.`,
+        content: `${aviso.modulo ?? 'Esa sección'} no está incluida en el plan ${aviso.plan ?? 'contratado'}. `
+          + 'Se habilita cambiando de plan.',
         duration: 6,
       });
     } else {
@@ -21,7 +22,6 @@ export default function AvisoSinAcceso() {
         duration: 6,
       });
     }
-
     navegar(pathname, { replace: true, state: null });
   }, [state]);
 

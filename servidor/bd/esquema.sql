@@ -200,12 +200,18 @@ CREATE TABLE IF NOT EXISTS suscripciones (
   -- por qué se cerró: vencimiento (llegó a su fecha), baja (la cortó el proveedor)
   -- o cambio_de_plan (la reemplazó otro plan). nulo mientras sigue activa
   motivo_cierre VARCHAR(20) NULL,
+  -- cuándo se dio de baja, quién la dio y por qué. la institución tiene derecho a
+  -- que se le diga, así que no alcanza con dejarlo en la auditoría
+  baja_en DATETIME NULL,
+  baja_por INT UNSIGNED NULL,
+  motivo_baja VARCHAR(200) NULL,
   institucion_id INT UNSIGNED NULL,
   creado_por INT UNSIGNED NULL,
   creado_en DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   actualizado_en DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT fk_suscripciones_pago FOREIGN KEY (pago_id) REFERENCES pagos (id),
-  CONSTRAINT fk_suscripciones_usuario FOREIGN KEY (creado_por) REFERENCES usuarios (id)
+  CONSTRAINT fk_suscripciones_usuario FOREIGN KEY (creado_por) REFERENCES usuarios (id),
+  CONSTRAINT fk_suscripciones_baja FOREIGN KEY (baja_por) REFERENCES usuarios (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_spanish_ci;
 
 -- ajustes del sistema editables por el administrador desde la pantalla de
@@ -243,6 +249,7 @@ CREATE TABLE IF NOT EXISTS planes (
   incluye TEXT NULL, -- una línea por punto
   max_usuarios INT UNSIGNED NULL, -- cuántos usuarios internos admite; nulo es sin tope
   max_aliados INT UNSIGNED NULL, -- cuántos aliados activos admite; nulo es sin tope
+  modulos_incluidos TEXT NULL, -- una clave de módulo por línea; vacío = todos
   imagen VARCHAR(200) NULL, -- archivo subido, dentro de subidas/planes
   activo TINYINT(1) NOT NULL DEFAULT 1,
   orden TINYINT UNSIGNED NOT NULL DEFAULT 0,

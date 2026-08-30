@@ -16,8 +16,10 @@ export async function revisarCupoAliados() {
   );
   if (Number(total) >= plan.maxAliados) {
     throw new ErrorVisible(
-      `El plan ${plan.texto} admite ${plan.maxAliados} aliados institucionales y ya están todos ocupados. ` +
-      'Desactivá un aliado o cambiá de plan desde Suscripción.',
+      plan.maxAliados === 0
+        ? `El plan ${plan.texto} no incluye aliados institucionales. Se habilitan cambiando de plan desde Suscripción.`
+        : `El plan ${plan.texto} admite ${plan.maxAliados} aliados institucionales y ya están todos ocupados. `
+          + 'Desactivá un aliado o cambiá de plan desde Suscripción.',
       402
     );
   }
