@@ -48,7 +48,7 @@ export default function Checkout() {
         <h2>Pago de {pedido.concepto}</h2>
       </header>
 
-      <section className="panel panel-checkout">
+      <section className="panel panel-pago">
         <Steps
           size="small"
           current={listo ? 2 : 1}

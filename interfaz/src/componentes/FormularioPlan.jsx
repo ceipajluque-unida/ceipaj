@@ -1,8 +1,8 @@
-import { Button, Input, InputNumber, Select, Switch } from 'antd';
-import { legible, conMiles, sinMiles } from '../servicios/formato.js';
+import { Button, Input, InputNumber, Switch } from 'antd';
+import { conMiles, sinMiles } from '../servicios/formato.js';
 import Modal from './Modal.jsx';
 
-export default function FormularioPlan({ abierto, editando, modulos, formulario, error, cargando, alCambiar, alEnviar, alCerrar }) {
+export default function FormularioPlan({ abierto, editando, formulario, error, cargando, alCambiar, alEnviar, alCerrar }) {
   const campo = (clave) => (evento) => alCambiar({ ...formulario, [clave]: evento.target.value });
 
   return (
@@ -34,11 +34,6 @@ export default function FormularioPlan({ abierto, editando, modulos, formulario,
           </label>
         </div>
 
-        <label><span>Módulos (vacío = habilita todos)</span>
-          <Select mode="multiple" value={formulario.modulos} style={{ width: '100%' }}
-            options={modulos.map((clave) => ({ value: clave, label: legible(clave) }))}
-            onChange={(valor) => alCambiar({ ...formulario, modulos: valor })} />
-        </label>
         <label><span>Detalle de lo que incluye (uno por línea)</span>
           <Input.TextArea value={formulario.incluye} onChange={campo('incluye')} rows={4} />
         </label>

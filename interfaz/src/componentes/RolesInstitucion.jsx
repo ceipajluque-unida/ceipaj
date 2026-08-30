@@ -46,14 +46,9 @@ export default function RolesInstitucion({ institucionId, ruta, refresco }) {
           {' '}Aliados: {cuenta(cupo.aliados, cupo.maxAliados)}.
         </p>
       )}
-      <Table
-        className="tabla-roles"
-        columns={columnas}
-        dataSource={detalle.roles}
-        rowKey="rol"
-        size="small"
-        pagination={false}
-      />
+      <div className="tabla-envoltura">
+        <Table columns={columnas} dataSource={detalle.roles} rowKey="rol" size="small" pagination={false} />
+      </div>
     </>
   );
 }

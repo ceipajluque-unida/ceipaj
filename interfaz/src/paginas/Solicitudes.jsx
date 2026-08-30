@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
-import { Button, Input, Select, Table, Tag } from 'antd';
+import { Button, Input, Select, Table } from 'antd';
 import { llamarApi } from '../servicios/api.js';
 import { avisarError, toast, confirmar } from '../servicios/avisos.js';
 import { fechaHora, contar } from '../servicios/formato.js';
 import { ESTADOS_SOLICITUD, DIAS_DESCARTE } from '../servicios/solicitudes.js';
 import DetalleSolicitud from '../componentes/DetalleSolicitud.jsx';
+import Estado from '../componentes/Estado.jsx';
 
-const COLOR_ESTADO = { nueva: 'blue', contactada: 'gold', convertida: 'green', descartada: 'default' };
+const TONO_ESTADO = { nueva: 'nuevo', contactada: 'pendiente', convertida: 'exitoso', descartada: 'neutro' };
 const textoEstado = (valor) => ESTADOS_SOLICITUD.find((e) => e.valor === valor)?.texto ?? valor;
 
 export default function Solicitudes() {
@@ -56,7 +57,7 @@ export default function Solicitudes() {
       title: 'Estado',
       dataIndex: 'estado',
       width: 120,
-      render: (valor) => <Tag color={COLOR_ESTADO[valor]}>{textoEstado(valor)}</Tag>,
+      render: (valor) => <Estado tono={TONO_ESTADO[valor]}>{textoEstado(valor)}</Estado>,
     },
     {
       title: '',
@@ -74,24 +75,34 @@ export default function Solicitudes() {
       </header>
 
       <section className="panel">
-      <div className="filtros">
-        <Select
-          value={filtros.estado}
-          onChange={(valor) => cambiar('estado', valor)}
-          style={{ width: 180 }}
-          options={[{ value: 'todas', label: 'Todos los estados' },
-            ...ESTADOS_SOLICITUD.map((e) => ({ value: e.valor, label: e.texto }))]}
-        />
-        <Input.Search
-          placeholder="Nombre, correo o institución"
-          allowClear
-          style={{ width: 280 }}
-          onSearch={(valor) => cambiar('texto', valor)}
-        />
+      <div className="barra-filtros">
+        <label>Estado
+          <Select
+            value={filtros.estado}
+            onChange={(valor) => cambiar('estado', valor)}
+            options={[{ value: 'todas', label: 'Todos los estados' },
+              ...ESTADOS_SOLICITUD.map((e) => ({ value: e.valor, label: e.texto }))]}
+          />
+        </label>
+        <label className="ancho">Buscar
+          <Input.Search
+            placeholder="Nombre, correo o institución"
+            allowClear
+            onSearch={(valor) => cambiar('texto', valor)}
+          />
+        </label>
         <Button onClick={descartarViejas}>{`Descartar las que llevan ${DIAS_DESCARTE} días`}</Button>
       </div>
 
-      <Table rowKey="id" columns={columnas} dataSource={datos} size="small" pagination={{ pageSize: 20 }} />
+      {datos.length > 0 ? (
+        <div className="tabla-envoltura">
+          <Table rowKey="id" columns={columnas} dataSource={datos} size="small" pagination={{ pageSize: 20 }} />
+        </div>
+      ) : (
+        <div className="vacio">
+          <p>Ninguna solicitud coincide con lo que buscaste.</p>
+        </div>
+      )}
 
       {abierta && (
         <DetalleSolicitud

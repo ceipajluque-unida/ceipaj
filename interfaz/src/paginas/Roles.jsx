@@ -132,11 +132,15 @@ export default function Roles() {
       <section className="panel">
         {cargando
           ? <p className="mensaje-centrado">Cargando…</p>
-          : <Table rowKey="clave" columns={columnas} dataSource={roles} size="small" pagination={false} />}
+          : (
+            <div className="tabla-envoltura">
+              <Table rowKey="clave" columns={columnas} dataSource={roles} size="small" pagination={false} />
+            </div>
+          )}
       </section>
 
       <Modal abierto={abierto} titulo={editando ? `Editar ${editando.titulo}` : 'Nuevo rol'} alCerrar={() => setAbierto(false)}>
-        <form onSubmit={guardar} className="formulario">
+        <form onSubmit={guardar}>
           <label>
             <span>Nombre del rol</span>
             <Input

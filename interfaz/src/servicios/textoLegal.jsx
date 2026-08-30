@@ -13,6 +13,6 @@ export function comoHtml(texto) {
         </ul>
       );
     }
-    return <p key={i} className="parrafo-legal">{limpio}</p>;
+    return <p key={i}>{limpio}</p>;
   });
 }

@@ -1,5 +1,5 @@
 import { Button } from 'antd';
-import { guaranies, contar, legible } from '../servicios/formato.js';
+import { guaranies, contar } from '../servicios/formato.js';
 
 const ESTILO_PORTADA = { width: '100%', height: 110, objectFit: 'cover', borderRadius: 10 };
 
@@ -43,7 +43,6 @@ export default function TarjetasPlanes({ planes, vigente, cambios = {}, esAdmini
             <ul className="lista-plan">
               <li>{plan.maxUsuarios ? `Hasta ${contar(plan.maxUsuarios, 'usuario', 'usuarios')}` : 'Usuarios sin límite'}</li>
               <li>{plan.maxAliados ? `Hasta ${contar(plan.maxAliados, 'aliado institucional', 'aliados institucionales')}` : 'Aliados ilimitados'}</li>
-              <li>{plan.modulos?.length ? `Módulos: ${plan.modulos.map(legible).join(', ')}` : 'Todos los módulos'}</li>
               {plan.incluye.map((punto) => <li key={punto}>{punto}</li>)}
             </ul>
             {esAdministrador && (

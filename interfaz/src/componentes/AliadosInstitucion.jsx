@@ -44,7 +44,9 @@ export default function AliadosInstitucion({ institucion }) {
       {aliados.length === 0 ? (
         <p className="nota">Todavía no tiene aliados.</p>
       ) : (
-        <Table className="tabla-roles" columns={columnas} dataSource={aliados} rowKey="id" size="small" pagination={false} />
+        <div className="tabla-envoltura">
+          <Table columns={columnas} dataSource={aliados} rowKey="id" size="small" pagination={false} />
+        </div>
       )}
     </>
   );

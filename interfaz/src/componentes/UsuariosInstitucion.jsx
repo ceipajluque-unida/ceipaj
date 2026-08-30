@@ -136,7 +136,9 @@ export default function UsuariosInstitucion({ institucion, alCambiar }) {
       {usuarios.length === 0 ? (
         <p className="nota">Todavía no tiene usuarios.</p>
       ) : (
-        <Table className="tabla-roles" columns={columnas} dataSource={usuarios} rowKey="id" size="small" pagination={false} />
+        <div className="tabla-envoltura">
+          <Table columns={columnas} dataSource={usuarios} rowKey="id" size="small" pagination={false} />
+        </div>
       )}
       <Modal abierto={Boolean(editando)} titulo={`Editar a ${editando?.nombre ?? ''}`} alCerrar={() => setEditando(null)}>
         <FormularioUsuario

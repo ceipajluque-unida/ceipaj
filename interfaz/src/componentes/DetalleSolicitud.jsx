@@ -48,7 +48,7 @@ export default function DetalleSolicitud({ solicitud, alCerrar, alGuardar }) {
         {solicitud.atendida_en && dato('Atendida', `${fechaHora(solicitud.atendida_en)} por ${solicitud.atendida_por_nombre ?? 'el proveedor'}`)}
       </dl>
 
-      <div className="campos-fila">
+      <div className="fila-campos">
         <label>
           <span>Estado</span>
           <Select value={estado} onChange={setEstado} style={{ width: '100%' }}

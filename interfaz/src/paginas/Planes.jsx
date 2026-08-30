@@ -2,18 +2,17 @@ import { useEffect, useState } from 'react';
 import { Button, Table } from 'antd';
 import { llamarApi } from '../servicios/api.js';
 import { confirmar, avisarError, toast } from '../servicios/avisos.js';
-import { guaranies, legible, contar } from '../servicios/formato.js';
+import { guaranies, contar } from '../servicios/formato.js';
 import ImagenPlan from '../componentes/ImagenPlan.jsx';
 import FormularioPlan from '../componentes/FormularioPlan.jsx';
 
 const FORMULARIO_VACIO = {
   titulo: '', descripcion: '', precio: 600000, meses: 1,
-  incluye: '', maxUsuarios: null, maxAliados: null, modulos: [], activo: true,
+  incluye: '', maxUsuarios: null, maxAliados: null, activo: true,
 };
 
 export default function Planes() {
   const [planes, setPlanes] = useState([]);
-  const [modulos, setModulos] = useState([]);
   const [abierto, setAbierto] = useState(false);
   const [editando, setEditando] = useState(null);
   const [formulario, setFormulario] = useState(FORMULARIO_VACIO);
@@ -23,10 +22,7 @@ export default function Planes() {
   async function cargar() {
     try { setPlanes(await llamarApi('/api/planes/todos')); } catch (e) { avisarError(e.message); }
   }
-  useEffect(() => {
-    cargar();
-    llamarApi('/api/planes/modulos').then(setModulos).catch(() => setModulos([]));
-  }, []);
+  useEffect(() => { cargar(); }, []);
 
   function abrirAlta() {
     setError(null);
@@ -41,7 +37,7 @@ export default function Planes() {
     setFormulario({
       titulo: plan.texto, descripcion: plan.descripcion ?? '', precio: plan.precio, meses: plan.meses,
       incluye: plan.incluye.join('\n'), maxUsuarios: plan.maxUsuarios, maxAliados: plan.maxAliados,
-      modulos: plan.modulos, activo: plan.activo,
+      activo: plan.activo,
     });
     setAbierto(true);
   }
@@ -92,10 +88,6 @@ export default function Planes() {
       title: 'Aliados', dataIndex: 'maxAliados', key: 'maxAliados',
       render: (valor) => (valor === null ? 'Sin tope' : `Hasta ${valor}`),
     },
-    {
-      title: 'Módulos que habilita', dataIndex: 'modulos', key: 'modulos',
-      render: (valor) => (valor.length === 0 ? 'Todos' : valor.map(legible).join(', ')),
-    },
     { title: 'Imagen', key: 'imagen', render: (_, plan) => <ImagenPlan plan={plan} alSubir={cargar} /> },
     {
       title: 'Estado', dataIndex: 'activo', key: 'activo',
@@ -129,7 +121,6 @@ export default function Planes() {
       <FormularioPlan
         abierto={abierto}
         editando={editando}
-        modulos={modulos}
         formulario={formulario}
         error={error}
         cargando={cargando}

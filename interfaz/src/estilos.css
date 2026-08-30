@@ -241,6 +241,7 @@ tbody tr:hover td { background: var(--panel-2); }
 .estado-interesado, .estado-pendiente { background: var(--ambar-fondo); color: var(--ambar); }
 .estado-matriculado, .estado-exitoso, .estado-pagada { background: var(--verde-fondo); color: var(--verde); }
 .estado-perdido, .estado-rechazado, .estado-riesgo { background: var(--rojo-fondo); color: var(--rojo); }
+.estado-neutro { background: var(--panel-2); color: var(--texto-suave); }
 
 .barra { background: var(--panel-2); border-radius: 6px; height: 15px; overflow: hidden; }
 .barra > span { display: block; height: 100%; background: var(--acento); }
@@ -434,9 +435,6 @@ tbody tr:hover td { background: var(--panel-2); }
 .grupo-casillas legend { padding: 0 6px; font-size: 0.85rem; color: var(--texto-suave); }
 .grupo-casillas .ant-checkbox-wrapper { display: flex; margin: 0; }
 .grupo-casillas > .ant-checkbox-wrapper { margin-inline-start: 0; }
-.grupo-casillas {
-  display: block;
-}
 .grupo-casillas .casillas {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -458,4 +456,3 @@ tbody tr:hover td { background: var(--panel-2); }
 }
 .reporte > div:first-child { flex: 1 1 320px; }
 .reporte .nota { margin: 4px 0 0; }
-.barra-filtros { margin-bottom: 12px; }

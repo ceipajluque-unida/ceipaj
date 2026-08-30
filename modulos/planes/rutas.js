@@ -3,7 +3,6 @@ import express from 'express';
 import * as servicio from './servicio.js';
 import { guardar as guardarImagen, CARPETA } from './imagen.js';
 import { autenticar, permitirModulo } from '../../servidor/middleware/autenticar.js';
-import { MODULOS_NUCLEO } from '../../configuracion/ajustes.js';
 
 export const rutasPlanes = Router();
 
@@ -13,9 +12,6 @@ rutasPlanes.get('/', async (req, res) => res.json(await servicio.listarActivos()
 
 rutasPlanes.use(autenticar, permitirModulo('planes'));
 
-rutasPlanes.get('/modulos', (req, res) =>
-  res.json(Object.keys(PERMISOS).filter((clave) => !MODULOS_NUCLEO.includes(clave)))
-);
 rutasPlanes.get('/todos', async (req, res) => res.json(await servicio.listarTodos()));
 rutasPlanes.post('/', async (req, res) => res.status(201).json(await servicio.crear(req.body, req.usuario, req.ip)));
 rutasPlanes.put('/:id', async (req, res) => res.json(await servicio.editar(req.params.id, req.body, req.usuario, req.ip)));
