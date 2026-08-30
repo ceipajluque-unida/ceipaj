@@ -1,9 +1,8 @@
 import { Router } from 'express';
 import * as servicio from './servicio.js';
 import * as publico from './publico.js';
-import { autenticar, permitirRoles } from '../../servidor/middleware/autenticar.js';
+import { autenticar, permitirModulo } from '../../servidor/middleware/autenticar.js';
 import { frenoSolicitud, frenoGeneral } from '../../servidor/middleware/frecuencia.js';
-import { PERMISOS } from '../../configuracion/permisos.js';
 import { ErrorVisible } from '../../servidor/errores.js';
 
 export const rutasSolicitudes = Router();
@@ -20,7 +19,7 @@ rutasSolicitudes.post('/', frenoSolicitud, async (req, res) =>
   res.status(201).json(await publico.registrar(req.body, req.ip))
 );
 
-rutasSolicitudes.use(autenticar, permitirRoles(...PERMISOS.solicitudes));
+rutasSolicitudes.use(autenticar, permitirModulo('solicitudes'));
 
 rutasSolicitudes.get('/', async (req, res) => {
   const { estado, texto } = req.query ?? {};

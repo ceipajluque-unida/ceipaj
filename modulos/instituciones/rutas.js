@@ -5,8 +5,8 @@ import * as usuarios from '../usuarios/servicio.js';
 import * as aliados from '../aliados/servicio.js';
 import * as suscripciones from '../suscripciones/servicio.js';
 import { conInstitucion } from '../../servidor/contexto.js';
-import { autenticar, permitirRoles } from '../../servidor/middleware/autenticar.js';
-import { PERMISOS, ROLES_ASIGNABLES } from '../../configuracion/permisos.js';
+import { autenticar, permitirModulo } from '../../servidor/middleware/autenticar.js';
+import { rolesAsignables } from '../roles/servicio.js';
 import { ErrorVisible } from '../../servidor/errores.js';
 
 export const rutasInstituciones = Router();
@@ -29,7 +29,7 @@ function usuarioDeRuta(req) {
   return id;
 }
 
-rutasInstituciones.use(autenticar, permitirRoles(...PERMISOS.instituciones));
+rutasInstituciones.use(autenticar, permitirModulo('instituciones'));
 
 rutasInstituciones.get('/', async (req, res) => res.json(await servicio.listar()));
 rutasInstituciones.get('/:id', async (req, res) => res.json(await servicio.obtener(idDeRuta(req))));
@@ -60,7 +60,8 @@ rutasInstituciones.put('/:id/usuarios/:usuarioId/activo', async (req, res) => {
 
 rutasInstituciones.put('/:id/usuarios/:usuarioId/rol', async (req, res) => {
   const { rol } = req.body ?? {};
-  if (!ROLES_ASIGNABLES.includes(rol)) throw new ErrorVisible('Ese rol no se puede asignar.');
+  const asignables = await rolesAsignables();
+  if (!asignables.some((r) => r.clave === rol)) throw new ErrorVisible('Ese rol no se puede asignar.');
   res.json(await conInstitucion(idDeRuta(req),
     () => usuarios.cambiarRol(usuarioDeRuta(req), rol, req.usuario, req.ip)));
 });

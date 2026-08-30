@@ -1,13 +1,12 @@
 import { Router } from 'express';
 import * as controlador from './controlador.js';
-import { autenticar, permitirRoles } from '../../servidor/middleware/autenticar.js';
-import { PERMISOS } from '../../configuracion/permisos.js';
+import { autenticar, permitirModulo } from '../../servidor/middleware/autenticar.js';
 
 export const rutasConfiguracion = Router();
 
 rutasConfiguracion.get('/legales', controlador.legales);
 
-rutasConfiguracion.use(autenticar, permitirRoles(...PERMISOS.configuracion));
+rutasConfiguracion.use(autenticar, permitirModulo('configuracion'));
 
 rutasConfiguracion.get('/', controlador.obtener);
 rutasConfiguracion.put('/', controlador.guardar);

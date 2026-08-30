@@ -1,8 +1,7 @@
 import { Router } from 'express';
 import * as controlador from './controlador.js';
-import { autenticar, permitirRoles } from '../../servidor/middleware/autenticar.js';
-import { PERMISOS } from '../../configuracion/permisos.js';
+import { autenticar, permitirModulo } from '../../servidor/middleware/autenticar.js';
 
 export const rutasAuditoria = Router();
 
-rutasAuditoria.get('/', autenticar, permitirRoles(...PERMISOS.auditoria), controlador.listar);
+rutasAuditoria.get('/', autenticar, permitirModulo('auditoria'), controlador.listar);

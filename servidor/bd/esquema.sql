@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
   clave_hash VARCHAR(100) NOT NULL,
   -- superadministrador es la cuenta del proveedor del servicio; va al final de la lista
   -- porque mysql guarda el enum por índice y agregar en el medio renumera las filas
-  rol ENUM('administrador','comercial','direccion','aliado','superadministrador') NOT NULL,
+  rol VARCHAR(30) NOT NULL DEFAULT 'comercial', -- referencia logica a roles.clave; no es ENUM para que el proveedor pueda crear roles propios
   telefono VARCHAR(30) NULL, -- celular; también sirve para el 2fa por sms
   direccion VARCHAR(150) NULL,
   -- puede ser 'app', 'email' o 'sms'
@@ -269,4 +269,17 @@ CREATE TABLE IF NOT EXISTS solicitudes (
   atendida_por INT UNSIGNED NULL,
   KEY idx_solicitudes_estado (estado, creado_en),
   CONSTRAINT fk_solicitudes_usuario FOREIGN KEY (atendida_por) REFERENCES usuarios(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_spanish_ci;
+
+-- roles del sistema. arrancan con la matriz de configuracion/permisos.js y el
+-- proveedor los puede editar o crear otros nuevos desde su pantalla de Roles.
+CREATE TABLE IF NOT EXISTS roles (
+  clave VARCHAR(30) NOT NULL PRIMARY KEY,
+  titulo VARCHAR(60) NOT NULL,
+  modulos TEXT NULL, -- una clave de modulo por linea
+  del_sistema TINYINT(1) NOT NULL DEFAULT 0, -- los cinco que vienen con el sistema: no se borran
+  bloqueado TINYINT(1) NOT NULL DEFAULT 0, -- proveedor y aliado: tampoco se editan
+  activo TINYINT(1) NOT NULL DEFAULT 1,
+  creado_en DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  actualizado_en DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_spanish_ci;

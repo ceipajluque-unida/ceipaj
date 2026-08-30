@@ -1,7 +1,7 @@
 import {
   GraduationCap, Menu, Home, Users, Activity, RefreshCw, Handshake, CircleDollarSign,
   Building2, BarChart3, CreditCard, CalendarClock, UserCog, Settings, ClipboardList,
-  Lock, LayoutList, School, MailOpen, TrendingUp,
+  Lock, LayoutList, School, MailOpen, PieChart, ShieldCheck,
 } from 'lucide-react';
 
 const ICONOS = {
@@ -20,7 +20,8 @@ const ICONOS = {
   planes: LayoutList,
   instituciones: School,
   solicitudes: MailOpen,
-  plataforma: TrendingUp,
+  plataforma: PieChart,
+  roles: ShieldCheck,
   candado: Lock,
   usuarios: UserCog,
   configuracion: Settings,

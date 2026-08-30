@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import mysql from 'mysql2/promise';
 import { BASE_DATOS, PLANES_SUSCRIPCION, INSTITUCION, COLORES_REEMPLAZADOS } from '../../configuracion/ajustes.js';
 import { CLAVES_PLATAFORMA } from '../../configuracion/ambitos.js';
+import { PERMISOS, TITULOS_ROL, ROLES_BLOQUEADOS } from '../../configuracion/permisos.js';
 
 const rutaEsquema = new URL('./esquema.sql', import.meta.url);
 
@@ -69,6 +70,24 @@ async function asegurarUnico(conexion, tabla, nombre, columnas, indiceViejo) {
   if (viejo.length > 0) await conexion.query(`ALTER TABLE \`${tabla}\` DROP INDEX \`${indiceViejo}\``);
   await conexion.query(`ALTER TABLE \`${tabla}\` ADD UNIQUE KEY \`${nombre}\` (${columnas})`);
   console.log(`índice único nuevo: ${tabla} (${columnas})`);
+}
+
+// los roles pasan a la base para que el proveedor los pueda editar. la semilla
+// es la matriz de configuracion/permisos.js, asi que una base ya existente
+// arranca comportandose exactamente igual que antes.
+async function sembrarRoles(conexion) {
+  const [filas] = await conexion.query('SELECT clave FROM roles');
+  const existentes = new Set(filas.map((f) => f.clave));
+  const modulos = Object.keys(PERMISOS);
+  for (const [clave, titulo] of Object.entries(TITULOS_ROL)) {
+    if (existentes.has(clave)) continue;
+    const suyos = modulos.filter((m) => PERMISOS[m].includes(clave));
+    await conexion.query(
+      'INSERT INTO roles (clave, titulo, modulos, del_sistema, bloqueado, activo) VALUES (?,?,?,1,?,1)',
+      [clave, titulo, suyos.join('\n'), ROLES_BLOQUEADOS.includes(clave) ? 1 : 0]
+    );
+    console.log(`rol sembrado: ${clave} con ${suyos.length} modulos`);
+  }
 }
 
 async function sembrarInstitucion(conexion) {
@@ -210,10 +229,6 @@ async function migrar() {
 
   await asegurarTipo(conexion, 'auditoria', 'detalle', 'text', 'TEXT NULL');
 
-  await asegurarTipo(conexion, 'usuarios', 'rol',
-    "enum('administrador','comercial','direccion','aliado','superadministrador')",
-    "ENUM('administrador','comercial','direccion','aliado','superadministrador') NOT NULL");
-
   await asegurarTipo(conexion, 'pagos', 'plan', 'varchar(30)', 'VARCHAR(30) NULL');
   await asegurarTipo(conexion, 'suscripciones', 'plan', 'varchar(30)', 'VARCHAR(30) NOT NULL');
 
@@ -232,6 +247,9 @@ async function migrar() {
   await emparejarPlanesConTesis(conexion);
   await actualizarColorAcento(conexion);
   await aplanarTextosLegales(conexion);
+  // usuarios.rol deja de ser ENUM: si no, no se podria asignar un rol nuevo
+  await asegurarTipo(conexion, 'usuarios', 'rol', 'varchar(30)', "VARCHAR(30) NOT NULL DEFAULT 'comercial'");
+  await sembrarRoles(conexion);
   await borrarAjustesRetirados(conexion);
 
   await conexion.end();

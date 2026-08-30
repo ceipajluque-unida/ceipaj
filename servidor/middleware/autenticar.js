@@ -43,3 +43,20 @@ export function permitirRoles(...roles) {
     return siguiente();
   };
 }
+
+// permiso por modulo: a diferencia de permitirRoles, resuelve en cada pedido,
+// asi un cambio en los roles se siente enseguida y no al reiniciar el servidor
+export function permitirModulo(modulo) {
+  return async (req, res, siguiente) => {
+    try {
+      const { rolesDelModulo } = await import('../../modulos/roles/servicio.js');
+      const permitidos = await rolesDelModulo(modulo);
+      if (!permitidos.includes(req.usuario?.rol)) {
+        return res.status(403).json({ error: 'Sin permiso para esta operación.' });
+      }
+      return siguiente();
+    } catch (excepcion) {
+      return siguiente(excepcion);
+    }
+  };
+}

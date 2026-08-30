@@ -2,6 +2,8 @@ import { Button, Select, Table } from 'antd';
 import { fecha, legible } from '../servicios/formato.js';
 
 export default function TablaUsuarios({ usuarios, miId, roles, alEditar, alCambiarRol, alCambiarActivo, alRestablecer }) {
+  // un rol creado por el proveedor no esta en los textos fijos de la interfaz
+  const nombreDeRol = (clave) => roles.find((r) => r.clave === clave)?.titulo ?? legible(clave);
   const columnas = [
     {
       title: 'Nombre',
@@ -17,13 +19,13 @@ export default function TablaUsuarios({ usuarios, miId, roles, alEditar, alCambi
       title: 'Rol',
       dataIndex: 'rol',
       key: 'rol',
-      render: (valor, usuario) => (usuario.id === miId ? legible(valor) : (
+      render: (valor, usuario) => (usuario.id === miId ? nombreDeRol(valor) : (
         <Select
           size="small"
           value={valor}
           style={{ width: 150 }}
           aria-label={`Rol de ${usuario.nombre}`}
-          options={roles.map((rol) => ({ value: rol, label: legible(rol) }))}
+          options={roles.map((rol) => ({ value: rol.clave, label: rol.titulo }))}
           onChange={(rol) => alCambiarRol(usuario, rol)}
         />
       )),

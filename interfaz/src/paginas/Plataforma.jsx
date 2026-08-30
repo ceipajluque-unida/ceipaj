@@ -63,7 +63,7 @@ export default function Plataforma() {
     <>
       <section className="panel">
         <header className="cabecera-panel">
-          <h2>Cómo viene la plataforma</h2>
+          <h2>Estadísticas de la plataforma</h2>
           <p className="nota">Las cifras salen de todas las instituciones juntas.</p>
         </header>
         <div className="cifras">

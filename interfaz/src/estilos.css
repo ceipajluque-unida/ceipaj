@@ -423,3 +423,23 @@ tbody tr:hover td { background: var(--panel-2); }
 .tarjeta-cifra strong { display: block; font-size: 1.6rem; line-height: 1.15; color: var(--acento); }
 .tarjeta-cifra span { display: block; margin-top: 0.25rem; font-size: 0.85rem; color: var(--texto); }
 .tarjeta-cifra small { display: block; margin-top: 0.2rem; font-size: 0.78rem; color: var(--texto-suave); }
+
+/* casillas de módulos del formulario de roles */
+.grupo-casillas {
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin: 0;
+}
+.grupo-casillas legend { padding: 0 6px; font-size: 0.85rem; color: var(--texto-suave); }
+.grupo-casillas .ant-checkbox-wrapper { display: flex; margin: 0; }
+.grupo-casillas > .ant-checkbox-wrapper { margin-inline-start: 0; }
+.grupo-casillas {
+  display: block;
+}
+.grupo-casillas .casillas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px 16px;
+  margin-top: 6px;
+}

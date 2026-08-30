@@ -4,7 +4,7 @@ import { Button } from 'antd';
 import { llamarApi, usuarioActual } from '../servicios/api.js';
 import { confirmar, avisarError, toast, mostrarClave } from '../servicios/avisos.js';
 import { contar, legible } from '../servicios/formato.js';
-import { ROLES_INTERNOS } from '../servicios/roles.js';
+import { rolesAsignables } from '../servicios/roles.js';
 import Modal from '../componentes/Modal.jsx';
 import FormularioUsuario from '../componentes/FormularioUsuario.jsx';
 import RolesInstitucion from '../componentes/RolesInstitucion.jsx';
@@ -18,6 +18,9 @@ export default function Usuarios() {
   const [usuarios, setUsuarios] = useState([]);
   const [abierto, setAbierto] = useState(false);
   const [editando, setEditando] = useState(null);
+  const [roles, setRoles] = useState([]);
+  // un rol creado por el proveedor no está en los textos fijos de la interfaz
+  const nombreDeRol = (clave) => roles.find((r) => r.clave === clave)?.titulo ?? legible(clave);
   const [formulario, setFormulario] = useState(FORMULARIO_VACIO);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState(null);
@@ -31,6 +34,7 @@ export default function Usuarios() {
     } catch (e) { avisarError(e.message); }
   }
   useEffect(() => { cargar(); }, []);
+  useEffect(() => { rolesAsignables().then(setRoles).catch(() => setRoles([])); }, []);
 
   function abrirAlta() {
     setError(null);
@@ -83,7 +87,7 @@ export default function Usuarios() {
   async function cambiarRol(usuario, rol) {
     const ok = await confirmar({
       titulo: 'Cambiar el rol?',
-      texto: `${usuario.nombre} pasa a ${legible(rol)}. Si está trabajando en el sistema, va a tener que volver a entrar.`,
+      texto: `${usuario.nombre} pasa a ${nombreDeRol(rol)}. Si está trabajando en el sistema, va a tener que volver a entrar.`,
       confirmar: 'Sí, cambiar',
     });
     if (!ok) return;
@@ -147,7 +151,7 @@ export default function Usuarios() {
             <TablaUsuarios
               usuarios={usuarios}
               miId={yo?.id}
-              roles={ROLES_INTERNOS}
+              roles={roles}
               alEditar={abrirEdicion}
               alCambiarRol={cambiarRol}
               alCambiarActivo={cambiarActivo}
@@ -175,7 +179,7 @@ export default function Usuarios() {
         <FormularioUsuario
           formulario={formulario}
           alCambiar={setFormulario}
-          roles={ROLES_INTERNOS}
+          roles={roles}
           editando={editando}
           cargando={cargando}
           error={error}

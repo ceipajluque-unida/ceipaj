@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Button, Table } from 'antd';
+import { Button, Table, Tabs } from 'antd';
 import { llamarApi } from '../servicios/api.js';
 import { confirmar, avisarError, toast, mostrarClave } from '../servicios/avisos.js';
 import { fecha, legible } from '../servicios/formato.js';
@@ -165,10 +165,37 @@ export default function Instituciones() {
               expandable={{
                 expandedRowRender: (institucion) => (
                   <div className="detalle-institucion">
-                    <RolesInstitucion institucionId={institucion.id} refresco={version} />
-                    <UsuariosInstitucion institucion={institucion} alCambiar={() => setVersion((anterior) => anterior + 1)} />
-                    <AliadosInstitucion institucion={institucion} />
-                    <SuscripcionInstitucion institucionId={institucion.id} refresco={version} />
+                    <Tabs
+                      size="small"
+                      destroyOnHidden={false}
+                      items={[
+                        {
+                          key: 'roles',
+                          label: 'Roles y accesos',
+                          children: <RolesInstitucion institucionId={institucion.id} refresco={version} />,
+                        },
+                        {
+                          key: 'usuarios',
+                          label: 'Usuarios',
+                          children: (
+                            <UsuariosInstitucion
+                              institucion={institucion}
+                              alCambiar={() => setVersion((anterior) => anterior + 1)}
+                            />
+                          ),
+                        },
+                        {
+                          key: 'aliados',
+                          label: 'Aliados',
+                          children: <AliadosInstitucion institucion={institucion} />,
+                        },
+                        {
+                          key: 'suscripcion',
+                          label: 'Suscripción',
+                          children: <SuscripcionInstitucion institucionId={institucion.id} refresco={version} />,
+                        },
+                      ]}
+                    />
                   </div>
                 ),
                 rowExpandable: () => true,

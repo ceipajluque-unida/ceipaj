@@ -17,9 +17,10 @@ export const GRUPOS = [
   ] },
 
   { titulo: 'Plataforma', items: [
-    { clave: 'plataforma', ruta: '/plataforma', texto: 'Cómo viene' },
+    { clave: 'plataforma', ruta: '/estadisticas', texto: 'Estadísticas' },
     { clave: 'instituciones', ruta: '/instituciones', texto: 'Instituciones' },
     { clave: 'planes', ruta: '/planes', texto: 'Planes' },
+    { clave: 'roles', ruta: '/roles', texto: 'Roles' },
     { clave: 'solicitudes', ruta: '/solicitudes', texto: 'Solicitudes' },
   ] },
   { titulo: 'Gestión', items: [

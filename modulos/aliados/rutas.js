@@ -1,11 +1,11 @@
 import { Router } from 'express';
 import * as controlador from './controlador.js';
-import { autenticar, permitirRoles } from '../../servidor/middleware/autenticar.js';
-import { PERMISOS, PERMISOS_ESCRITURA } from '../../configuracion/permisos.js';
+import { autenticar, permitirModulo, permitirRoles } from '../../servidor/middleware/autenticar.js';
+import { PERMISOS_ESCRITURA } from '../../configuracion/permisos.js';
 
 export const rutasAliados = Router();
 
-rutasAliados.use(autenticar, permitirRoles(...PERMISOS.aliados));
+rutasAliados.use(autenticar, permitirModulo('aliados'));
 const soloEscritura = permitirRoles(...PERMISOS_ESCRITURA.aliados);
 
 rutasAliados.get('/', controlador.listar);

@@ -5,7 +5,7 @@ import { validarCorreo, validarTelefono, validarLargo, LARGOS } from '../../comu
 import * as ajustes from '../../servidor/ajustesSistema.js';
 import { correoConfigurado } from '../../servidor/correo.js';
 import { conInstitucion } from '../../servidor/contexto.js';
-import { modulosDelRol } from '../../configuracion/permisos.js';
+import { listar as listarRoles } from '../roles/servicio.js';
 import { ROLES } from '../../configuracion/ajustes.js';
 import { planEnVigor, moduloIncluido } from '../suscripciones/plan.js';
 
@@ -104,15 +104,18 @@ export async function detalleRoles(id) {
       aliados: activosDe(ROLES.ALIADO),
       maxAliados: plan.maxAliados ?? null,
     },
-    roles: [ROLES.ADMINISTRADOR, ROLES.COMERCIAL, ROLES.DIRECCION, ROLES.ALIADO].map((rol) => {
-      const fila = porRol.get(rol);
-      return {
-        rol,
-        usuarios: Number(fila?.total ?? 0),
-        activos: Number(fila?.activos ?? 0),
-        modulos: modulosDelRol(rol).filter((modulo) => moduloIncluido(plan, modulo)),
-      };
-    }),
+    roles: (await listarRoles())
+      .filter((r) => r.activo && r.clave !== ROLES.SUPERADMINISTRADOR)
+      .map((r) => {
+        const fila = porRol.get(r.clave);
+        return {
+          rol: r.clave,
+          titulo: r.titulo,
+          usuarios: Number(fila?.total ?? 0),
+          activos: Number(fila?.activos ?? 0),
+          modulos: r.modulos.filter((modulo) => moduloIncluido(plan, modulo)),
+        };
+      }),
   };
 }
 

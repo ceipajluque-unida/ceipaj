@@ -41,7 +41,6 @@ export default function AliadosInstitucion({ institucion }) {
 
   return (
     <>
-      <h4>Aliados institucionales</h4>
       {aliados.length === 0 ? (
         <p className="nota">Todavía no tiene aliados.</p>
       ) : (

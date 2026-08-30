@@ -5,13 +5,16 @@ import FormularioUsuario from './FormularioUsuario.jsx';
 import { llamarApi } from '../servicios/api.js';
 import { confirmar, avisarError, toast, mostrarClave } from '../servicios/avisos.js';
 import { legible } from '../servicios/formato.js';
-import { ROLES_INTERNOS } from '../servicios/roles.js';
+import { rolesAsignables } from '../servicios/roles.js';
 
 const VACIO = { nombre: '', correo: '', telefono: '', direccion: '', rol: '' };
 
 export default function UsuariosInstitucion({ institucion, alCambiar }) {
   const correoActivo = Boolean(institucion.correoActivo);
   const [usuarios, setUsuarios] = useState(null);
+  const [roles, setRoles] = useState([]);
+  // un rol creado por el proveedor no esta en los textos fijos de la interfaz
+  const nombreDeRol = (clave) => roles.find((r) => r.clave === clave)?.titulo ?? legible(clave);
   const [editando, setEditando] = useState(null);
   const [formulario, setFormulario] = useState(VACIO);
   const [error, setError] = useState(null);
@@ -23,6 +26,7 @@ export default function UsuariosInstitucion({ institucion, alCambiar }) {
     try { setUsuarios(await llamarApi(base)); } catch (excepcion) { avisarError(excepcion.message); }
   }
   useEffect(() => { cargar(); }, [institucion.id]);
+  useEffect(() => { rolesAsignables().then(setRoles).catch(() => setRoles([])); }, []);
 
   function abrirEdicion(usuario) {
     setError(null);
@@ -108,7 +112,7 @@ export default function UsuariosInstitucion({ institucion, alCambiar }) {
         </>
       ),
     },
-    { title: 'Rol', dataIndex: 'rol', key: 'rol', render: (valor) => legible(valor) },
+    { title: 'Rol', dataIndex: 'rol', key: 'rol', render: (valor) => nombreDeRol(valor) },
     {
       title: 'Estado', dataIndex: 'activo', key: 'activo',
       render: (valor) => <span className={`estado estado-${valor ? 'exitoso' : 'rechazado'}`}>{valor ? 'Activo' : 'Inactivo'}</span>,
@@ -129,7 +133,6 @@ export default function UsuariosInstitucion({ institucion, alCambiar }) {
 
   return (
     <>
-      <h4>Usuarios registrados</h4>
       {usuarios.length === 0 ? (
         <p className="nota">Todavía no tiene usuarios.</p>
       ) : (
@@ -137,7 +140,7 @@ export default function UsuariosInstitucion({ institucion, alCambiar }) {
       )}
       <Modal abierto={Boolean(editando)} titulo={`Editar a ${editando?.nombre ?? ''}`} alCerrar={() => setEditando(null)}>
         <FormularioUsuario
-          formulario={formulario} alCambiar={setFormulario} roles={ROLES_INTERNOS} editando
+          formulario={formulario} alCambiar={setFormulario} roles={roles} editando
           cargando={cargando} error={error} alEnviar={guardar} alCerrar={() => setEditando(null)}
         />
       </Modal>

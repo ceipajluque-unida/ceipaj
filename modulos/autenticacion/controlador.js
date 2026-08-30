@@ -2,7 +2,7 @@ import QRCode from 'qrcode';
 import * as servicio from './servicio.js';
 import { bd } from '../../servidor/bd/conexion.js';
 import { validarCorreo, validarTelefono } from '../../comun/validar.js';
-import { modulosDelRol } from '../../configuracion/permisos.js';
+import { modulosDeRol } from '../roles/servicio.js';
 import { METODOS_2FA, INSTITUCION, PLATAFORMA, ROLES } from '../../configuracion/ajustes.js';
 import * as ajustes from '../../servidor/ajustesSistema.js';
 import * as recuperacion from './recuperacion.js';
@@ -123,7 +123,7 @@ export async function quitar2fa(req, res) {
 
 export async function perfil(req, res) {
   const [[extra]] = await bd.query('SELECT metodo_2fa, telefono, direccion, sin_2fa FROM usuarios WHERE id = ?', [req.usuario.id]);
-  const modulos = modulosDelRol(req.usuario.rol);
+  const modulos = await modulosDeRol(req.usuario.rol);
 
   const plan = await planEnVigor();
   res.json({

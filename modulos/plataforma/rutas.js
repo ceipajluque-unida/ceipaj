@@ -1,11 +1,10 @@
 import { Router } from 'express';
 import * as servicio from './servicio.js';
-import { autenticar, permitirRoles } from '../../servidor/middleware/autenticar.js';
-import { PERMISOS } from '../../configuracion/permisos.js';
+import { autenticar, permitirModulo } from '../../servidor/middleware/autenticar.js';
 
 export const rutasPlataforma = Router();
 
-rutasPlataforma.use(autenticar, permitirRoles(...PERMISOS.plataforma));
+rutasPlataforma.use(autenticar, permitirModulo('plataforma'));
 
 rutasPlataforma.get('/', async (req, res) => {
   const [resumen, planes, instituciones, meses] = await Promise.all([

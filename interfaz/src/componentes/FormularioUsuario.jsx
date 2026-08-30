@@ -18,7 +18,7 @@ export default function FormularioUsuario({ formulario, alCambiar, roles, editan
         <label><span>Rol</span>
           <Select
             value={formulario.rol}
-            options={roles.map((rol) => ({ value: rol, label: legible(rol) }))}
+            options={roles.map((rol) => ({ value: rol.clave, label: rol.titulo }))}
             onChange={(valor) => alCambiar({ ...formulario, rol: valor })}
           />
         </label>

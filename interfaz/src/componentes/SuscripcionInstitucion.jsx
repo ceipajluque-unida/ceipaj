@@ -85,7 +85,6 @@ export default function SuscripcionInstitucion({ institucionId, refresco }) {
 
   return (
     <section className="bloque-institucion">
-      <h4>Suscripción</h4>
       {filas.length === 0
         ? <p className="nota">Esta institución todavía no contrató ningún plan.</p>
         : <Table rowKey="id" columns={columnas} dataSource={filas} size="small" pagination={false} />}

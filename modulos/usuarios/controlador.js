@@ -2,7 +2,7 @@ import * as servicio from './servicio.js';
 import { ErrorVisible } from '../../servidor/errores.js';
 import { validarCorreo, validarTelefono, validarLargo, LARGOS } from '../../comun/validar.js';
 import { ROLES } from '../../configuracion/ajustes.js';
-import { ROLES_ASIGNABLES } from '../../configuracion/permisos.js';
+import { rolesAsignables } from '../roles/servicio.js';
 
 function idDeRuta(req) {
   const id = Number(req.params.id);
@@ -24,10 +24,11 @@ function datosValidados(cuerpo) {
   return { nombre, correo, telefono, direccion };
 }
 
-function rolValidado(rol) {
+async function rolValidado(rol) {
   if (rol === ROLES.ALIADO) throw new ErrorVisible('Los aliados se registran desde el módulo de Aliados.');
 
-  if (!ROLES_ASIGNABLES.includes(rol)) throw new ErrorVisible('El rol no es válido.');
+  const asignables = await rolesAsignables();
+  if (!asignables.some((r) => r.clave === rol)) throw new ErrorVisible('El rol no es válido.');
   return rol;
 }
 
@@ -41,7 +42,7 @@ export async function ver(req, res) {
 
 export async function crear(req, res) {
   const datos = datosValidados(req.body);
-  const rol = rolValidado(req.body?.rol);
+  const rol = await rolValidado(req.body?.rol);
   res.status(201).json(await servicio.crearUsuario({ ...datos, rol }, req.usuario, req.ip));
 }
 
@@ -51,7 +52,7 @@ export async function editar(req, res) {
 }
 
 export async function cambiarRol(req, res) {
-  const rol = rolValidado(req.body?.rol);
+  const rol = await rolValidado(req.body?.rol);
   res.json(await servicio.cambiarRol(idDeRuta(req), rol, req.usuario, req.ip));
 }
 

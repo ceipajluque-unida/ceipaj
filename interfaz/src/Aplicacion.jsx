@@ -29,6 +29,7 @@ import Planes from './paginas/Planes.jsx';
 import Instituciones from './paginas/Instituciones.jsx';
 import Solicitudes from './paginas/Solicitudes.jsx';
 import Plataforma from './paginas/Plataforma.jsx';
+import Roles from './paginas/Roles.jsx';
 import Usuarios from './paginas/Usuarios.jsx';
 import Configuracion from './paginas/Configuracion.jsx';
 import Auditoria from './paginas/Auditoria.jsx';
@@ -98,7 +99,8 @@ export default function Aplicacion() {
         <Route path="/planes" element={<Planes />} />
         <Route path="/instituciones" element={<Instituciones />} />
         <Route path="/solicitudes" element={<Solicitudes />} />
-        <Route path="/plataforma" element={<Plataforma />} />
+        <Route path="/estadisticas" element={<Plataforma />} />
+        <Route path="/roles" element={<Roles />} />
         <Route path="/usuarios" element={<Usuarios />} />
         <Route path="/configuracion" element={<Configuracion />} />
         <Route path="/auditoria" element={<Auditoria />} />

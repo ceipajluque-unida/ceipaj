@@ -74,6 +74,7 @@ const MODULOS = {
   comisiones: 'Comisiones', conversion: 'Conversión', seguimiento: 'Seguimiento estratégico',
   reportes: 'Reportes', pagos: 'Pagos', suscripcion: 'Suscripción', configuracion: 'Configuración',
   auditoria: 'Auditoría', planes: 'Planes', instituciones: 'Instituciones',
+  solicitudes: 'Solicitudes', plataforma: 'Estadísticas', roles: 'Roles del sistema',
 };
 
 export function nombreModulo(clave) {
