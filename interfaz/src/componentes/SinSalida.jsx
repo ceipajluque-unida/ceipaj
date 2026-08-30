@@ -12,7 +12,7 @@ export default function SinSalida({ motivo, plan, modulo, institucion }) {
           title={`${modulo ?? 'Tu sección'} no está disponible`}
           subTitle={porPlan
             ? `El plan ${plan ?? 'contratado'} de ${institucion} no habilita esta sección. `
-              + 'Escribile a la institución para que la habilite; en cuanto lo haga vas a poder entrar con esta misma cuenta.'
+              + 'Escribile a la institución para que la habilite.'
             : 'Tu cuenta no tiene ninguna sección habilitada. Pedíle a quien administra el sistema que revise tus permisos.'}
           extra={[
             <Button key="reintentar" type="primary" onClick={() => window.location.reload()}>Reintentar</Button>,

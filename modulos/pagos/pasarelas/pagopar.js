@@ -66,7 +66,6 @@ export async function crearCobro({ concepto, monto, medio, comprador }) {
     comprador,
     publico,
     token: firmar(referencia, String(montoEntero)),
-    tipo: ajustes.leer('PAGOPAR_TIPO_PEDIDO', PAGOPAR.TIPO_PEDIDO),
   });
   const resultado = await llamar('/comercios/2.0/iniciar-transaccion', pedido);
   const hash = resultado?.[0]?.data;
@@ -115,5 +114,5 @@ export async function consultarEstado(identificadorExterno) {
 // el medio se elige en el propio checkout de pagopar, así siempre se ofrecen
 // los que el comercio de verdad tiene habilitados; de paso no se consulta su api
 export async function listarMedios() {
-  return [{ valor: 'pagopar', texto: 'Pagopar (el medio se elige al pagar)', montoMinimo: PAGOPAR.MONTO_MINIMO, ventanaPropia: true }];
+  return [{ valor: 'pagopar', texto: 'Pagopar', montoMinimo: PAGOPAR.MONTO_MINIMO, ventanaPropia: true }];
 }

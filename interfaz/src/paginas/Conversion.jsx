@@ -57,13 +57,23 @@ export default function Conversion() {
     }
   }
 
+  // excel guarda los csv en windows-1252: leerlos siempre como utf-8 rompe los acentos
+  async function leerTexto(csv) {
+    const datos = await csv.arrayBuffer();
+    try {
+      return new TextDecoder('utf-8', { fatal: true }).decode(datos);
+    } catch {
+      return new TextDecoder('windows-1252').decode(datos);
+    }
+  }
+
   async function importar(evento) {
     evento.preventDefault();
     if (!archivo) return setError('Elegí un archivo CSV.');
     setError(null);
     setImportando(true);
     try {
-      const contenido = await archivo.text();
+      const contenido = await leerTexto(archivo);
       const respuesta = await llamarApi('/api/conversion/importar', { metodo: 'POST', cuerpo: { contenido } });
       setResumen(respuesta);
       setAbierto(false);

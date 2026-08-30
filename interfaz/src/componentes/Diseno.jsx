@@ -26,6 +26,7 @@ export default function Diseno() {
   const [modulos, setModulos] = useState(null);
   const [bloqueados, setBloqueados] = useState([]);
   const [plan, setPlan] = useState(null);
+  const [correoActivo, setCorreoActivo] = useState(false);
   const [badges, setBadges] = useState({});
   const [error, setError] = useState(null);
 
@@ -34,7 +35,7 @@ export default function Diseno() {
   );
 
   const esProveedor = usuario?.rol === 'superadministrador';
-  const inicio = INICIO_POR_ROL[usuario?.rol] ?? '/';
+  const inicio = INICIO_POR_ROL[usuario?.rol] ?? '/panel';
 
   useEffect(() => {
     const traer = () => {
@@ -43,9 +44,11 @@ export default function Diseno() {
           setModulos(respuesta.modulos);
           setBloqueados(respuesta.modulosBloqueados ?? []);
           setPlan(respuesta.plan ?? null);
+          setCorreoActivo(Boolean(respuesta.correoActivo));
         })
         .catch((excepcion) => setError(excepcion.message));
-      if (!esProveedor) llamarApi('/api/resumen/badges').then(setBadges).catch(() => setBadges({}));
+      // el proveedor también tiene contador: las solicitudes sin atender
+      llamarApi('/api/resumen/badges').then(setBadges).catch(() => setBadges({}));
     };
     traer();
     window.addEventListener('plan', traer);
@@ -77,7 +80,7 @@ export default function Diseno() {
   const raiz = `/${ubicacion.pathname.split('/')[1] ?? ''}`;
   const moduloPedido = MODULO_POR_RUTA[raiz];
 
-  if (raiz === '/' && inicio !== '/') return <Navigate to={inicio} replace />;
+  if (raiz === '/panel' && inicio !== '/panel') return <Navigate to={inicio} replace />;
 
   const motivo = !moduloPedido ? null
     : !puedeVer(moduloPedido) ? 'rol'
@@ -128,7 +131,7 @@ export default function Diseno() {
 
             {plan && !esProveedor && usuario?.rol !== 'aliado' && (
               <NavLink to="/suscripcion" className={`chip-plan ${plan.vigente ? '' : 'sin-plan'}`}
-                title={plan.vigente ? 'Plan contratado' : 'Sin suscripción vigente: el sistema funciona con el plan mínimo'}>
+                title={plan.vigente ? undefined : 'Sin suscripción vigente: el sistema funciona con el plan mínimo'}>
                 Plan {plan.texto}
                 {plan.vigente
                   ? plan.diasRestantes !== null && <span className="chip-detalle">, {plan.diasRestantes} d</span>
@@ -140,7 +143,7 @@ export default function Diseno() {
         </header>
         <main className="contenido">
           <AvisoSinAcceso />
-          <Outlet context={{ usuario, modulos, bloqueados, inicio }} />
+          <Outlet context={{ usuario, modulos, bloqueados, inicio, correoActivo }} />
         </main>
       </div>
     </div>

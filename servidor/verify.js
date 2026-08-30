@@ -91,9 +91,11 @@ export async function enviarVerificacion({ para, canal = 'sms' }) {
 export async function comprobarVerificacion({ para, codigo }) {
   if (!verifyConfigurado() || !para) return { aprobado: false };
   try {
-    const respuesta = await llamar('/VerificationChecks', new URLSearchParams({ To: aE164(para), Code: String(codigo ?? '').trim() }));
-    if (!respuesta.ok) return { aprobado: false };
+    const respuesta = await llamar('/VerificationCheck', new URLSearchParams({ To: aE164(para), Code: String(codigo ?? '').trim() }));
     const datos = await respuesta.json().catch(() => ({}));
+    // twilio bloquea la verificación a los 5 intentos y la vence a los 10 minutos:
+    // sin decir eso, la persona reintenta con un código que ya nunca va a andar
+    if (!respuesta.ok) return { aprobado: false, motivo: explicar(datos, respuesta.status) };
     return { aprobado: datos.status === 'approved' };
   } catch {
     return { aprobado: false };

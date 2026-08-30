@@ -5,6 +5,7 @@ import { ErrorVisible } from '../../servidor/errores.js';
 import { PERMISOS } from '../../configuracion/permisos.js';
 import { LIMITES, ESTADOS_LEAD } from '../../configuracion/ajustes.js';
 import { contarPorVencer } from '../suscripciones/servicio.js';
+import { contarNuevas } from '../solicitudes/servicio.js';
 
 export async function contarBadges(usuario) {
   const rol = usuario.rol;
@@ -76,6 +77,10 @@ export async function contarBadges(usuario) {
     );
     badges.suscripcion = await contarPorVencer() + Number(fila.total);
   }
+
+  // las solicitudes de la pagina publica son del proveedor: no cuelgan de
+  // ninguna institucion, asi que no pasan por institucion()
+  if (puede('solicitudes')) badges.solicitudes = await contarNuevas();
 
   return badges;
 }

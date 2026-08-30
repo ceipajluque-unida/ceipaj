@@ -94,18 +94,18 @@ export default function Seguimiento() {
       render: (valor) => <span className="sin-cortar">{fecha(valor)}</span>,
     },
     {
-      title: 'Sin acompañar',
+      title: 'Sin acompañamiento',
       dataIndex: 'dias_sin_accion',
       key: 'dias_sin_accion',
       render: (valor) => <span className="sin-cortar">{dias(valor)}</span>,
     },
     {
-      title: 'Situación',
+      title: 'Riesgo de deserción',
       dataIndex: 'en_riesgo',
       key: 'en_riesgo',
       render: (valor) => (valor
         ? <span className="estado estado-riesgo">En riesgo</span>
-        : <span className="estado estado-matriculado">Al día</span>),
+        : <span className="estado estado-matriculado">Sin riesgo</span>),
     },
     {
       title: <span className="oculto-visual">Acciones</span>,
@@ -123,7 +123,7 @@ export default function Seguimiento() {
     },
     { title: 'Tipo', dataIndex: 'tipo', key: 'tipo', render: (valor) => legible(valor) },
     { title: 'Detalle', dataIndex: 'detalle', key: 'detalle', render: (valor) => valor ?? '—' },
-    { title: 'Registró', dataIndex: 'usuario', key: 'usuario' },
+    { title: 'Registrado por', dataIndex: 'usuario', key: 'usuario' },
   ];
 
   return (
@@ -135,7 +135,7 @@ export default function Seguimiento() {
           <h3>Estudiantes activos</h3><p className="cifra">{estudiantes.length}</p>
         </article>
         <article className="indicador">
-          <h3>En riesgo</h3><p className="cifra">{enRiesgo}</p>
+          <h3>En riesgo de deserción</h3><p className="cifra">{enRiesgo}</p>
           <p className="nota">Más de {dias(opciones.diasRiesgo)} sin acompañamiento</p>
         </article>
       </section>
@@ -149,8 +149,8 @@ export default function Seguimiento() {
             <Select
               value={filtros.ver}
               options={[
-                { value: 'todos', label: 'Todos los estudiantes' },
-                { value: 'riesgo', label: 'Solo los que están en riesgo' },
+                { value: 'todos', label: 'Todos' },
+                { value: 'riesgo', label: 'En riesgo de deserción' },
               ]}
               onChange={(valor) => setFiltros({ ...filtros, ver: valor })}
             />
@@ -190,14 +190,14 @@ export default function Seguimiento() {
                   <Select
                     value={formulario.tipo}
                     options={[
-                      { value: '', label: 'Elegí el tipo' },
+                      { value: '', label: 'Elegí…' },
                       ...opciones.tiposAccion.map((tipo) => ({ value: tipo, label: legible(tipo) })),
                     ]}
                     onChange={(valor) => setFormulario({ ...formulario, tipo: valor })}
                   />
                 </label>
                 <label>Detalle
-                  <Input placeholder="Se lo llamó y confirmó que sigue asistiendo" value={formulario.detalle} onChange={(evento) => setFormulario({ ...formulario, detalle: evento.target.value })} />
+                  <Input value={formulario.detalle} onChange={(evento) => setFormulario({ ...formulario, detalle: evento.target.value })} />
                 </label>
               </div>
               {error && <p className="error">{error}</p>}
@@ -208,7 +208,7 @@ export default function Seguimiento() {
             </form>
 
             <h3 className="separado">Acompañamientos anteriores</h3>
-            {acciones.length === 0 && <p className="nota">Sin acompañamientos anteriores.</p>}
+            {acciones.length === 0 && <p className="nota">Todavía no hay ninguno.</p>}
             {acciones.length > 0 && (
               <div className="tabla-envoltura">
                 <Table columns={columnasAcciones} dataSource={acciones} rowKey="id" size="small" pagination={false} />

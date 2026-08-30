@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import mysql from 'mysql2/promise';
-import { BASE_DATOS, PLANES_SUSCRIPCION, INSTITUCION } from '../../configuracion/ajustes.js';
+import { BASE_DATOS, PLANES_SUSCRIPCION, INSTITUCION, COLORES_REEMPLAZADOS } from '../../configuracion/ajustes.js';
 import { CLAVES_PLATAFORMA } from '../../configuracion/ambitos.js';
 
 const rutaEsquema = new URL('./esquema.sql', import.meta.url);
@@ -38,7 +38,7 @@ async function asegurarTipo(conexion, tabla, columna, tipoEsperado, definicion) 
   );
   if (filas.length === 0 || filas[0].tipo.toLowerCase() === tipoEsperado) return;
   await conexion.query(`ALTER TABLE \`${tabla}\` MODIFY \`${columna}\` ${definicion}`);
-  console.log(`columna ampliada: ${tabla}.${columna} → ${tipoEsperado}`);
+  console.log(`columna ampliada: ${tabla}.${columna} ahora es ${tipoEsperado}`);
 }
 
 async function asegurarClavePrimaria(conexion, tabla, columnasEsperadas, definicion) {
@@ -142,6 +142,25 @@ async function emparejarPlanesConTesis(conexion) {
   }
 }
 
+async function actualizarColorAcento(conexion) {
+  for (const [viejo, nuevo] of Object.entries(COLORES_REEMPLAZADOS)) {
+    const [resultado] = await conexion.query(
+      'UPDATE ajustes_sistema SET valor = ? WHERE clave = ? AND valor = ?',
+      [nuevo, 'COLOR_ACENTO', viejo]
+    );
+    if (resultado.affectedRows > 0) console.log(`color de acento ${viejo} cambiado por ${nuevo}`);
+  }
+}
+
+// ajustes que ya no existen en el catálogo y quedaron guardados en bases viejas
+async function borrarAjustesRetirados(conexion) {
+  const [resultado] = await conexion.query(
+    'DELETE FROM ajustes_sistema WHERE clave IN (?)',
+    [['PAGOPAR_TIPO_PEDIDO']]
+  );
+  if (resultado.affectedRows > 0) console.log(`${resultado.affectedRows} ajuste(s) retirado(s) del sistema`);
+}
+
 async function migrar() {
   const conexion = await mysql.createConnection({
     host: BASE_DATOS.HOST,
@@ -184,6 +203,7 @@ async function migrar() {
   await asegurarColumna(conexion, 'suscripciones', 'cancelada_en', 'DATETIME NULL AFTER pago_id');
   await asegurarColumna(conexion, 'planes', 'max_usuarios', 'INT UNSIGNED NULL AFTER incluye');
   await asegurarColumna(conexion, 'planes', 'max_aliados', 'INT UNSIGNED NULL AFTER max_usuarios');
+  await asegurarColumna(conexion, 'usuarios', 'sin_2fa', "TINYINT(1) NOT NULL DEFAULT 0 AFTER activado_2fa");
   await asegurarColumna(conexion, 'planes', 'modulos_incluidos', 'TEXT NULL AFTER max_aliados');
 
   await asegurarTipo(conexion, 'ajustes_sistema', 'valor', 'mediumtext', 'MEDIUMTEXT NULL');
@@ -210,7 +230,9 @@ async function migrar() {
   await asegurarUnico(conexion, 'academico_matriculados', 'uk_matriculados_institucion_cedula', 'institucion_id,cedula', 'cedula');
   await sembrarPlanes(conexion);
   await emparejarPlanesConTesis(conexion);
+  await actualizarColorAcento(conexion);
   await aplanarTextosLegales(conexion);
+  await borrarAjustesRetirados(conexion);
 
   await conexion.end();
   console.log(`base "${BASE_DATOS.NOMBRE}" lista con todas las tablas del sistema.`);

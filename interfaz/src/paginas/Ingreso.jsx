@@ -58,7 +58,7 @@ export default function Ingreso() {
 
       if (!r.requiereCodigo) {
         guardarSesion(r.token, r.usuario, r.recordar);
-        return navegar(r.requiereCambioClave ? '/cambiar-clave' : '/');
+        return navegar(r.requiereCambioClave ? '/cambiar-clave' : '/panel');
       }
       setTokenPre2fa(r.tokenPre2fa);
       setDos({ metodo: r.metodo, qr: r.qr ?? null, destino: r.destino, configurado: r.configurado, enviado: r.enviado, codigoPrueba: r.codigoPrueba, alternativas: r.alternativas ?? [] });
@@ -85,7 +85,7 @@ export default function Ingreso() {
       if (r.tokenDispositivo) guardarDispositivo(r.tokenDispositivo);
       else if (!confiarEquipo && tokenDispositivo()) olvidarDispositivo();
 
-      navegar(r.requiereCambioClave ? '/cambiar-clave' : '/');
+      navegar(r.requiereCambioClave ? '/cambiar-clave' : '/panel');
     } catch (excepcion) {
       setError(excepcion.message);
     } finally {
@@ -145,7 +145,7 @@ export default function Ingreso() {
             <label>Correo<Input type="email" value={correo} onChange={(e) => setCorreo(e.target.value)} required /></label>
             <label>Contraseña<Input.Password value={clave} onChange={(e) => setClave(e.target.value)} required /></label>
             <Checkbox checked={recordar} onChange={(e) => setRecordar(e.target.checked)}>
-              Recordarme en este equipo
+              Mantener la sesión abierta varios días en este equipo
             </Checkbox>
             {captcha.activo && <Captcha claveSitio={captcha.claveSitio} alResolver={setCaptchaRespuesta} />}
             {!error && salida && <p className="aviso-sesion">{salida}</p>}

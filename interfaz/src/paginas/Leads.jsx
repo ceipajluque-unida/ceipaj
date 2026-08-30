@@ -94,7 +94,7 @@ export default function Leads() {
                 <span className="etiqueta">{contar(alerta.dias_sin_contacto, 'día', 'días')} sin contacto</span>
               </li>
             ))}
-            {alertas.length > 6 && <li className="nota">y {alertas.length - 6} más en la lista de abajo</li>}
+            {alertas.length > 6 && <li className="nota">y {alertas.length - 6} más</li>}
           </ul>
         </section>
       )}
@@ -167,7 +167,7 @@ export default function Leads() {
           <label>Canal de origen
             <Select
               value={formulario.canal}
-              options={[{ value: '', label: 'Elegí un canal' }, ...canales]}
+              options={[{ value: '', label: 'Elegí…' }, ...canales]}
               onChange={(valor) => setFormulario({ ...formulario, canal: valor, aliadoId: valor === 'aliado' ? formulario.aliadoId : '' })}
             />
           </label>

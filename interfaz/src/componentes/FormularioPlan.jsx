@@ -24,17 +24,17 @@ export default function FormularioPlan({ abierto, editando, modulos, formulario,
         </div>
 
         <div className="fila-campos">
-          <label><span>Cantidad de usuarios internos (vacío = no hay tope)</span>
+          <label><span>Usuarios internos (vacío = sin tope)</span>
             <InputNumber value={formulario.maxUsuarios} min={1} style={{ width: '100%' }}
               onChange={(valor) => alCambiar({ ...formulario, maxUsuarios: valor })} />
           </label>
-          <label><span>Cantidad de aliados (vacío = no hay tope)</span>
+          <label><span>Aliados (vacío = sin tope)</span>
             <InputNumber value={formulario.maxAliados} min={1} style={{ width: '100%' }}
               onChange={(valor) => alCambiar({ ...formulario, maxAliados: valor })} />
           </label>
         </div>
 
-        <label><span>Módulos que habilita (vacío = habilita todos)</span>
+        <label><span>Módulos (vacío = habilita todos)</span>
           <Select mode="multiple" value={formulario.modulos} style={{ width: '100%' }}
             options={modulos.map((clave) => ({ value: clave, label: legible(clave) }))}
             onChange={(valor) => alCambiar({ ...formulario, modulos: valor })} />

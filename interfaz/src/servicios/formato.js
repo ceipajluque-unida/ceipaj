@@ -14,16 +14,20 @@ export function sinMiles(texto) {
   return String(texto ?? '').replace(/\./g, '').replace(/\D/g, '');
 }
 
+const FORMATO_FECHA = { day: '2-digit', month: '2-digit', year: 'numeric' };
+// hourCycle h23: el reloj va de 00 a 23 en cualquier navegador, sin am/pm
+const FORMATO_FECHA_HORA = { ...FORMATO_FECHA, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' };
+
 export function fecha(valor) {
   if (!valor) return '—';
   const fecha = new Date(valor);
-  return Number.isNaN(fecha.getTime()) ? '—' : fecha.toLocaleDateString('es-PY');
+  return Number.isNaN(fecha.getTime()) ? '—' : fecha.toLocaleDateString('es-PY', FORMATO_FECHA);
 }
 
 export function fechaHora(valor) {
   if (!valor) return '—';
   const fecha = new Date(valor);
-  return Number.isNaN(fecha.getTime()) ? '—' : fecha.toLocaleString('es-PY');
+  return Number.isNaN(fecha.getTime()) ? '—' : fecha.toLocaleString('es-PY', FORMATO_FECHA_HORA);
 }
 
 export function contar(cantidad, singular, plural) {
@@ -47,6 +51,9 @@ const TEXTOS = {
   activa: 'Activa',
   vencida: 'Vencida',
   cancelada: 'Cancelada',
+  basico: 'Básico',
+  estandar: 'Estándar',
+  avanzado: 'Avanzado',
   adamspay: 'AdamsPay',
   'redes sociales': 'Redes sociales',
   whatsapp: 'WhatsApp',

@@ -66,7 +66,7 @@ export default function Configuracion() {
     setEnviando(ruta);
     try {
       await llamarApi(`/api/configuracion/${ruta}`, { metodo: 'POST', cuerpo: { para: destino.trim() } });
-      avisarExito('Enviado correctamente. Revisá la bandeja o el teléfono de destino.');
+      avisarExito('Enviado correctamente.');
     } catch (excepcion) {
       avisarError(excepcion.message);
     } finally {

@@ -1,11 +1,10 @@
 import { bd } from '../../servidor/bd/conexion.js';
-import { RECIBO, PLATAFORMA } from '../../configuracion/ajustes.js';
+import { RECIBO, PLATAFORMA, nombreDePasarela } from '../../configuracion/ajustes.js';
 import * as ajustes from '../../servidor/ajustesSistema.js';
 import { guaraniesEnLetras } from '../../comun/numeroALetras.js';
 import { dibujarRecibo } from './reciboPdf.js';
 
 const OPCIONES_FORMA = ['Efectivo', 'Transferencia bancaria', 'Tarjeta de crédito/débito', 'Depósito bancario', 'Billetera electrónica', 'Otro medio de pago'];
-const NOMBRE_PROVEEDOR = { pagopar: 'Pagopar', adamspay: 'AdamsPay', simulada: 'Pasarela de prueba' };
 
 const FORMA_POR_MEDIO = {
   tarjeta: 'Tarjeta de crédito/débito',
@@ -24,17 +23,25 @@ export function enGuaranies(monto) {
 }
 
 export function fechaCorta(valor) {
-  return new Date(valor).toLocaleDateString('es-PY');
+  return new Date(valor).toLocaleDateString('es-PY', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
 export function fechaYHora(valor) {
   const fecha = new Date(valor);
-  return `${fecha.toLocaleDateString('es-PY')} ${fecha.toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
+  return `${fecha.toLocaleDateString('es-PY', { day: '2-digit', month: '2-digit', year: 'numeric' })} ${fecha.toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' })}`;
+}
+
+export function nombreDelEmisor() {
+  return ajustes.leer('RECIBO_EMISOR_NOMBRE', RECIBO.EMISOR_NOMBRE) || ajustes.leer('PLATAFORMA_NOMBRE', PLATAFORMA.NOMBRE);
+}
+
+export async function marcarReciboEmitido(id, cuando) {
+  await bd.query('UPDATE pagos SET recibo_emitido_en = ? WHERE id = ? AND recibo_emitido_en IS NULL', [cuando, id]);
 }
 
 function emisor() {
   return {
-    nombre: ajustes.leer('RECIBO_EMISOR_NOMBRE', RECIBO.EMISOR_NOMBRE) || ajustes.leer('PLATAFORMA_NOMBRE', PLATAFORMA.NOMBRE),
+    nombre: nombreDelEmisor(),
     direccion: ajustes.leer('RECIBO_EMISOR_DIRECCION', RECIBO.EMISOR_DIRECCION),
     telefono: ajustes.leer('RECIBO_EMISOR_TELEFONO', RECIBO.EMISOR_TELEFONO),
     correo: ajustes.leer('RECIBO_EMISOR_CORREO', RECIBO.EMISOR_CORREO),
@@ -64,7 +71,7 @@ export async function generarRecibo(pago, emision) {
   ];
   if (periodo) concepto.push(['Período', `${fechaCorta(periodo.fecha_inicio)} a ${fechaCorta(periodo.fecha_fin)}`]);
 
-  const nombreProveedor = NOMBRE_PROVEEDOR[pago.proveedor] ?? pago.proveedor;
+  const nombreProveedor = nombreDePasarela(pago.proveedor);
   const trazabilidad = [
     ['Pago registrado el', fechaYHora(pago.creado_en)],
     ['Acreditado el', pago.fecha_pago ? fechaYHora(pago.fecha_pago) : '—'],
@@ -85,7 +92,7 @@ export async function generarRecibo(pago, emision) {
     numero: numeroDeRecibo(pago),
     emision: {
       fecha: fechaCorta(emision.ahora),
-      hora: emision.ahora.toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+      hora: emision.ahora.toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' }),
       estado: emision.estado,
     },
     parIzquierdo: {

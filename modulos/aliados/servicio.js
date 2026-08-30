@@ -68,7 +68,7 @@ export async function crearAliado({ nombre, correo, institucion, cargo, telefono
   await registrarAuditoria({
     usuarioId: solicitante.id,
     accion: 'aliado_creado',
-    detalle: `${correo} — ${institucion} — ${envio.correoEnviado ? 'credenciales enviadas' : 'clave mostrada en pantalla'}`,
+    detalle: `${correo}: ${institucion}, ${envio.correoEnviado ? 'credenciales enviadas' : 'clave mostrada en pantalla'}`,
     ip,
   });
   return { aliado: await buscarAliado(perfil.insertId), ...envio };
@@ -93,8 +93,8 @@ export async function editarAliado(id, { nombre, correo, institucion, cargo, tel
   } finally {
     conexion.release();
   }
-  const cambio = antes.correo !== correo ? `correo ${antes.correo} → ${correo}` : 'datos actualizados';
-  await registrarAuditoria({ usuarioId: solicitante.id, accion: 'aliado_actualizado', detalle: `${antes.correo} — ${cambio}`, ip });
+  const cambio = antes.correo !== correo ? `cambió el correo de ${antes.correo} a ${correo}` : 'datos actualizados';
+  await registrarAuditoria({ usuarioId: solicitante.id, accion: 'aliado_actualizado', detalle: `${antes.correo}: ${cambio}`, ip });
   return buscarAliado(id);
 }
 
@@ -108,7 +108,7 @@ export async function reenviarAcceso(id, solicitante, ip) {
   await registrarAuditoria({
     usuarioId: solicitante.id,
     accion: 'aliado_credenciales_reenviadas',
-    detalle: `${aliado.correo} — ${envio.correoEnviado ? 'enviadas por correo' : 'clave mostrada en pantalla'}`,
+    detalle: `${aliado.correo}: ${envio.correoEnviado ? 'enviadas por correo' : 'clave mostrada en pantalla'}`,
     ip,
   });
   return envio;

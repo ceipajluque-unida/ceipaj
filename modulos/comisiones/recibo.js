@@ -34,12 +34,14 @@ export async function buscarComisionPagada(id, { aliadoUsuarioId = null } = {}) 
   return comision;
 }
 
+export async function marcarReciboEmitido(id, cuando) {
+  await bd.query('UPDATE comisiones SET recibo_emitido_en = ? WHERE id = ? AND recibo_emitido_en IS NULL', [cuando, id]);
+}
+
 export async function marcarEmision(comision) {
   const ahora = new Date();
   const primera = !comision.recibo_emitido_en;
-  if (primera) {
-    await bd.query('UPDATE comisiones SET recibo_emitido_en = ? WHERE id = ?', [ahora, comision.id]);
-  }
+  if (primera) await marcarReciboEmitido(comision.id, ahora);
   return { ahora, estado: primera ? 'Emitido' : 'Reimpreso', emitidoEn: comision.recibo_emitido_en ?? ahora };
 }
 
@@ -56,7 +58,7 @@ export function generarReciboComision(comision, emision) {
     numero: numeroDeReciboComision(comision),
     emision: {
       fecha: fechaCorta(emision.ahora),
-      hora: emision.ahora.toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+      hora: emision.ahora.toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' }),
       estado: emision.estado,
     },
     parIzquierdo: {

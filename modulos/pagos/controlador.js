@@ -1,6 +1,6 @@
 import * as servicio from './servicio.js';
 import * as acreditacion from './acreditacion.js';
-import { generarRecibo, numeroDeRecibo } from './recibo.js';
+import { generarRecibo, numeroDeRecibo, marcarReciboEmitido } from './recibo.js';
 import { registrarAuditoria } from '../../servidor/auditoria.js';
 import { ErrorVisible } from '../../servidor/errores.js';
 import { ESTADOS_PAGO, CHECKOUT } from '../../configuracion/ajustes.js';
@@ -77,6 +77,10 @@ export async function notificacion(req, res) {
   res.json(req.body?.resultado ?? []);
 }
 
+export async function descartar(req, res) {
+  res.json(await servicio.descartarPago(req.params.referencia, req.usuario, req.ip));
+}
+
 export async function conciliar(req, res) {
   res.json(await acreditacion.conciliarPendientes(req.ip));
 }
@@ -88,7 +92,7 @@ export async function recibo(req, res) {
   }
   const ahora = new Date();
   const primera = !pago.recibo_emitido_en;
-  if (primera) await servicio.marcarReciboEmitido(pago.id, ahora);
+  if (primera) await marcarReciboEmitido(pago.id, ahora);
   const pdf = await generarRecibo(pago, {
     ahora,
     estado: primera ? 'Emitido' : 'Reimpreso',

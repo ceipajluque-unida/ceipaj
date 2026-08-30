@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Button, Input, Select, Table } from 'antd';
 import { llamarApi, guardarSesion, tokenActual, usuarioActual } from '../servicios/api.js';
-import { avisarError, confirmar, toast } from '../servicios/avisos.js';
+import { avisarError, confirmar, toast, pedirClave } from '../servicios/avisos.js';
 import { fecha, legible, nombreModulo } from '../servicios/formato.js';
 
 export default function Perfil() {
@@ -62,6 +62,26 @@ export default function Perfil() {
       avisarError(excepcion.message);
     } finally {
       setGuardando(false);
+    }
+  }
+
+  function etiquetaMetodo(valor) {
+    return perfil.metodos2fa.find((m) => m.valor === valor)?.texto ?? legible(valor);
+  }
+
+  async function quitarDosPasos() {
+    const clave = await pedirClave({
+      titulo: 'Quitar la verificación en dos pasos?',
+      texto: 'Vas a entrar solo con tu correo y tu contraseña. Escribí tu contraseña actual para confirmar.',
+      confirmar: 'Sí, quitar',
+    });
+    if (!clave) return;
+    try {
+      await llamarApi('/api/autenticacion/quitar-2fa', { metodo: 'POST', cuerpo: { clave } });
+      await cargar();
+      toast('La cuenta quedó sin verificación en dos pasos.');
+    } catch (excepcion) {
+      avisarError(excepcion.message);
     }
   }
 
@@ -128,7 +148,7 @@ export default function Perfil() {
             </label>
           </div>
           <label>Dirección
-            <Input value={datos.direccion} onChange={(e) => setDatos({ ...datos, direccion: e.target.value })} placeholder="Barrio, calle, ciudad" />
+            <Input value={datos.direccion} onChange={(e) => setDatos({ ...datos, direccion: e.target.value })} />
           </label>
           <div className="menu-fila">
             <span className="nota">Rol: <span className="rol-chip">{legible(perfil.usuario.rol)}</span></span>
@@ -139,6 +159,21 @@ export default function Perfil() {
 
       <section className="panel">
         <h3>Verificación en dos pasos</h3>
+        <dl className="datos-perfil">
+          <div>
+            <dt>Estado</dt>
+            <dd>
+              <span className={`estado estado-${perfil.sin2fa ? 'rechazado' : 'exitoso'}`}>
+                {perfil.sin2fa ? 'Sin verificación' : `${etiquetaMetodo(perfil.usuario.metodo_2fa)} configurada`}
+              </span>
+            </dd>
+          </div>
+        </dl>
+        {perfil.puedeQuitar2fa && !perfil.sin2fa && (
+          <div className="acciones separado">
+            <Button danger onClick={quitarDosPasos}>Quitar la verificación</Button>
+          </div>
+        )}
         <form onSubmit={guardarMetodo}>
           <div className="fila-formulario">
             <label>Método

@@ -3,13 +3,14 @@ import * as servicio from './servicio.js';
 import { bd } from '../../servidor/bd/conexion.js';
 import { validarCorreo, validarTelefono } from '../../comun/validar.js';
 import { modulosDelRol } from '../../configuracion/permisos.js';
-import { METODOS_2FA, INSTITUCION, PLATAFORMA } from '../../configuracion/ajustes.js';
+import { METODOS_2FA, INSTITUCION, PLATAFORMA, ROLES } from '../../configuracion/ajustes.js';
 import * as ajustes from '../../servidor/ajustesSistema.js';
 import * as recuperacion from './recuperacion.js';
 import * as bloqueos from './bloqueos.js';
 import * as politica from '../../servidor/politicaClave.js';
 import { ErrorVisible } from '../../servidor/errores.js';
 import * as captcha from '../../servidor/recaptcha.js';
+import { correoConfigurado } from '../../servidor/correo.js';
 import { planEnVigor, moduloIncluido } from '../suscripciones/plan.js';
 
 export async function estado(req, res) {
@@ -116,8 +117,12 @@ export async function cambiarMetodo2fa(req, res) {
   res.json(resultado);
 }
 
+export async function quitar2fa(req, res) {
+  res.json(await servicio.quitarDobleFactor({ usuarioId: req.usuario.id, clave: req.body?.clave }, req.ip));
+}
+
 export async function perfil(req, res) {
-  const [[extra]] = await bd.query('SELECT metodo_2fa, telefono, direccion FROM usuarios WHERE id = ?', [req.usuario.id]);
+  const [[extra]] = await bd.query('SELECT metodo_2fa, telefono, direccion, sin_2fa FROM usuarios WHERE id = ?', [req.usuario.id]);
   const modulos = modulosDelRol(req.usuario.rol);
 
   const plan = await planEnVigor();
@@ -126,7 +131,15 @@ export async function perfil(req, res) {
     modulos,
     modulosBloqueados: modulos.filter((clave) => !moduloIncluido(plan, clave)),
     plan: { clave: plan.clave, texto: plan.texto, vigente: plan.vigente, fechaFin: plan.fechaFin, diasRestantes: plan.diasRestantes },
-    metodos2fa: METODOS_2FA,
+    // al proveedor solo se le ofrece la app: el correo y el sms son ajustes
+    // del colegio y su cuenta no pertenece a ninguna institucion
+    sin2fa: Boolean(extra?.sin_2fa),
+    puedeQuitar2fa: req.usuario.rol === ROLES.SUPERADMINISTRADOR,
+    metodos2fa: req.usuario.rol === ROLES.SUPERADMINISTRADOR
+      ? METODOS_2FA.filter((m) => m.valor === 'app')
+      : METODOS_2FA,
+    // las pantallas lo usan para saber si la clave temporal se manda por correo o se muestra en pantalla
+    correoActivo: correoConfigurado(),
   });
 }
 

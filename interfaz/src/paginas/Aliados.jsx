@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { Button } from 'antd';
 import { llamarApi, usuarioActual } from '../servicios/api.js';
 import { confirmar, avisarError, toast, mostrarClave } from '../servicios/avisos.js';
@@ -11,6 +12,7 @@ const FORMULARIO_VACIO = { nombre: '', correo: '', institucion: '', cargo: '', t
 
 export default function Aliados() {
   const soloLectura = usuarioActual()?.rol === 'direccion';
+  const { correoActivo } = useOutletContext() ?? {};
   const [aliados, setAliados] = useState([]);
   const [cargos, setCargos] = useState([]);
   const [filtros, setFiltros] = useState(FILTROS_VACIOS);
@@ -60,9 +62,9 @@ export default function Aliados() {
         setAbierto(false);
         await cargar();
         if (respuesta.claveTemporal) {
-          mostrarClave(respuesta.claveTemporal, 'No pudimos enviarle el correo a', respuesta.aliado.correo);
+          mostrarClave(respuesta.claveTemporal, correoActivo ? 'No pudimos enviarle el correo a' : 'Aliado creado:', respuesta.aliado.correo);
         } else {
-          toast('Aliado creado. Ya le enviamos sus datos de acceso por correo.');
+          toast(`Aliado creado. Acceso enviado a ${respuesta.aliado.correo}.`);
         }
       }
     } catch (excepcion) {
@@ -74,17 +76,19 @@ export default function Aliados() {
 
   async function reenviarAcceso(aliado) {
     const ok = await confirmar({
-      titulo: 'Reenviar el acceso?',
-      texto: `Se genera una clave nueva para ${aliado.nombre} y la anterior deja de servir.`,
-      confirmar: 'Sí, reenviar',
+      titulo: correoActivo ? 'Enviar el acceso por correo?' : 'Reenviar el acceso?',
+      texto: correoActivo
+        ? `Se genera una clave temporal para ${aliado.nombre} y se envía a ${aliado.correo}. La anterior deja de servir.`
+        : `Se genera una clave temporal para ${aliado.nombre} y se muestra en pantalla, porque no hay correo configurado. La anterior deja de servir.`,
+      confirmar: correoActivo ? 'Sí, enviar' : 'Sí, reenviar',
     });
     if (!ok) return;
     try {
       const respuesta = await llamarApi(`/api/aliados/${aliado.id}/reenviar-acceso`, { metodo: 'PUT' });
       if (respuesta.claveTemporal) {
-        mostrarClave(respuesta.claveTemporal, 'No pudimos enviarle el correo a', aliado.correo);
+        mostrarClave(respuesta.claveTemporal, correoActivo ? 'No pudimos enviarle el correo a' : 'Acceso restablecido de', aliado.correo);
       } else {
-        toast('Listo, le reenviamos el acceso por correo.');
+        toast(`Acceso enviado a ${aliado.correo}.`);
       }
     } catch (excepcion) { avisarError(excepcion.message); }
   }

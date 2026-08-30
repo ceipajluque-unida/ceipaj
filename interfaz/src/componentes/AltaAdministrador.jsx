@@ -61,7 +61,7 @@ export default function AltaAdministrador({ institucion, alEnviar, alCerrar }) {
         <AvisoPrivacidad />
         {error && <p className="error">{error}</p>}
         <div className="acciones">
-          <Button type="primary" htmlType="submit" disabled={cargando}>{cargando ? 'Creando…' : 'Crear administrador'}</Button>
+          <Button type="primary" htmlType="submit" disabled={cargando}>{cargando ? 'Creando…' : 'Crear usuario'}</Button>
           <Button onClick={alCerrar}>Cancelar</Button>
         </div>
       </form>

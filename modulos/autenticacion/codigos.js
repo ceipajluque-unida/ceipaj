@@ -26,7 +26,7 @@ export async function emitirCodigo(usuario, metodo = usuario.metodo_2fa) {
   const configurado = correoConfigurado();
   let enviado = false;
   if (configurado) {
-    const envio = await enviarCorreo({ para: usuario.correo, asunto: `Código de verificación — ${INSTITUCION.NOMBRE}`, texto });
+    const envio = await enviarCorreo({ para: usuario.correo, asunto: `Código de verificación (${INSTITUCION.NOMBRE})`, texto });
     enviado = envio.enviado;
   }
   const codigoPrueba = revelar(codigo, configurado);
@@ -38,15 +38,15 @@ export async function verificarCodigo(usuario, codigo) {
   const porSms = pendiente ? pendiente.canal === 'sms' : usuario.metodo_2fa === 'sms';
 
   if (porSms) {
-    const { aprobado } = await comprobarVerificacion({ para: pendiente?.telefono ?? usuario.telefono, codigo });
+    const { aprobado, motivo } = await comprobarVerificacion({ para: pendiente?.telefono ?? usuario.telefono, codigo });
     if (aprobado) pendientes.delete(usuario.id);
-    return aprobado;
+    return { aprobado, motivo };
   }
 
-  if (!pendiente || pendiente.vence < Date.now()) return false;
-  if (pendiente.codigo !== String(codigo ?? '').trim()) return false;
+  if (!pendiente || pendiente.vence < Date.now()) return { aprobado: false };
+  if (pendiente.codigo !== String(codigo ?? '').trim()) return { aprobado: false };
   pendientes.delete(usuario.id);
-  return true;
+  return { aprobado: true };
 }
 
 export function invalidar(usuarioId) {

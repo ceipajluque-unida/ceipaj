@@ -3,7 +3,7 @@ import { Button, Table } from 'antd';
 import { llamarApi, usuarioActual } from '../servicios/api.js';
 import { descargarArchivo } from '../servicios/descargas.js';
 import { confirmar, avisarError, toast } from '../servicios/avisos.js';
-import { guaranies, fecha, contar, legible } from '../servicios/formato.js';
+import { guaranies, fecha, contar } from '../servicios/formato.js';
 import Modal from '../componentes/Modal.jsx';
 import Barras from '../componentes/Barras.jsx';
 
@@ -35,7 +35,7 @@ export default function Comisiones() {
   async function pagar(comision) {
     const ok = await confirmar({
       titulo: `Pagar la comisión de ${comision.aliado}?`,
-      texto: `${guaranies(comision.monto)} por la matrícula de ${comision.lead}. Queda registrada como pagada.`,
+      texto: `${guaranies(comision.monto)} por la matrícula de ${comision.interesado}.`,
       confirmar: 'Sí, pagar',
     });
     if (!ok) return;
@@ -86,7 +86,7 @@ export default function Comisiones() {
   ];
 
   const columnasDetalle = [
-    { title: 'Interesado matriculado', dataIndex: 'lead', key: 'lead' },
+    { title: 'Interesado matriculado', dataIndex: 'interesado', key: 'interesado' },
     { title: 'Monto', dataIndex: 'monto', key: 'monto', render: (valor) => guaranies(valor) },
     {
       title: 'Estado',

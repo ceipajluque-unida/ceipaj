@@ -53,7 +53,7 @@ export async function crearUsuario({ nombre, correo, telefono, direccion, rol },
     if (error.code === 'ER_DUP_ENTRY') throw new ErrorVisible('Ya existe un usuario con ese correo.', 409);
     throw error;
   }
-  await registrarAuditoria({ usuarioId: solicitante.id, accion: 'usuario_creado', detalle: `${correo} — rol ${rol}`, ip });
+  await registrarAuditoria({ usuarioId: solicitante.id, accion: 'usuario_creado', detalle: `${correo}: rol ${rol}`, ip });
   const envio = await despacharCredenciales({ nombre, correo, claveTemporal, asunto: 'Tu acceso al SIG del CEIPAJ' });
 
   return { usuario: await buscarInterno(resultado.insertId), ...envio };
@@ -72,14 +72,14 @@ export async function editarUsuario(id, { nombre, correo, telefono, direccion },
   }
   const cambios = [
     antes.nombre !== nombre ? 'nombre' : null,
-    antes.correo !== correo ? `correo ${antes.correo} → ${correo}` : null,
+    antes.correo !== correo ? `correo (de ${antes.correo} a ${correo})` : null,
     (antes.telefono ?? '') !== (telefono ?? '') ? 'teléfono' : null,
     (antes.direccion ?? '') !== (direccion ?? '') ? 'dirección' : null,
   ].filter(Boolean);
   await registrarAuditoria({
     usuarioId: solicitante.id,
     accion: 'usuario_actualizado',
-    detalle: `${antes.correo} — ${cambios.length ? cambios.join(', ') : 'sin cambios'}`,
+    detalle: `${antes.correo}: ${cambios.length ? cambios.join(', ') : 'sin cambios'}`,
     ip,
   });
   return buscarInterno(id);
@@ -98,7 +98,7 @@ export async function cambiarRol(id, rol, solicitante, ip) {
   await registrarAuditoria({
     usuarioId: solicitante.id,
     accion: 'usuario_rol_cambiado',
-    detalle: `${antes.correo} — ${antes.rol} → ${rol}`,
+    detalle: `${antes.correo}: cambió el rol de ${antes.rol} a ${rol}`,
     ip,
   });
   return buscarInterno(id);
@@ -130,6 +130,6 @@ export async function restablecerClave({ id }, solicitante, ip) {
     nombre: usuario.nombre,
     correo: usuario.correo,
     claveTemporal,
-    asunto: 'Nueva contraseña temporal — SIG CEIPAJ',
+    asunto: 'Nueva contraseña temporal (SIG CEIPAJ)',
   });
 }

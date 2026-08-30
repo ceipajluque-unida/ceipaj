@@ -7,6 +7,8 @@ import FormularioInstitucion from '../componentes/FormularioInstitucion.jsx';
 import AltaAdministrador from '../componentes/AltaAdministrador.jsx';
 import RolesInstitucion from '../componentes/RolesInstitucion.jsx';
 import UsuariosInstitucion from '../componentes/UsuariosInstitucion.jsx';
+import AliadosInstitucion from '../componentes/AliadosInstitucion.jsx';
+import SuscripcionInstitucion from '../componentes/SuscripcionInstitucion.jsx';
 
 const FORMULARIO_VACIO = { nombre: '', ciudad: '', correoContacto: '', telefono: '', direccion: '' };
 
@@ -19,8 +21,15 @@ export default function Instituciones() {
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState(null);
 
+  // sube con cada alta o edición de usuarios: el panel de roles cuenta activos por rol
+  // y el cupo del plan, así que sin esto queda mostrando lo de cuando se abrió la fila
+  const [version, setVersion] = useState(0);
+
   async function cargar() {
-    try { setInstituciones(await llamarApi('/api/instituciones')); } catch (e) { avisarError(e.message); }
+    try {
+      setInstituciones(await llamarApi('/api/instituciones'));
+      setVersion((anterior) => anterior + 1);
+    } catch (e) { avisarError(e.message); }
   }
   useEffect(() => { cargar(); }, []);
 
@@ -66,7 +75,7 @@ export default function Instituciones() {
     const ok = await confirmar({
       titulo: desactivar ? `Suspender ${institucion.nombre}?` : `Reactivar ${institucion.nombre}?`,
       texto: desactivar
-        ? 'Se corta el ingreso de todos sus usuarios hasta reactivarla. Los datos no se tocan.'
+        ? 'Sus usuarios no van a poder entrar hasta que la reactives. No se borra nada: toda su información queda donde está.'
         : 'Sus usuarios vuelven a poder ingresar.',
       confirmar: desactivar ? 'Sí, suspender' : 'Sí, reactivar',
       peligro: desactivar,
@@ -123,7 +132,9 @@ export default function Instituciones() {
       render: (_, institucion) => (
         <div className="acciones">
           <Button size="small" onClick={() => abrirEdicion(institucion)}>Editar</Button>
-          <Button size="small" onClick={() => setAdministrando(institucion)}>Administrador</Button>
+          {Number(institucion.administradores) === 0 && (
+            <Button size="small" onClick={() => setAdministrando(institucion)}>Crear usuario</Button>
+          )}
           <Button size="small" danger={institucion.activo} onClick={() => cambiarActivo(institucion)}>
             {institucion.activo ? 'Suspender' : 'Reactivar'}
           </Button>
@@ -154,8 +165,10 @@ export default function Instituciones() {
               expandable={{
                 expandedRowRender: (institucion) => (
                   <div className="detalle-institucion">
-                    <RolesInstitucion institucionId={institucion.id} />
-                    <UsuariosInstitucion institucion={institucion} />
+                    <RolesInstitucion institucionId={institucion.id} refresco={version} />
+                    <UsuariosInstitucion institucion={institucion} alCambiar={() => setVersion((anterior) => anterior + 1)} />
+                    <AliadosInstitucion institucion={institucion} />
+                    <SuscripcionInstitucion institucionId={institucion.id} refresco={version} />
                   </div>
                 ),
                 rowExpandable: () => true,

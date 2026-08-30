@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { haySesion, llamarApi } from './servicios/api.js';
 import Diseno from './componentes/Diseno.jsx';
@@ -7,6 +7,8 @@ import Ingreso from './paginas/Ingreso.jsx';
 import RecuperarClave from './paginas/RecuperarClave.jsx';
 import RestablecerClave from './paginas/RestablecerClave.jsx';
 import Privacidad from './paginas/Privacidad.jsx';
+// la pagina publica no la ve ningun usuario interno: se carga solo si se entra
+const Landing = lazy(() => import('./paginas/Landing.jsx'));
 import PagoFinalizado from './paginas/PagoFinalizado.jsx';
 import CambioClave from './paginas/CambioClave.jsx';
 import PantallaPrincipal from './paginas/PantallaPrincipal.jsx';
@@ -25,6 +27,8 @@ import Checkout from './paginas/Checkout.jsx';
 import Suscripciones from './paginas/Suscripciones.jsx';
 import Planes from './paginas/Planes.jsx';
 import Instituciones from './paginas/Instituciones.jsx';
+import Solicitudes from './paginas/Solicitudes.jsx';
+import Plataforma from './paginas/Plataforma.jsx';
 import Usuarios from './paginas/Usuarios.jsx';
 import Configuracion from './paginas/Configuracion.jsx';
 import Auditoria from './paginas/Auditoria.jsx';
@@ -35,7 +39,7 @@ function RutaProtegida({ children }) {
 }
 
 function RutaDeAcceso({ children }) {
-  return haySesion() ? <Navigate to="/" replace /> : children;
+  return haySesion() ? <Navigate to="/panel" replace /> : children;
 }
 
 export default function Aplicacion() {
@@ -73,10 +77,11 @@ export default function Aplicacion() {
       />
       <Route path="/recuperar" element={<RutaDeAcceso><RecuperarClave /></RutaDeAcceso>} />
       <Route path="/restablecer" element={<RutaDeAcceso><RestablecerClave /></RutaDeAcceso>} />
+      <Route path="/" element={<Suspense fallback={<p className="mensaje-centrado">Cargando…</p>}><Landing /></Suspense>} />
       <Route path="/privacidad" element={<Privacidad />} />
       <Route path="/pago-finalizado" element={<PagoFinalizado />} />
       <Route element={<RutaProtegida><Diseno /></RutaProtegida>}>
-        <Route path="/" element={<PantallaPrincipal />} />
+        <Route path="/panel" element={<PantallaPrincipal />} />
         <Route path="/leads" element={<Leads />} />
         <Route path="/leads/:id" element={<LeadDetalle />} />
         <Route path="/seguimiento" element={<Seguimiento />} />
@@ -92,6 +97,8 @@ export default function Aplicacion() {
         <Route path="/suscripcion" element={<Suscripciones />} />
         <Route path="/planes" element={<Planes />} />
         <Route path="/instituciones" element={<Instituciones />} />
+        <Route path="/solicitudes" element={<Solicitudes />} />
+        <Route path="/plataforma" element={<Plataforma />} />
         <Route path="/usuarios" element={<Usuarios />} />
         <Route path="/configuracion" element={<Configuracion />} />
         <Route path="/auditoria" element={<Auditoria />} />

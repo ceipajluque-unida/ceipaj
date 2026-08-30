@@ -133,5 +133,5 @@ export function verificarNotificacion(cuerpo, req) {
 }
 
 export async function listarMedios() {
-  return [{ valor: 'adamspay', texto: 'AdamsPay (el medio se elige al pagar)', montoMinimo: 0, ventanaPropia: true }];
+  return [{ valor: 'adamspay', texto: 'AdamsPay', montoMinimo: 0, ventanaPropia: true }];
 }

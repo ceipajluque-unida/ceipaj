@@ -1,18 +1,20 @@
 import { useEffect, useState } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { Button } from 'antd';
 import { llamarApi, usuarioActual } from '../servicios/api.js';
 import { confirmar, avisarError, toast, mostrarClave } from '../servicios/avisos.js';
 import { contar, legible } from '../servicios/formato.js';
+import { ROLES_INTERNOS } from '../servicios/roles.js';
 import Modal from '../componentes/Modal.jsx';
 import FormularioUsuario from '../componentes/FormularioUsuario.jsx';
 import RolesInstitucion from '../componentes/RolesInstitucion.jsx';
 import TablaUsuarios from '../componentes/TablaUsuarios.jsx';
 
-const ROLES_INTERNOS = ['administrador', 'comercial', 'direccion'];
 const FORMULARIO_VACIO = { nombre: '', correo: '', telefono: '', direccion: '', rol: 'comercial' };
 
 export default function Usuarios() {
   const yo = usuarioActual();
+  const { correoActivo } = useOutletContext() ?? {};
   const [usuarios, setUsuarios] = useState([]);
   const [abierto, setAbierto] = useState(false);
   const [editando, setEditando] = useState(null);
@@ -20,8 +22,13 @@ export default function Usuarios() {
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState(null);
 
+  const [version, setVersion] = useState(0);
+
   async function cargar() {
-    try { setUsuarios(await llamarApi('/api/usuarios')); } catch (e) { avisarError(e.message); }
+    try {
+      setUsuarios(await llamarApi('/api/usuarios'));
+      setVersion((anterior) => anterior + 1);
+    } catch (e) { avisarError(e.message); }
   }
   useEffect(() => { cargar(); }, []);
 
@@ -49,6 +56,10 @@ export default function Usuarios() {
     try {
       if (editando) {
         await llamarApi(`/api/usuarios/${editando.id}`, { metodo: 'PUT', cuerpo: formulario });
+        // el rol se cambia aparte: tiene sus propias guardas y queda auditado
+        if (formulario.rol && formulario.rol !== editando.rol) {
+          await llamarApi(`/api/usuarios/${editando.id}/rol`, { metodo: 'PUT', cuerpo: { rol: formulario.rol } });
+        }
         setAbierto(false);
         await cargar();
         toast('Usuario actualizado.');
@@ -59,7 +70,7 @@ export default function Usuarios() {
         if (respuesta.claveTemporal) {
           mostrarClave(respuesta.claveTemporal, 'Usuario creado:', respuesta.usuario.correo);
         } else {
-          toast('Usuario creado. Las credenciales se enviaron por correo.');
+          toast(`Usuario creado. Credenciales enviadas a ${respuesta.usuario.correo}.`);
         }
       }
     } catch (excepcion) {
@@ -72,7 +83,7 @@ export default function Usuarios() {
   async function cambiarRol(usuario, rol) {
     const ok = await confirmar({
       titulo: 'Cambiar el rol?',
-      texto: `${usuario.nombre} pasa a ${legible(rol)} y se le corta la sesión que tenga abierta.`,
+      texto: `${usuario.nombre} pasa a ${legible(rol)}. Si está trabajando en el sistema, va a tener que volver a entrar.`,
       confirmar: 'Sí, cambiar',
     });
     if (!ok) return;
@@ -100,14 +111,20 @@ export default function Usuarios() {
   }
 
   async function restablecer(usuario) {
-    const ok = await confirmar({ titulo: 'Restablecer la clave?', texto: `Se genera una clave temporal nueva para ${usuario.nombre}.`, confirmar: 'Sí, restablecer' });
+    const ok = await confirmar({
+      titulo: correoActivo ? 'Enviar la clave temporal por correo?' : 'Restablecer la clave?',
+      texto: correoActivo
+        ? `Se genera una clave temporal para ${usuario.nombre} y se envía a ${usuario.correo}. La anterior deja de servir.`
+        : `Se genera una clave temporal para ${usuario.nombre} y se muestra en pantalla, porque no hay correo configurado. La anterior deja de servir.`,
+      confirmar: correoActivo ? 'Sí, enviar' : 'Sí, restablecer',
+    });
     if (!ok) return;
     try {
       const respuesta = await llamarApi(`/api/usuarios/${usuario.id}/restablecer-clave`, { metodo: 'PUT' });
       if (respuesta.claveTemporal) {
-        mostrarClave(respuesta.claveTemporal, 'Clave restablecida de', usuario.correo);
+        mostrarClave(respuesta.claveTemporal, correoActivo ? 'No pudimos enviarle el correo a' : 'Clave restablecida de', usuario.correo);
       } else {
-        toast('Clave restablecida. Se envió por correo.');
+        toast(`Clave temporal enviada a ${usuario.correo}.`);
       }
     } catch (excepcion) { avisarError(excepcion.message); }
   }
@@ -147,15 +164,15 @@ export default function Usuarios() {
         )}
       </section>
 
-      <Modal abierto={abierto} titulo={editando ? `Editar ${editando.nombre}` : 'Nuevo usuario'} alCerrar={() => setAbierto(false)} ancho={620}>
+      <Modal abierto={abierto} titulo={editando ? `Editar ${editando.nombre}` : 'Nuevo usuario'} alCerrar={() => setAbierto(false)} ancho={900}>
         <section className="panel">
-        <h3>Roles y accesos del plan</h3>
-        <div className="tabla-envoltura">
-          <RolesInstitucion ruta="/api/usuarios/roles" />
-        </div>
-      </section>
+          <h3>Roles y accesos del plan</h3>
+          <div className="tabla-envoltura">
+            <RolesInstitucion ruta="/api/usuarios/roles" refresco={version} />
+          </div>
+        </section>
 
-      <FormularioUsuario
+        <FormularioUsuario
           formulario={formulario}
           alCambiar={setFormulario}
           roles={ROLES_INTERNOS}

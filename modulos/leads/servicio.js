@@ -57,7 +57,7 @@ export async function crearLead({ nombre, cedula, telefono, correo, canal, conse
     if (error.code === 'ER_DUP_ENTRY') throw new ErrorVisible('Ya existe un interesado con esa cédula.', 409);
     throw error;
   }
-  await registrarAuditoria({ usuarioId: creadoPor, accion: 'lead_creado', detalle: `cédula ${cedulaNormalizada} — canal ${canal}`, ip });
+  await registrarAuditoria({ usuarioId: creadoPor, accion: 'lead_creado', detalle: `cédula ${cedulaNormalizada}, canal ${canal}`, ip });
   const [[lead]] = await bd.query('SELECT * FROM leads WHERE id = ? AND institucion_id = ?', [resultado.insertId, institucionId]);
   return lead;
 }
@@ -131,8 +131,9 @@ export async function editarLead(id, { nombre, telefono, correo, canal, aliadoId
   await registrarAuditoria({
     usuarioId,
     accion: 'lead_editado',
-
-    detalle: cambiaAliado ? `lead ${id} — aliado ${antes.aliado_id ?? '—'} → ${aliado ?? '—'}` : `lead ${id}`,
+    detalle: cambiaAliado
+      ? `lead ${id}: cambió el aliado de ${antes.aliado_id ?? 'ninguno'} a ${aliado ?? 'ninguno'}`
+      : `lead ${id}`,
     ip,
   });
   return { id: Number(id), nombre: nombre.trim(), telefono, correo, canal, aliado_id: aliado };
@@ -150,7 +151,7 @@ export async function cambiarEstado(id, estadoNuevo, usuarioId, ip) {
   }
   if (estadoNuevo === ESTADOS_LEAD.MATRICULADO) return concretarMatricula(id, null, usuarioId, ip);
   await bd.query('UPDATE leads SET estado = ? WHERE id = ? AND institucion_id = ?', [estadoNuevo, id, institucionId]);
-  await registrarAuditoria({ usuarioId, accion: 'lead_estado', detalle: `de ${lead.estado} a ${estadoNuevo}`, ip });
+  await registrarAuditoria({ usuarioId, accion: 'lead_estado', detalle: `lead ${lead.id}: cambió el estado de ${lead.estado} a ${estadoNuevo}`, ip });
   return { id: lead.id, estado: estadoNuevo };
 }
 
@@ -168,7 +169,7 @@ export async function registrarInteraccion(leadId, { tipo, detalle }, usuarioId,
     'INSERT INTO interacciones (lead_id, usuario_id, tipo, detalle) VALUES (?, ?, ?, ?)',
     [leadId, usuarioId, tipo, limpio]
   );
-  await registrarAuditoria({ usuarioId, accion: 'interaccion_registrada', detalle: `lead ${lead.id} — ${tipo}`, ip });
+  await registrarAuditoria({ usuarioId, accion: 'interaccion_registrada', detalle: `lead ${lead.id}: ${tipo}`, ip });
   return { id: resultado.insertId, leadId: lead.id, tipo, detalle: limpio };
 }
 

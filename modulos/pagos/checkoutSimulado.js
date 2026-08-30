@@ -5,7 +5,7 @@ import { avisoDePago } from './pasarelas/simulada.js';
 import { procesarNotificacion } from './acreditacion.js';
 
 function exigirSimulada() {
-  if (!esSimulada()) throw new ErrorVisible('El checkout de prueba está desactivado.', 403);
+  if (!esSimulada()) throw new ErrorVisible('El checkout de demostración está desactivado.', 403);
 }
 
 async function buscarPedido(hash) {

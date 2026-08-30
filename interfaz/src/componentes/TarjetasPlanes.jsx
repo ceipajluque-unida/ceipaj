@@ -1,5 +1,5 @@
 import { Button } from 'antd';
-import { guaranies, fecha, contar, legible } from '../servicios/formato.js';
+import { guaranies, contar, legible } from '../servicios/formato.js';
 
 const ESTILO_PORTADA = { width: '100%', height: 110, objectFit: 'cover', borderRadius: 10 };
 
@@ -14,6 +14,16 @@ function textoPeriodo(meses) {
   if (meses === 1) return 'por mes';
   if (meses === 12) return 'por año';
   return `cada ${meses} meses`;
+}
+
+// una sola cadena: como varios hijos, el botón de antd los separaba con su
+// espacio y quedaba "Pasar a este plan , sin cargo"
+function textoBoton(esElActual, cambio) {
+  if (esElActual) return 'Renovar por otro período';
+  const base = ETIQUETA_CAMBIO[cambio?.tipo] ?? 'Contratar';
+  if (cambio?.tipo === 'mejora') return `${base} por ${guaranies(cambio.aPagar)}`;
+  if (cambio?.tipo === 'reduccion') return `${base}, sin cargo`;
+  return base;
 }
 
 export default function TarjetasPlanes({ planes, vigente, cambios = {}, esAdministrador, alElegir }) {
@@ -54,9 +64,7 @@ export default function TarjetasPlanes({ planes, vigente, cambios = {}, esAdmini
                   aria-label={`${ETIQUETA_CAMBIO[cambio?.tipo] ?? 'Contratar'} el plan ${plan.texto}`}
                   onClick={() => alElegir(plan, cambio)}
                 >
-                  {esElActual ? 'Renovar por otro período' : ETIQUETA_CAMBIO[cambio?.tipo] ?? 'Contratar'}
-                  {cambio?.tipo === 'mejora' && ` por ${guaranies(cambio.aPagar)}`}
-                  {cambio?.tipo === 'reduccion' && ', sin cargo'}
+                  {textoBoton(esElActual, cambio)}
                 </Button>
               </>
             )}

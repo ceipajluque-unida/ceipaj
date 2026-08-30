@@ -134,7 +134,7 @@ export async function aplicarReduccion(claveDestino, usuario, ip) {
   await registrarAuditoria({
     usuarioId: usuario.id,
     accion: 'suscripcion_reducida',
-    detalle: `${vigente.plan} → ${cambio.plan}, saldo ${cambio.credito} por ${cambio.diasQueCubre} días`,
+    detalle: `cambió el plan de ${vigente.plan} a ${cambio.plan}, saldo ${cambio.credito} por ${cambio.diasQueCubre} días`,
     ip,
   });
   limpiarCachePlan(institucionId);
@@ -143,7 +143,8 @@ export async function aplicarReduccion(claveDestino, usuario, ip) {
 
 export async function listarSuscripciones() {
   const [filas] = await bd.query(
-    `SELECT s.id, s.plan, s.estado, s.monto, s.fecha_inicio, s.fecha_fin, p.referencia
+    `SELECT s.id, s.plan, s.estado, s.monto, s.fecha_inicio, s.fecha_fin, p.referencia,
+            p.estado AS estado_pago
        FROM suscripciones s
        LEFT JOIN pagos p ON p.id = s.pago_id
       WHERE s.institucion_id = ?
@@ -189,7 +190,7 @@ export async function activarPorPago({ pagoId, institucionId, plan, monto, usuar
   );
 
   await conInstitucion(institucionId, () => registrarAuditoria({
-    usuarioId, accion: 'suscripcion_activada', detalle: `${plan} — ${meses} mes(es)`, ip,
+    usuarioId, accion: 'suscripcion_activada', detalle: `${plan}, ${meses} mes(es)`, ip,
   }));
   limpiarCachePlan(institucionId);
   return { id: resultado.insertId };
@@ -205,6 +206,28 @@ export async function cancelar(id, usuario, ip) {
   await registrarAuditoria({ usuarioId: usuario.id, accion: 'suscripcion_cancelada', detalle: String(id), ip });
   const vigente = await suscripcionVigente();
   return { id, renueva: false, fechaFin: vigente?.fecha_fin ?? null };
+}
+
+// corta el periodo en el acto, sin esperar a su fecha de fin. es distinto de
+// cancelar: aca la institucion cae al plan minimo enseguida, asi que solo lo
+// hace el proveedor y siempre con un motivo, que queda en la auditoria.
+export async function darDeBajaAhora(id, motivo, usuario, ip) {
+  const razon = String(motivo ?? '').trim().slice(0, 200);
+  if (!razon) throw new ErrorVisible('Escribí por qué se da de baja: queda registrado.');
+
+  const institucionId = institucionDelPedido();
+  const [resultado] = await bd.query(
+    `UPDATE suscripciones SET estado = ?, fecha_fin = NOW(), cancelada_en = COALESCE(cancelada_en, NOW())
+      WHERE id = ? AND institucion_id = ? AND estado = ?`,
+    [ESTADOS_SUSCRIPCION.VENCIDA, id, institucionId, ESTADOS_SUSCRIPCION.ACTIVA]
+  );
+  if (resultado.affectedRows === 0) throw new ErrorVisible('La suscripción no existe o ya no estaba activa.', 404);
+
+  await registrarAuditoria({
+    usuarioId: usuario.id, accion: 'suscripcion_dada_de_baja', detalle: `suscripción ${id}: ${razon}`, ip,
+  });
+  limpiarCachePlan(institucionId);
+  return { id, fechaFin: new Date() };
 }
 
 export async function marcarVencidas() {

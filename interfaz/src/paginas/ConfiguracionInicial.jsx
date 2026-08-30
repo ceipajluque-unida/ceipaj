@@ -57,7 +57,7 @@ export default function ConfiguracionInicial() {
         cuerpo: { tokenPre2fa: paso1.tokenPre2fa, codigo },
       });
       guardarSesion(paso2.token, paso2.usuario);
-      navegar('/');
+      navegar('/panel');
     } catch (excepcion) {
       setError(excepcion.message);
     } finally {

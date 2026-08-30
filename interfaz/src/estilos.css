@@ -1,5 +1,5 @@
 :root {
-  --acento: #35597e; --acento-suave: color-mix(in srgb, var(--acento) 14%, transparent);
+  --acento: #0958d9; --acento-suave: color-mix(in srgb, var(--acento) 14%, transparent);
   --acento-hover: color-mix(in srgb, var(--acento) 85%, black);
 
   --fondo: #f3f5fa;
@@ -413,3 +413,13 @@ tbody tr:hover td { background: var(--panel-2); }
 .boton-vista-previa { margin-top: 0.45rem; width: fit-content; }
 
 .pantalla-suelta { min-height: 100vh; display: grid; place-items: center; background: var(--fondo); }
+
+/* cifras del panel del proveedor */
+.cifras { display: grid; gap: var(--esp-2); grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+.tarjeta-cifra {
+  border: 1px solid var(--borde); border-radius: var(--radio); padding: var(--esp-3);
+  background: var(--panel-2);
+}
+.tarjeta-cifra strong { display: block; font-size: 1.6rem; line-height: 1.15; color: var(--acento); }
+.tarjeta-cifra span { display: block; margin-top: 0.25rem; font-size: 0.85rem; color: var(--texto); }
+.tarjeta-cifra small { display: block; margin-top: 0.2rem; font-size: 0.78rem; color: var(--texto-suave); }

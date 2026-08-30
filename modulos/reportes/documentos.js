@@ -45,9 +45,9 @@ export async function generarPdf(tabla) {
     doc.on('error', rechazar);
 
     doc.fontSize(15).font('Helvetica-Bold').fillColor('#1f2430')
-      .text(`${ajustes.leer('INSTITUCION_NOMBRE', INSTITUCION.NOMBRE)} — ${titulo}`);
+      .text(`${ajustes.leer('INSTITUCION_NOMBRE', INSTITUCION.NOMBRE)}: ${titulo}`);
     doc.moveDown(0.2).fontSize(8).font('Helvetica').fillColor('#666')
-      .text(`Generado el ${new Date().toLocaleString('es-PY')} — ${filas.length} registro(s)`);
+      .text(`Generado el ${new Date().toLocaleString('es-PY', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })}, ${filas.length} registro(s)`);
     doc.moveDown(0.6).fillColor('#000');
 
     const izq = doc.page.margins.left;

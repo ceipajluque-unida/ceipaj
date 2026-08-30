@@ -49,13 +49,7 @@ export default function TablaAliados({ aliados, total, soloLectura, alEditar, al
     });
   }
 
-  if (total === 0) {
-    return (
-      <p className="nota">
-        {soloLectura ? 'Todavía no hay aliados cargados.' : 'Todavía no hay aliados. Creá el primero con el botón de arriba.'}
-      </p>
-    );
-  }
+  if (total === 0) return <p className="nota">Todavía no hay aliados.</p>;
   if (aliados.length === 0) return <p className="nota">Ningún aliado coincide con lo que buscaste.</p>;
 
   return (

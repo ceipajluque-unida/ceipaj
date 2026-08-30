@@ -68,7 +68,7 @@ export default function Planes() {
   async function apagar(plan) {
     const ok = await confirmar({
       titulo: `Dejar de ofrecer el plan ${plan.texto}?`,
-      texto: 'Las suscripciones contratadas aplican hasta su vencimiento.',
+      texto: 'Deja de aparecer para contratar. Las instituciones que ya lo tienen siguen usándolo hasta que se les venza.',
       confirmar: 'Sí, dar de baja',
       peligro: true,
     });

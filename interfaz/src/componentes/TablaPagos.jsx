@@ -3,7 +3,7 @@ import { guaranies, legible, fechaHora } from '../servicios/formato.js';
 
 const TEXTO_ESTADO = { pendiente: 'Pendiente', exitoso: 'Pagado', rechazado: 'Rechazado' };
 
-export default function TablaPagos({ pagos, textoMedio, esAdministrador, bajando, alBajarRecibo, alRetomar }) {
+export default function TablaPagos({ pagos, textoMedio, esAdministrador, bajando, alBajarRecibo, alRetomar, alDescartar }) {
   const columnas = [
     { title: 'Referencia', dataIndex: 'referencia', key: 'referencia' },
     { title: 'Concepto', dataIndex: 'concepto', key: 'concepto' },
@@ -51,6 +51,11 @@ export default function TablaPagos({ pagos, textoMedio, esAdministrador, bajando
           {esAdministrador && pago.estado === 'pendiente' && pago.url_pago && (
             <Button size="small" aria-label={`Retomar el pago ${pago.referencia}`} onClick={() => alRetomar(pago)}>
               Retomar pago
+            </Button>
+          )}
+          {esAdministrador && pago.estado === 'pendiente' && (
+            <Button size="small" danger aria-label={`Descartar el cobro ${pago.referencia}`} onClick={() => alDescartar(pago)}>
+              Descartar
             </Button>
           )}
         </div>

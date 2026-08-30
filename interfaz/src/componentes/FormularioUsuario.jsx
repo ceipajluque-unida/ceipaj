@@ -14,7 +14,7 @@ export default function FormularioUsuario({ formulario, alCambiar, roles, editan
         <label><span>Dirección</span><Input value={formulario.direccion} onChange={campo('direccion')} /></label>
       </div>
 
-      {!editando && (
+      {roles.length > 0 && (
         <label><span>Rol</span>
           <Select
             value={formulario.rol}

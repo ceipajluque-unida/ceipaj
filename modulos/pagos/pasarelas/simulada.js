@@ -1,6 +1,9 @@
 import { createHash, randomUUID, timingSafeEqual } from 'node:crypto';
-import { ESTADOS_PAGO, MEDIOS_PAGO, APLICACION } from '../../../configuracion/ajustes.js';
+import { ESTADOS_PAGO, MEDIOS_PAGO, APLICACION, nombreDePasarela } from '../../../configuracion/ajustes.js';
 import * as ajustes from '../../../servidor/ajustesSistema.js';
+
+// el recibo compara la forma de pago con el nombre de la pasarela, así que sale del mismo lugar
+const NOMBRE = nombreDePasarela('simulada');
 
 function secreto() {
   return ajustes.leer('PAGOPAR_TOKEN_PRIVADO', '') || process.env.JWT_SECRETO || 'simulada';
@@ -40,7 +43,7 @@ export function verificarNotificacion(cuerpo) {
     estado: datos.pagado ? ESTADOS_PAGO.EXITOSO : ESTADOS_PAGO.PENDIENTE,
     monto: Number(datos.monto),
     fechaPago: datos.fecha_pago ?? null,
-    formaPagoExterna: datos.forma_pago ?? 'Pasarela de prueba',
+    formaPagoExterna: datos.forma_pago ?? NOMBRE,
     comprobanteExterno: datos.numero_comprobante ?? null,
     pagadorNombre: datos.pagador_nombre ?? null,
     pagadorDocumento: datos.pagador_documento ?? null,
@@ -55,6 +58,15 @@ export async function listarMedios() {
   return MEDIOS_PAGO.map((medio) => ({ ...medio, minimo: 1 }));
 }
 
+// la hora va en el huso del servidor, igual que creado_en y que NOW() de mysql:
+// con toISOString() salía en utc y el recibo mostraba el pago tres horas después
+// de haberse creado
+function ahoraLocal() {
+  const ahora = new Date();
+  const desfase = ahora.getTimezoneOffset() * 60000;
+  return new Date(ahora.getTime() - desfase).toISOString().slice(0, 19).replace('T', ' ');
+}
+
 export function avisoDePago({ hash, monto, medio }) {
   return {
     resultado: [{
@@ -62,8 +74,8 @@ export function avisoDePago({ hash, monto, medio }) {
       token: firmar(hash),
       pagado: true,
       monto: String(monto),
-      fecha_pago: new Date().toISOString().slice(0, 19).replace('T', ' '),
-      forma_pago: MEDIOS_PAGO.find((m) => m.valor === medio)?.texto ?? 'Pasarela de prueba',
+      fecha_pago: ahoraLocal(),
+      forma_pago: MEDIOS_PAGO.find((m) => m.valor === medio)?.texto ?? NOMBRE,
       numero_comprobante: `SIM${Date.now().toString().slice(-8)}`,
     }],
   };

@@ -49,7 +49,7 @@ export async function crearAdministrador(institucionId, cuerpo, solicitante, ip)
   await registrarAuditoria({
     usuarioId: solicitante.id,
     accion: 'institucion_administrador_creado',
-    detalle: `${institucion.nombre} — ${correo}`,
+    detalle: `${institucion.nombre}: ${correo}`,
     ip,
   });
   return { usuario: { id: resultado.insertId, nombre, correo }, ...envio };

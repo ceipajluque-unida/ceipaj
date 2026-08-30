@@ -2,6 +2,7 @@ import { bd } from '../../servidor/bd/conexion.js';
 import { registrarAuditoria } from '../../servidor/auditoria.js';
 import { ErrorVisible } from '../../servidor/errores.js';
 import { institucionActual } from '../../servidor/contexto.js';
+import { enviarReciboDeComision } from './reciboCorreo.js';
 
 export const ESTADOS_COMISION = { PENDIENTE: 'pendiente', PAGADA: 'pagada' };
 
@@ -24,7 +25,7 @@ function resumirPorAliado(filas) {
 
 export async function listarComisiones() {
   const [filas] = await bd.query(
-    `SELECT c.id, c.aliado_id, u.nombre AS aliado, a.institucion, l.nombre AS lead,
+    `SELECT c.id, c.aliado_id, u.nombre AS aliado, a.institucion, l.nombre AS interesado,
             c.monto, c.estado, c.creado_en, c.actualizado_en
        FROM comisiones c
        JOIN aliados a ON a.id = c.aliado_id
@@ -54,5 +55,8 @@ export async function pagarComision(id, usuario, ip) {
     throw new ErrorVisible('Esa comisión ya está pagada.', 409);
   }
   await registrarAuditoria({ usuarioId: usuario.id, accion: 'comision_pagada', detalle: `comisión ${id}`, ip });
+  // el recibo sale con la comisión ya marcada como pagada y sin esperarlo, para que un
+  // correo lento o caído no demore ni deshaga el marcado
+  enviarReciboDeComision(id, usuario.id, ip);
   return { id, estado: ESTADOS_COMISION.PAGADA };
 }

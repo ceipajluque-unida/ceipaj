@@ -5,10 +5,12 @@ import FormularioUsuario from './FormularioUsuario.jsx';
 import { llamarApi } from '../servicios/api.js';
 import { confirmar, avisarError, toast, mostrarClave } from '../servicios/avisos.js';
 import { legible } from '../servicios/formato.js';
+import { ROLES_INTERNOS } from '../servicios/roles.js';
 
-const VACIO = { nombre: '', correo: '', telefono: '', direccion: '' };
+const VACIO = { nombre: '', correo: '', telefono: '', direccion: '', rol: '' };
 
-export default function UsuariosInstitucion({ institucion }) {
+export default function UsuariosInstitucion({ institucion, alCambiar }) {
+  const correoActivo = Boolean(institucion.correoActivo);
   const [usuarios, setUsuarios] = useState(null);
   const [editando, setEditando] = useState(null);
   const [formulario, setFormulario] = useState(VACIO);
@@ -30,6 +32,7 @@ export default function UsuariosInstitucion({ institucion }) {
       correo: usuario.correo,
       telefono: usuario.telefono ?? '',
       direccion: usuario.direccion ?? '',
+      rol: usuario.rol,
     });
   }
 
@@ -39,8 +42,13 @@ export default function UsuariosInstitucion({ institucion }) {
     setCargando(true);
     try {
       await llamarApi(`${base}/${editando.id}`, { metodo: 'PUT', cuerpo: formulario });
+      // el rol se cambia aparte: tiene sus propias guardas y queda auditado
+      if (formulario.rol && formulario.rol !== editando.rol) {
+        await llamarApi(`${base}/${editando.id}/rol`, { metodo: 'PUT', cuerpo: { rol: formulario.rol } });
+      }
       setEditando(null);
       await cargar();
+      alCambiar?.();
       toast('Usuario actualizado.');
     } catch (excepcion) {
       setError(excepcion.message);
@@ -51,16 +59,21 @@ export default function UsuariosInstitucion({ institucion }) {
 
   async function restablecer(usuario) {
     const ok = await confirmar({
-      titulo: `Restablecer la contraseña de ${usuario.nombre}?`,
-      texto: 'La actual deja de servir en el momento.',
-      confirmar: 'Sí, restablecer',
+      titulo: correoActivo ? 'Enviar la clave temporal por correo?' : 'Restablecer la clave?',
+      texto: correoActivo
+        ? `Se genera una clave temporal para ${usuario.nombre} y se envía a ${usuario.correo}. La anterior deja de servir.`
+        : `Se genera una clave temporal para ${usuario.nombre} y se muestra en pantalla, porque no hay correo configurado. La anterior deja de servir.`,
+      confirmar: correoActivo ? 'Sí, enviar' : 'Sí, restablecer',
       peligro: true,
     });
     if (!ok) return;
     try {
       const respuesta = await llamarApi(`${base}/${usuario.id}/restablecer`, { metodo: 'POST' });
-      if (respuesta.claveTemporal) mostrarClave(respuesta.claveTemporal, 'Contraseña temporal de', usuario.correo);
-      else toast('Las credenciales se enviaron por correo.');
+      if (respuesta.claveTemporal) {
+        mostrarClave(respuesta.claveTemporal, correoActivo ? 'No pudimos enviarle el correo a' : 'Clave restablecida de', usuario.correo);
+      } else {
+        toast(`Clave temporal enviada a ${usuario.correo}.`);
+      }
     } catch (excepcion) { avisarError(excepcion.message); }
   }
 
@@ -68,7 +81,9 @@ export default function UsuariosInstitucion({ institucion }) {
     const desactivar = Boolean(usuario.activo);
     const ok = await confirmar({
       titulo: desactivar ? `Desactivar a ${usuario.nombre}?` : `Reactivar a ${usuario.nombre}?`,
-      texto: desactivar ? 'No va a poder ingresar hasta reactivarlo.' : 'Vuelve a poder ingresar.',
+      texto: desactivar
+        ? `${usuario.nombre} no va a poder entrar al sistema hasta que lo reactives. Su cuenta y su trabajo quedan como están.`
+        : `${usuario.nombre} vuelve a poder entrar al sistema.`,
       confirmar: desactivar ? 'Sí, desactivar' : 'Sí, reactivar',
       peligro: desactivar,
     });
@@ -76,6 +91,7 @@ export default function UsuariosInstitucion({ institucion }) {
     try {
       await llamarApi(`${base}/${usuario.id}/activo`, { metodo: 'PUT', cuerpo: { activo: !usuario.activo } });
       await cargar();
+      alCambiar?.();
       toast(desactivar ? 'Usuario desactivado.' : 'Usuario reactivado.');
     } catch (excepcion) { avisarError(excepcion.message); }
   }
@@ -121,7 +137,7 @@ export default function UsuariosInstitucion({ institucion }) {
       )}
       <Modal abierto={Boolean(editando)} titulo={`Editar a ${editando?.nombre ?? ''}`} alCerrar={() => setEditando(null)}>
         <FormularioUsuario
-          formulario={formulario} alCambiar={setFormulario} roles={[]} editando
+          formulario={formulario} alCambiar={setFormulario} roles={ROLES_INTERNOS} editando
           cargando={cargando} error={error} alEnviar={guardar} alCerrar={() => setEditando(null)}
         />
       </Modal>

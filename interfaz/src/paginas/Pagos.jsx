@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Button, Input, Select } from 'antd';
 import { llamarApi, usuarioActual } from '../servicios/api.js';
-import { avisarError, toast } from '../servicios/avisos.js';
+import { avisarError, toast, confirmar } from '../servicios/avisos.js';
 import { descargarArchivo } from '../servicios/descargas.js';
-import { legible } from '../servicios/formato.js';
+import { legible, guaranies } from '../servicios/formato.js';
 import VentanaPago from '../componentes/VentanaPago.jsx';
 import { abrirVentanaPago, llevarVentanaPagoA } from '../servicios/ventanaPago.js';
 import TablaPagos from '../componentes/TablaPagos.jsx';
@@ -54,6 +54,23 @@ export default function Pagos() {
     }
   }
 
+  async function descartar(pago) {
+    const ok = await confirmar({
+      titulo: 'Descartar este cobro?',
+      texto: `${pago.concepto}, ${guaranies(pago.monto)}, referencia ${pago.referencia}. Se borra del historial y no se puede recuperar.`,
+      confirmar: 'Sí, descartar',
+      peligro: true,
+    });
+    if (!ok) return;
+    try {
+      await llamarApi(`/api/pagos/${pago.referencia}`, { metodo: 'DELETE' });
+      await cargar();
+      toast('Cobro descartado.');
+    } catch (excepcion) {
+      avisarError(excepcion.message);
+    }
+  }
+
   async function bajarRecibo(referencia) {
     setBajando(referencia);
     try {
@@ -81,7 +98,7 @@ export default function Pagos() {
       {cargaError && <p className="error">{cargaError}</p>}
 
       <header className="encabezado-pagina">
-        <h2>Pagos a la plataforma</h2>
+        <h2>Pagos</h2>
         {esAdministrador && (
           <Button disabled={conciliando} onClick={conciliar}>
             {conciliando ? 'Consultando…' : 'Actualizar estados'}
@@ -125,8 +142,10 @@ export default function Pagos() {
             esAdministrador={esAdministrador}
             bajando={bajando}
             alBajarRecibo={bajarRecibo}
+            alDescartar={descartar}
             alRetomar={(pago) => {
-              const propia = pago.proveedor === 'adamspay';
+              // el único checkout que se puede incrustar es el propio, el de la pasarela Demo
+              const propia = pago.proveedor !== 'simulada';
               if (propia) {
                 abrirVentanaPago();
                 llevarVentanaPagoA(pago.url_pago);

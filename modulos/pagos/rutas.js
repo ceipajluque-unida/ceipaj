@@ -17,6 +17,7 @@ rutasPagos.post('/conciliar', autenticar, permitirRoles(...PERMISOS_ESCRITURA.pa
 
 rutasPagos.get('/:referencia/estado', autenticar, permitirRoles(...PERMISOS.pagos), controlador.estado);
 rutasPagos.get('/:referencia/recibo', autenticar, permitirRoles(...PERMISOS.pagos), controlador.recibo);
+rutasPagos.delete('/:referencia', autenticar, permitirRoles(...PERMISOS_ESCRITURA.pagos), controlador.descartar);
 
 rutasPagos.post('/notificacion', controlador.notificacion);
 

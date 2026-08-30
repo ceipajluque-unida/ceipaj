@@ -15,11 +15,17 @@ const TEXTO_PASO = {
   nuevo: 'Volver a nuevo',
 };
 
+// solo los pasos que no se pueden deshacer (o casi) necesitan aviso
+const AVISO_PASO = {
+  matriculado: 'Matriculado es el último estado, después no se puede volver atrás.',
+  perdido: 'Queda como perdido, pero más adelante lo podés reactivar como interesado.',
+};
+
 const COLUMNAS_INTERACCIONES = [
   { title: 'Fecha', dataIndex: 'fecha', key: 'fecha', render: (valor) => <span className="sin-cortar">{fechaHora(valor)}</span> },
   { title: 'Tipo', dataIndex: 'tipo', key: 'tipo', render: (valor) => legible(valor) },
   { title: 'Detalle', dataIndex: 'detalle', key: 'detalle', render: (valor) => valor ?? '—' },
-  { title: 'Registró', dataIndex: 'usuario', key: 'usuario' },
+  { title: 'Registrado por', dataIndex: 'usuario', key: 'usuario' },
 ];
 
 export default function LeadDetalle() {
@@ -44,11 +50,7 @@ export default function LeadDetalle() {
     const fuerte = estado === 'perdido' || estado === 'matriculado';
     const ok = await confirmar({
       titulo: `Pasarlo a ${legible(estado)}?`,
-      texto: estado === 'matriculado'
-        ? 'Matriculado es el último estado, después no se puede volver atrás.'
-        : estado === 'perdido'
-          ? 'Queda como perdido, pero más adelante lo podés reactivar como interesado.'
-          : 'El cambio queda registrado con tu usuario.',
+      texto: AVISO_PASO[estado],
       confirmar: 'Sí, cambiar',
       peligro: fuerte,
     });
@@ -82,17 +84,24 @@ export default function LeadDetalle() {
       </header>
 
       <nav className="pestanas">
-        <Button type="text" className={pestana === 'datos' ? 'activa' : ''} onClick={() => setPestana('datos')}>Datos y estado</Button>
+        <Button type="text" className={pestana === 'datos' ? 'activa' : ''} onClick={() => setPestana('datos')}>Detalles</Button>
         <Button type="text" className={pestana === 'contactos' ? 'activa' : ''} onClick={() => setPestana('contactos')}>
-          Contactos ({lead.interacciones.length})
+          Contactos realizados ({lead.interacciones.length})
         </Button>
       </nav>
 
       {pestana === 'datos' && (
         <>
           <section className="panel">
-            <h3>Datos de contacto</h3>
+            <h3>Datos del interesado</h3>
             <dl className="datos-perfil">
+              <div>
+                <dt>Estado</dt>
+                <dd><span className={`estado estado-${lead.estado}`}>{legible(lead.estado)}</span></dd>
+              </div>
+              {lead.fecha_conversion && (
+                <div><dt>Se matriculó el</dt><dd>{fechaHora(lead.fecha_conversion)}</dd></div>
+              )}
               <div><dt>Cédula</dt><dd>{lead.cedula}</dd></div>
               <div><dt>Teléfono</dt><dd>{lead.telefono || '—'}</dd></div>
               <div><dt>Correo</dt><dd>{lead.correo || '—'}</dd></div>
@@ -100,23 +109,14 @@ export default function LeadDetalle() {
               <div><dt>Aliado que lo recomendó</dt><dd>{lead.aliado ?? '—'}</dd></div>
               <div><dt>Registrado</dt><dd>{fechaHora(lead.creado_en)}</dd></div>
             </dl>
-            <div className="acciones separado"><Button type="primary" onClick={() => setModalDatos(true)}>Editar datos</Button></div>
-          </section>
-
-          <section className="panel">
-            <h3>Estado</h3>
-            {lead.fecha_conversion && <p className="nota">Se matriculó el {fechaHora(lead.fecha_conversion)}.</p>}
-            {lead.transiciones.length === 0 ? (
-              <p className="nota">Ya está matriculado.</p>
-            ) : (
-              <div className="acciones">
-                {lead.transiciones.map((estado) => (
-                  <Button key={estado} type={estado === 'perdido' ? 'default' : 'primary'} danger={estado === 'perdido'} onClick={() => cambiarEstado(estado)}>
-                    {TEXTO_PASO[estado] ?? `Pasar a ${legible(estado)}`}
-                  </Button>
-                ))}
-              </div>
-            )}
+            <div className="acciones separado">
+              {lead.transiciones.map((estado) => (
+                <Button key={estado} type={estado === 'perdido' ? 'default' : 'primary'} danger={estado === 'perdido'} onClick={() => cambiarEstado(estado)}>
+                  {TEXTO_PASO[estado] ?? `Pasar a ${legible(estado)}`}
+                </Button>
+              ))}
+              <Button onClick={() => setModalDatos(true)}>Editar datos</Button>
+            </div>
           </section>
 
           <BajaLead lead={lead} alActualizar={cargar} />

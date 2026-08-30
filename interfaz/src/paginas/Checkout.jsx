@@ -80,7 +80,7 @@ export default function Checkout() {
                 className="sep-arriba"
                 type="info"
                 showIcon
-                message="Pasarela en modo de prueba"
+                message="Pasarela Demo"
                 description="No se cobra dinero real. Los datos de la tarjeta no se guardan en ningún lado."
               />
             </article>
@@ -89,7 +89,7 @@ export default function Checkout() {
               <h3>Datos de la tarjeta</h3>
               <form onSubmit={confirmar}>
                 <label><span>Nombre del titular</span>
-                  <Input value={tarjeta.titular} onChange={campo('titular')} placeholder="Como figura en la tarjeta" required />
+                  <Input value={tarjeta.titular} onChange={campo('titular')} required />
                 </label>
                 <label><span>Número</span>
                   <Input value={tarjeta.numero} onChange={campo('numero')} inputMode="numeric" />

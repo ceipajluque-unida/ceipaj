@@ -38,3 +38,5 @@ export function frenoPorIp({ nombre, pedidos, segundos }) {
 export const frenoIngreso = frenoPorIp({ nombre: 'ingreso', ...SEGURIDAD.FRECUENCIA_INGRESO });
 export const frenoRecuperacion = frenoPorIp({ nombre: 'recuperacion', ...SEGURIDAD.FRECUENCIA_RECUPERACION });
 export const frenoGeneral = frenoPorIp({ nombre: 'general', ...SEGURIDAD.FRECUENCIA_GENERAL });
+// el formulario publico lleva su propio contador: insistir ahi no gasta el cupo del ingreso
+export const frenoSolicitud = frenoPorIp({ nombre: 'solicitud', ...SEGURIDAD.FRECUENCIA_SOLICITUD });

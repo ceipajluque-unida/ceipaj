@@ -24,7 +24,10 @@ const ERRORES = {
   'missing-input-secret': 'Falta la clave secreta del captcha en Configuración.',
 };
 
-export async function verificar(respuesta, ip) {
+// exigente = true hace que un fallo de Google rechace en vez de dejar pasar.
+// el ingreso y la recuperacion siguen siendo tolerantes, para no dejar a nadie
+// afuera del sistema; el formulario publico no tiene esa urgencia.
+export async function verificar(respuesta, ip, exigente = false) {
   if (!activo()) return { ok: true };
   if (!respuesta) return { ok: false, motivo: ERRORES['missing-input-response'] };
   try {
@@ -40,6 +43,8 @@ export async function verificar(respuesta, ip) {
     return { ok: false, motivo: ERRORES[codigo] ?? 'No se pudo validar el captcha.' };
   } catch {
     console.error('recaptcha: no se pudo contactar con google');
-    return { ok: true };
+    return exigente
+      ? { ok: false, motivo: 'No se pudo validar el captcha en este momento. Probá de nuevo en un minuto.' }
+      : { ok: true };
   }
 }

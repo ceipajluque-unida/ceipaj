@@ -18,8 +18,8 @@ export default function PagoFinalizado() {
       <Result
         status="success"
         title="Pago procesado"
-        subTitle="Esta ventana se cierra sola y el sistema queda al día."
-        extra={sigueAbierta && <Link to="/"><Button type="primary">Volver al sistema</Button></Link>}
+        subTitle="Esta ventana se cierra sola."
+        extra={sigueAbierta && <Link to="/panel"><Button type="primary">Volver al sistema</Button></Link>}
       />
     </main>
   );

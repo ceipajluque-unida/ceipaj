@@ -32,6 +32,45 @@ export async function confirmar({ titulo, texto, confirmar = 'Sí, continuar', p
   }
 }
 
+// confirmacion que ademas pide la contraseña, para las acciones que aflojan
+// la seguridad de la propia cuenta
+export async function pedirClave({ titulo, texto, confirmar = 'Confirmar' }) {
+  const resultado = await Swal.fire({
+    ...base(),
+    icon: 'warning',
+    title: titulo,
+    text: texto,
+    input: 'password',
+    inputAttributes: { autocomplete: 'current-password', autocapitalize: 'off' },
+    inputPlaceholder: 'Tu contraseña actual',
+    showCancelButton: true,
+    confirmButtonText: confirmar,
+    cancelButtonText: 'Cancelar',
+    reverseButtons: true,
+    inputValidator: (valor) => (valor ? undefined : 'Escribí tu contraseña.'),
+  });
+  return resultado.isConfirmed ? resultado.value : null;
+}
+
+// igual que pedirClave, pero para escribir un motivo que queda registrado
+export async function pedirTexto({ titulo, texto, marcador = '', confirmar = 'Confirmar', largo = 200 }) {
+  const resultado = await Swal.fire({
+    ...base(),
+    icon: 'warning',
+    title: titulo,
+    text: texto,
+    input: 'text',
+    inputAttributes: { maxlength: String(largo), autocapitalize: 'sentences' },
+    inputPlaceholder: marcador,
+    showCancelButton: true,
+    confirmButtonText: confirmar,
+    cancelButtonText: 'Cancelar',
+    reverseButtons: true,
+    inputValidator: (valor) => (String(valor ?? '').trim() ? undefined : 'Escribí el motivo.'),
+  });
+  return resultado.isConfirmed ? String(resultado.value).trim() : null;
+}
+
 export function avisarExito(texto, titulo = 'Listo') {
   return Swal.fire({ ...base(), icon: 'success', title: titulo, text: texto });
 }

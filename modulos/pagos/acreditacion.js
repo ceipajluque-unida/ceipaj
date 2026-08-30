@@ -1,9 +1,10 @@
 import { bd } from '../../servidor/bd/conexion.js';
 import { registrarAuditoria } from '../../servidor/auditoria.js';
 import { ErrorVisible } from '../../servidor/errores.js';
-import { institucionActual } from '../../servidor/contexto.js';
+import { institucionActual, conInstitucion } from '../../servidor/contexto.js';
 import { ESTADOS_PAGO, PASARELA } from '../../configuracion/ajustes.js';
 import { pasarelaActiva } from './proveedor.js';
+import { enviarReciboDePago } from './reciboCorreo.js';
 import { activarPorPago } from '../suscripciones/servicio.js';
 
 function institucionDelPedido() {
@@ -27,6 +28,7 @@ function guardarDatosDelPago(conexion, referencia, aviso = {}) {
 
 export async function aplicarResultado({ referencia, estado, usuarioId, aviso }, ip) {
   const conexion = await bd.getConnection();
+  let pago;
   try {
     await conexion.beginTransaction();
 
@@ -40,9 +42,10 @@ export async function aplicarResultado({ referencia, estado, usuarioId, aviso },
     }
     if (estado === ESTADOS_PAGO.EXITOSO) await guardarDatosDelPago(conexion, referencia, aviso);
 
-    const [[pago]] = await conexion.query(
+    const [filas] = await conexion.query(
       'SELECT id, plan, monto, institucion_id FROM pagos WHERE referencia = ?', [referencia]
     );
+    pago = filas[0];
     if (estado === ESTADOS_PAGO.EXITOSO && pago?.plan) {
       await activarPorPago(
         { pagoId: pago.id, institucionId: pago.institucion_id, plan: pago.plan, monto: pago.monto, usuarioId },
@@ -50,13 +53,19 @@ export async function aplicarResultado({ referencia, estado, usuarioId, aviso },
       );
     }
     await conexion.commit();
-    return { referencia, estado, plan: pago?.plan ?? null };
   } catch (error) {
     await conexion.rollback();
     throw error;
   } finally {
     conexion.release();
   }
+
+  // el recibo sale con el cobro ya confirmado y sin esperarlo: el aviso de la pasarela
+  // necesita respuesta rápida y el correo no puede demorar ni revertir la acreditación
+  if (estado === ESTADOS_PAGO.EXITOSO && pago) {
+    conInstitucion(pago.institucion_id, () => enviarReciboDePago(pago.id, usuarioId, ip));
+  }
+  return { referencia, estado, plan: pago?.plan ?? null };
 }
 
 export async function procesarNotificacion(cuerpo, ip, req) {
@@ -92,7 +101,7 @@ export async function procesarNotificacion(cuerpo, ip, req) {
   }
 
   const datos = await aplicarResultado({ referencia: pago.referencia, estado: aviso.estado, usuarioId: null, aviso }, ip);
-  await registrarAuditoria({ accion: `pago_${aviso.estado}`, detalle: `${pago.referencia} — aviso del proveedor`, ip });
+  await registrarAuditoria({ accion: `pago_${aviso.estado}`, detalle: `${pago.referencia}: aviso del proveedor`, ip });
   return datos;
 }
 

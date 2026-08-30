@@ -56,6 +56,7 @@ export const SEGURIDAD = {
   FRECUENCIA_INGRESO: { pedidos: 100, segundos: 300 },
   FRECUENCIA_RECUPERACION: { pedidos: 10, segundos: 900 },
   FRECUENCIA_GENERAL: { pedidos: 300, segundos: 300 },
+  FRECUENCIA_SOLICITUD: { pedidos: 15, segundos: 900 },
   RECAPTCHA_ACTIVO: process.env.RECAPTCHA_ACTIVO === '1',
   RECAPTCHA_CLAVE_SITIO: process.env.RECAPTCHA_CLAVE_SITIO ?? '',
   RECAPTCHA_CLAVE_SECRETA: process.env.RECAPTCHA_CLAVE_SECRETA ?? '',
@@ -79,8 +80,9 @@ export const PASARELA = {
   MONEDA: 'PYG',
 
   PROVEEDOR: process.env.PASARELA_PROVEEDOR ?? 'simulada',
+  // el texto es el nombre visible de la pasarela: se usa en Configuración y en el recibo
   PROVEEDORES: [
-    { valor: 'simulada', texto: 'Simulada (para pruebas y demostración)' },
+    { valor: 'simulada', texto: 'Demo' },
     { valor: 'pagopar', texto: 'Pagopar' },
     { valor: 'adamspay', texto: 'AdamsPay' },
   ],
@@ -90,6 +92,10 @@ export const PASARELA = {
 
   SEGUNDOS_ENTRE_CONSULTAS_DE_PAGO: 20,
 };
+
+export function nombreDePasarela(valor) {
+  return PASARELA.PROVEEDORES.find((proveedor) => proveedor.valor === valor)?.texto ?? valor;
+}
 
 export const PAGOPAR = {
   API: 'https://api.pagopar.com/api',
@@ -101,19 +107,12 @@ export const PAGOPAR = {
 
   MS_ENTRE_LLAMADAS: 400,
   MINUTOS_CACHE_MEDIOS: 15,
-  // mínimo común de los medios del comercio, verificado contra su api en julio
+  // topes por transacción que impone el comercio
   MONTO_MINIMO: 1000,
+  MONTO_MAXIMO: 50000000,
 
-  // mientras el comercio no esté habilitado para servicios virtuales,
-  // el pedido se puede declarar como producto físico que se retira en el local
-  TIPO_PEDIDO: 'servicio',
-  TIPOS_PEDIDO: [
-    { valor: 'servicio', texto: 'Servicio (lo correcto para la suscripción)' },
-    { valor: 'fisico', texto: 'Producto físico (muestra, sin habilitación de servicios)' },
-  ],
+  // la suscripción no se despacha: va con la categoría de servicios de su catálogo
   CATEGORIA_SERVICIO: '909',
-  CATEGORIA_FISICO: '980',
-  MEDIDAS_FISICO: { peso: '1', largo: '1', ancho: '1', alto: '1' },
 };
 
 export const ADAMSPAY = {
@@ -180,14 +179,26 @@ export const ROLES = {
   SUPERADMINISTRADOR: 'superadministrador',
 };
 
+// tonos de la paleta de ant design; todos pasan 4.5:1 sobre blanco, que es
+// lo que exige el contraste porque el acento se usa de fondo con texto blanco
 export const COLORES_SISTEMA = [
-  { valor: '#35597e', texto: 'Azul institucional' },
-  { valor: '#2a7f76', texto: 'Turquesa' },
-  { valor: '#3d7a4e', texto: 'Verde' },
-  { valor: '#5f5182', texto: 'Violeta' },
-  { valor: '#a85c42', texto: 'Terracota' },
+  { valor: '#0958d9', texto: 'Azul' },
+  { valor: '#006d75', texto: 'Turquesa' },
+  { valor: '#237804', texto: 'Verde' },
+  { valor: '#722ed1', texto: 'Lila' },
+  { valor: '#cf1322', texto: 'Rojo' },
   { valor: '#8a3d52', texto: 'Bordó' },
 ];
+
+// los colores viejos se cambian por su equivalente nuevo para que a nadie
+// le quede un acento que ya no figura en la lista
+export const COLORES_REEMPLAZADOS = {
+  '#35597e': '#0958d9',
+  '#2a7f76': '#006d75',
+  '#3d7a4e': '#237804',
+  '#5f5182': '#722ed1',
+  '#a85c42': '#cf1322',
+};
 
 export const CANALES_CAPTACION = ['redes sociales', 'llamada', 'whatsapp', 'presencial', 'aliado', 'otro'];
 

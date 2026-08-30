@@ -10,9 +10,8 @@ function textoCredenciales({ nombre, correo, claveTemporal }) {
     `Tenés acceso al Sistema de Información Gerencial del ${INSTITUCION.NOMBRE}.\n\n` +
     `Usuario: ${correo}\n` +
     `Contraseña temporal: ${claveTemporal}\n\n` +
-    'Al ingresar vas a tener que cambiar esta contraseña temporal. Si todavía no ' +
-    'activaste la verificación en dos pasos, el sistema te va a mostrar un código QR ' +
-    'para escanear con tu app de autenticación (Microsoft Authenticator, Google Authenticator o la que uses).'
+    'Si todavía no activaste la verificación en dos pasos, vas a necesitar una app ' +
+    'de autenticación (Microsoft Authenticator, Google Authenticator o la que uses).'
   );
 }
 

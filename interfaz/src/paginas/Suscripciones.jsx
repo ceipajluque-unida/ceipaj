@@ -7,6 +7,7 @@ import { guaranies, fecha, contar, legible } from '../servicios/formato.js';
 import Modal from '../componentes/Modal.jsx';
 import VentanaPago from '../componentes/VentanaPago.jsx';
 import { abrirVentanaPago, llevarVentanaPagoA, cerrarVentanaPago } from '../servicios/ventanaPago.js';
+import { descargarArchivo } from '../servicios/descargas.js';
 import TarjetasPlanes, { ETIQUETA_CAMBIO } from '../componentes/TarjetasPlanes.jsx';
 
 function textoPeriodo(meses) {
@@ -26,6 +27,7 @@ export default function Suscripciones() {
   const [cargaError, setCargaError] = useState(null);
   const [pagando, setPagando] = useState(false);
   const [cobroEnCurso, setCobroEnCurso] = useState(null);
+  const [bajando, setBajando] = useState(null);
 
   async function cargar() {
     try {
@@ -42,11 +44,31 @@ export default function Suscripciones() {
     if (esAdministrador) llamarApi('/api/pagos/medios').then(setMedios).catch(() => setMedios([]));
   }, []);
 
+  function resumenDelPago(plan, cambio) {
+    const partes = [`Vas a pagar ${guaranies(cambio?.aPagar ?? plan.precio ?? 0)} ${textoPeriodo(plan.meses ?? 1)}.`];
+    if (cambio?.credito > 0) {
+      partes.push(`El plan cuesta ${guaranies(plan.precio)} y se te descuentan ${guaranies(cambio.credito)} `
+        + `por los ${contar(cambio.diasRestantes, 'día', 'días')} que quedan del plan ${cambio.planActual}.`);
+    }
+    if (cambio?.tipo === 'renovacion') partes.push('Arranca al terminar el período actual.');
+    return partes.join(' ');
+  }
+
   async function abrirPago(plan, cambio) {
     if (cambio?.tipo === 'reduccion') return bajarDePlan(plan, cambio);
+    // con un solo medio no hay nada que elegir: se confirma y se sale a la pasarela
+    if (medios.length === 1) {
+      const unico = medios[0];
+      const ok = await confirmar({
+        titulo: `${ETIQUETA_CAMBIO[cambio?.tipo] ?? 'Contratar'} plan ${plan.texto}?`,
+        texto: resumenDelPago(plan, cambio),
+        confirmar: 'Sí, ir a pagar',
+      });
+      if (ok) await procesarPago(plan, unico.valor);
+      return;
+    }
     setPlanElegido({ ...plan, cambio });
-    // con un solo medio no hay nada que elegir: queda seleccionado solo
-    setMedio(medios.length === 1 ? medios[0].valor : '');
+    setMedio('');
     setError(null);
   }
 
@@ -67,15 +89,14 @@ export default function Suscripciones() {
     }
   }
 
-  async function pagarPlan(evento) {
-    evento.preventDefault();
+  async function procesarPago(plan, medioElegido) {
     if (pagando) return;
     setError(null);
-    if (!medio) return setError('Elegí un medio de pago.');
-    if (medios.find((opcion) => opcion.valor === medio)?.ventanaPropia) abrirVentanaPago();
+    // la ventana se abre acá, pegada al clic, si no el navegador la bloquea
+    if (medios.find((opcion) => opcion.valor === medioElegido)?.ventanaPropia) abrirVentanaPago();
     setPagando(true);
     try {
-      const cobro = await llamarApi('/api/pagos/plan', { metodo: 'POST', cuerpo: { plan: planElegido.valor, medio } });
+      const cobro = await llamarApi('/api/pagos/plan', { metodo: 'POST', cuerpo: { plan: plan.valor, medio: medioElegido } });
       setPlanElegido(null);
       await cargar();
 
@@ -88,9 +109,28 @@ export default function Suscripciones() {
       setCobroEnCurso(cobro);
     } catch (excepcion) {
       cerrarVentanaPago();
-      setError(excepcion.message);
+      // sin el modal abierto el error no tiene dónde mostrarse
+      if (medios.length === 1) avisarError(excepcion.message);
+      else setError(excepcion.message);
     } finally {
       setPagando(false);
+    }
+  }
+
+  async function pagarPlan(evento) {
+    evento.preventDefault();
+    if (!medio) return setError('Elegí un medio de pago.');
+    await procesarPago(planElegido, medio);
+  }
+
+  async function bajarRecibo(referencia) {
+    setBajando(referencia);
+    try {
+      await descargarArchivo(`/api/pagos/${referencia}/recibo`, `recibo-${referencia}.pdf`);
+    } catch (excepcion) {
+      avisarError(excepcion.message);
+    } finally {
+      setBajando(null);
     }
   }
 
@@ -132,6 +172,20 @@ export default function Suscripciones() {
       render: (valor) => <span className={`estado estado-${valor}`}>{legible(valor)}</span>,
     },
     { title: 'Referencia de pago', dataIndex: 'referencia', key: 'referencia', render: (valor) => valor ?? '—' },
+    {
+      title: <span className="oculto-visual">Acciones</span>,
+      key: 'recibo',
+      render: (_, periodo) => (periodo.referencia && periodo.estado_pago === 'exitoso' ? (
+        <Button
+          size="small"
+          disabled={bajando === periodo.referencia}
+          aria-label={`Descargar el recibo del pago ${periodo.referencia}`}
+          onClick={() => bajarRecibo(periodo.referencia)}
+        >
+          {bajando === periodo.referencia ? 'Descargando…' : 'Recibo'}
+        </Button>
+      ) : null),
+    },
   ];
 
   const opcionesMedio = [
@@ -156,16 +210,13 @@ export default function Suscripciones() {
       <section className="panel">
         <h3>Estado actual</h3>
         {!vigente && (
-          <p className="error">
-            No hay una suscripción activa. Elegí un plan para poner la plataforma al día.
-          </p>
+          <p className="error">No hay una suscripción activa.</p>
         )}
         {vigente && (
           <>
             {vigente.por_vencer && (
               <p className="error">
                 Tu plan {vigente.texto_plan} vence en {contar(vigente.dias_restantes, 'día', 'días')}, el {fecha(vigente.fecha_fin)}.
-                Renovalo para no perder los módulos que incluye tu plan.
               </p>
             )}
             <dl className="datos-perfil">
@@ -233,13 +284,9 @@ export default function Suscripciones() {
           {planElegido?.cambio?.tipo === 'renovacion' && (
             <p className="nota">Arranca al terminar el período actual.</p>
           )}
-          {medios.length === 1 ? (
-            <p className="nota">{medios[0].texto}.</p>
-          ) : (
-            <label>Medio de pago
-              <Select value={medio} options={opcionesMedio} onChange={setMedio} />
-            </label>
-          )}
+          <label>Medio de pago
+            <Select value={medio} options={opcionesMedio} onChange={setMedio} />
+          </label>
           {error && <p className="error">{error}</p>}
           <div className="acciones">
             <Button type="primary" htmlType="submit" disabled={pagando}>{pagando ? 'Generando el pago…' : 'Ir a pagar'}</Button>

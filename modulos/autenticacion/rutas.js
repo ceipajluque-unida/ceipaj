@@ -16,6 +16,7 @@ rutasAutenticacion.post('/recuperar', frenoRecuperacion, controlador.recuperar);
 rutasAutenticacion.post('/restablecer', frenoRecuperacion, controlador.restablecer);
 rutasAutenticacion.post('/cambiar-clave', autenticar, controlador.cambiarClave);
 rutasAutenticacion.post('/metodo-2fa', autenticar, controlador.cambiarMetodo2fa);
+rutasAutenticacion.post('/quitar-2fa', autenticar, controlador.quitar2fa);
 rutasAutenticacion.post('/salir', autenticar, controlador.salir);
 rutasAutenticacion.get('/perfil', autenticar, controlador.perfil);
 rutasAutenticacion.get('/dispositivos', autenticar, controlador.dispositivos);

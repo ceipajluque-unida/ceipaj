@@ -2,7 +2,7 @@
   "name": "ceipaj-sig",
   "version": "0.1.0",
   "private": true,
-  "description": "Sistema de Información Gerencial (CRM educativo) del CEIPAJ — tesis de grado 2026",
+  "description": "Sistema de Información Gerencial (CRM educativo) del CEIPAJ, tesis de grado 2026",
   "type": "module",
   "scripts": {
     "migrar": "node servidor/bd/migrar.js",

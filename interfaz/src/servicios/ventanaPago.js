@@ -1,11 +1,11 @@
 let ventana = null;
 
 export function abrirVentanaPago() {
-  const ancho = 480;
-  const alto = 760;
-  const izquierda = Math.max(0, Math.round((window.screen.width - ancho) / 2));
-  const arriba = Math.max(0, Math.round((window.screen.height - alto) / 2));
-  ventana = window.open('', 'ventana-pago', `popup=yes,width=${ancho},height=${alto},left=${izquierda},top=${arriba}`);
+  // a pantalla completa: el checkout de la pasarela necesita espacio y una
+  // ventana chica obliga a desplazarse para llegar al boton de pagar
+  const ancho = window.screen.availWidth;
+  const alto = window.screen.availHeight;
+  ventana = window.open('', 'ventana-pago', `popup=yes,width=${ancho},height=${alto},left=0,top=0`);
   if (!ventana) return false;
   try {
     ventana.opener = null;

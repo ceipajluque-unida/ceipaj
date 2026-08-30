@@ -3,13 +3,15 @@ import { Table, Tag } from 'antd';
 import { llamarApi } from '../servicios/api.js';
 import { legible, nombreModulo, contar } from '../servicios/formato.js';
 
-export default function RolesInstitucion({ institucionId, ruta }) {
+export default function RolesInstitucion({ institucionId, ruta, refresco }) {
   const [detalle, setDetalle] = useState(null);
   const [error, setError] = useState(null);
 
+  // refresco cambia cada vez que se dan de alta o se editan usuarios: sin esto
+  // los conteos quedaban congelados en lo que había al abrir la pantalla
   useEffect(() => {
     llamarApi(ruta ?? `/api/instituciones/${institucionId}/roles`).then(setDetalle).catch((e) => setError(e.message));
-  }, [institucionId, ruta]);
+  }, [institucionId, ruta, refresco]);
 
   if (error) return <p className="error">{error}</p>;
   if (!detalle) return <p className="nota">Cargando…</p>;
@@ -31,14 +33,27 @@ export default function RolesInstitucion({ institucionId, ruta }) {
     },
   ];
 
+  const { cupo } = detalle;
+  const tope = (usados, maximo, singular, plural) => (maximo === null
+    ? `${contar(usados, singular, plural)}, sin tope`
+    : `${usados} de ${maximo} ${plural}`);
+
   return (
-    <Table
-      className="tabla-roles"
-      columns={columnas}
-      dataSource={detalle.roles}
-      rowKey="rol"
-      size="small"
-      pagination={false}
-    />
+    <>
+      {cupo && (
+        <p className="nota">
+          Plan {cupo.plan}: {tope(cupo.usuarios, cupo.maxUsuarios, 'usuario interno', 'usuarios internos')}
+          {' · '}{tope(cupo.aliados, cupo.maxAliados, 'aliado', 'aliados')}.
+        </p>
+      )}
+      <Table
+        className="tabla-roles"
+        columns={columnas}
+        dataSource={detalle.roles}
+        rowKey="rol"
+        size="small"
+        pagination={false}
+      />
+    </>
   );
 }

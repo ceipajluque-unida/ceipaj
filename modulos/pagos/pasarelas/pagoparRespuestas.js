@@ -1,4 +1,4 @@
-import { ESTADOS_PAGO } from '../../../configuracion/ajustes.js';
+import { ESTADOS_PAGO, PAGOPAR } from '../../../configuracion/ajustes.js';
 
 function esVerdadero(valor) {
   return valor === true || valor === 1 || String(valor).toLowerCase() === 'true';
@@ -20,12 +20,8 @@ export function datosDelPago(datos) {
   };
 }
 
+// traduce el rechazo de pagopar a algo que se entienda y se pueda accionar
 export function explicar(motivo) {
-  if (/no se encuentra habilitado para ofrecer servicios/i.test(motivo)) {
-    return 'Pagopar todavía no habilitó tu comercio para vender servicios o productos virtuales. '
-      + 'Pedíselo a su soporte (ver documentacion/pagopar-pedido-a-soporte.txt): es un permiso de la '
-      + 'cuenta, no un problema del sistema.';
-  }
   if (/Jsonb|No coinciden los campos/i.test(motivo)) {
     return `Pagopar rechazó el formato del pedido (${motivo}). Es un error del sistema, no de la cuenta.`;
   }
@@ -33,7 +29,8 @@ export function explicar(motivo) {
     return 'Los tokens de Pagopar no coinciden. Revisá que sean los del entorno correcto en Configuración.';
   }
   if (/monto/i.test(motivo)) {
-    return `Pagopar no acepta ese monto (${motivo}). El mínimo es Gs. 1.000 y el máximo Gs. 50.000.000.`;
+    return `Pagopar no acepta ese monto (${motivo}). El mínimo es Gs. ${PAGOPAR.MONTO_MINIMO.toLocaleString('es-PY')} `
+      + `y el máximo Gs. ${PAGOPAR.MONTO_MAXIMO.toLocaleString('es-PY')}.`;
   }
   return `Pagopar: ${motivo}`;
 }

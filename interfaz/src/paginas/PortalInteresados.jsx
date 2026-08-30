@@ -40,7 +40,7 @@ export default function PortalInteresados() {
     evento.preventDefault();
     if (enviando) return;
     setError(null);
-    if (!formulario.consentimiento) return setError('Marcá la casilla del final: sin el permiso del interesado no podemos guardar sus datos.');
+    if (!formulario.consentimiento) return setError('Marcá la casilla del consentimiento antes de registrar.');
     setEnviando(true);
     try {
       await llamarApi('/api/portal/leads', { metodo: 'POST', cuerpo: formulario });

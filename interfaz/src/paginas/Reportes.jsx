@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { Button, Table } from 'antd';
-import { llamarApi, tokenActual } from '../servicios/api.js';
+import { tokenActual } from '../servicios/api.js';
 import { toast, avisarError } from '../servicios/avisos.js';
 
 const TABLAS = [
@@ -21,15 +21,7 @@ const FORMATOS = [
 
 export default function Reportes() {
   const { modulos = [], bloqueados = [] } = useOutletContext() ?? {};
-  const [datos, setDatos] = useState(null);
-  const [error, setError] = useState(null);
   const [bajando, setBajando] = useState(null);
-
-  useEffect(() => {
-    llamarApi('/api/reportes/indicadores')
-      .then(setDatos)
-      .catch((excepcion) => setError(excepcion.message));
-  }, []);
 
   async function descargar(tabla, formato) {
     setBajando(`${tabla}-${formato}`);
@@ -54,16 +46,6 @@ export default function Reportes() {
       setBajando(null);
     }
   }
-
-  if (!datos) return error ? <p className="error">{error}</p> : <p className="mensaje-centrado">Cargando…</p>;
-
-  const columnasAliados = [
-    { title: 'Aliado', dataIndex: 'aliado', key: 'aliado' },
-    { title: 'Trabaja en', dataIndex: 'institucion', key: 'institucion' },
-    { title: 'Interesados', dataIndex: 'leads', key: 'leads' },
-    { title: 'Matriculados', dataIndex: 'convertidos', key: 'convertidos' },
-    { title: 'Puntos', dataIndex: 'puntos', key: 'puntos', render: (valor) => <strong>{valor}</strong> },
-  ];
 
   const columnasDescargas = [
     { title: 'Reporte', dataIndex: 'titulo', key: 'titulo', render: (valor) => <strong>{valor}</strong> },
@@ -91,41 +73,6 @@ export default function Reportes() {
   return (
     <>
       <header className="encabezado-pagina"><h2>Reportes</h2></header>
-
-      <section className="cuadricula sep-abajo">
-        <article className="indicador">
-          <h3>Interesados</h3>
-          <p className="cifra">{datos.totalLeads}</p>
-        </article>
-        <article className="indicador">
-          <h3>Matriculados</h3>
-          <p className="cifra">{datos.conversiones}</p>
-        </article>
-        <article className="indicador">
-          <h3>Tasa de conversión</h3>
-          <p className="cifra">{datos.tasaConversion}%</p>
-        </article>
-      </section>
-
-      <section className="panel">
-        <h3>Rendimiento por aliado</h3>
-        {datos.rendimientoAliados.length > 0 && (
-          <div className="tabla-envoltura">
-            <Table
-              columns={columnasAliados}
-              dataSource={datos.rendimientoAliados}
-              rowKey="aliado_id"
-              size="small"
-              pagination={false}
-            />
-          </div>
-        )}
-        {datos.rendimientoAliados.length === 0 && (
-          <div className="vacio">
-            <p>Todavía no hay aliados cargados.</p>
-          </div>
-        )}
-      </section>
 
       <section className="panel">
         <h3>Descargar información</h3>

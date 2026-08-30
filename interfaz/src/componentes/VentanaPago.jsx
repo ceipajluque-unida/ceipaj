@@ -61,7 +61,7 @@ export default function VentanaPago({ cobro, alAcreditar, alCerrar }) {
   if (estado === 'exitoso') {
     return (
       <section className="panel panel-pago">
-        <Alert type="success" showIcon message="Pago acreditado. Ya podés descargar tu recibo desde el historial." />
+        <Alert type="success" showIcon message="Pago acreditado. El recibo queda en el historial." />
       </section>
     );
   }
@@ -69,7 +69,7 @@ export default function VentanaPago({ cobro, alAcreditar, alCerrar }) {
   if (estado === 'rechazado') {
     return (
       <section className="panel panel-pago">
-        <Alert type="error" showIcon message="El pago fue rechazado. Podés intentar de nuevo con otro medio." />
+        <Alert type="error" showIcon message="El pago fue rechazado." />
         <div className="acciones"><Button onClick={alCerrar}>Cerrar</Button></div>
       </section>
     );
@@ -103,17 +103,9 @@ export default function VentanaPago({ cobro, alAcreditar, alCerrar }) {
         </div>
       )}
 
-      <p className="nota pago-espera" role="status">
-        <span className="punto-vivo" aria-hidden="true" />
-        {cobro.incrustado
-          ? 'Esperando la confirmación de la pasarela. La pantalla se actualiza sola cuando el pago se acredite.'
-          : 'El pago se completa en la ventana de la pasarela. Al acreditarse, la ventana se cierra y esta pantalla se actualiza sola.'}
-      </p>
-
       {cobro.urlPago && cobro.incrustado && (
         <p className="nota">
-          No se ve el formulario de pago?{' '}
-          <a href={cobro.urlPago} target="_blank" rel="noreferrer">Abrilo en una pestaña nueva</a>.
+          <a href={cobro.urlPago} target="_blank" rel="noreferrer">Abrir en una pestaña nueva</a>
         </p>
       )}
 
@@ -121,7 +113,7 @@ export default function VentanaPago({ cobro, alAcreditar, alCerrar }) {
         <Alert
           type="error"
           showIcon
-          message="Pasó el tiempo de espera y no hay confirmación. Si ya pagaste, usá «Conciliar pagos» en el historial."
+          message="No llegó la confirmación. Si ya pagaste, usá Conciliar pagos en el historial."
         />
       )}
     </section>

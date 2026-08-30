@@ -29,7 +29,7 @@ export default function Privacidad() {
 
         <p className="ayuda centrado sep-arriba">
           {haySesion()
-            ? <Link to="/">Volver al sistema</Link>
+            ? <Link to="/panel">Volver al sistema</Link>
             : <Link to="/ingreso">Volver al ingreso</Link>}
         </p>
       </article>

@@ -22,7 +22,7 @@ export async function importarPlanilla(contenido, usuarioId, ip) {
   await registrarAuditoria({
     usuarioId,
     accion: 'academico_importado',
-    detalle: `${resumen.leidas} leídas — ${resumen.guardadas} guardadas — ${resumen.rechazadas.length} rechazadas`,
+    detalle: `${resumen.leidas} leídas, ${resumen.guardadas} guardadas, ${resumen.rechazadas.length} rechazadas`,
     ip,
   });
   return resumen;
@@ -52,7 +52,7 @@ export async function sincronizar(usuarioId, ip) {
   await registrarAuditoria({
     usuarioId,
     accion: 'sincronizacion_academico',
-    detalle: `${matriculados.length} en el académico — ${coincidencias} coincidencias — ${convertidos.length} convertidos`,
+    detalle: `${matriculados.length} en el académico, ${coincidencias} coincidencias, ${convertidos.length} convertidos`,
     ip,
   });
   return { enAcademico: matriculados.length, coincidencias, convertidos };

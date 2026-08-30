@@ -23,7 +23,7 @@ export default function FondoIngreso({ actual, alCambiar }) {
         lector.readAsDataURL(archivo);
       });
       const r = await llamarApi('/api/configuracion/fondo', { metodo: 'PUT', cuerpo: { imagen: base64 } });
-      toast('Imagen de fondo actualizada. Recargá el ingreso para verla.');
+      toast('Imagen de fondo actualizada.');
       await alCambiar?.(r.imagen);
     } catch (excepcion) {
       avisarError(excepcion.message);

@@ -32,7 +32,12 @@ function minutosDeSesion(recordar) {
 
 const ultimoEnvioAlterno = new Map();
 
+function soloApp(usuario) {
+  return usuario.rol === ROLES.SUPERADMINISTRADOR;
+}
+
 function alternativasPara(usuario) {
+  if (soloApp(usuario)) return [];
   const otras = [];
   if (usuario.secreto_2fa && usuario.metodo_2fa !== 'app') otras.push('app');
   if (usuario.correo && usuario.metodo_2fa !== 'email') otras.push('email');
@@ -95,6 +100,18 @@ async function seguirIngreso(usuario, { recordar, tokenDispositivo }, ip) {
     };
   }
 
+  // el proveedor puede dejar su cuenta sin segundo paso: en ese caso entra directo
+  if (usuario.sin_2fa) {
+    await registrarAuditoria({ usuarioId: usuario.id, accion: 'ingreso_exitoso', detalle: 'sin verificacion en dos pasos', ip });
+    return {
+      requiereCodigo: false,
+      token: emitirToken(usuario, 'sesion', minutosDeSesion(recordar)),
+      usuario: { id: usuario.id, nombre: usuario.nombre, correo: usuario.correo, rol: usuario.rol },
+      requiereCambioClave: Boolean(usuario.debe_cambiar_clave),
+      recordar: Boolean(recordar),
+    };
+  }
+
   const respuesta = {
     requiereCodigo: true,
     metodo: usuario.metodo_2fa,
@@ -137,12 +154,14 @@ async function seguirVerificacion(usuario, datos, { codigo, confiarEquipo, userA
 
   const codigoLimpio = String(codigo ?? '').trim();
   const totpOk = usuario.secreto_2fa && authenticator.check(codigoLimpio, usuario.secreto_2fa);
-  const codigoValido = totpOk || await verificarCodigoContacto(usuario, codigoLimpio);
-  if (!codigoValido) {
+  const porContacto = totpOk ? { aprobado: true } : await verificarCodigoContacto(usuario, codigoLimpio);
+  if (!porContacto.aprobado) {
     frenoCodigo.anotarFallo(usuario.id);
-    await registrarAuditoria({ usuarioId: usuario.id, accion: 'codigo_2fa_invalido', ip });
+    await registrarAuditoria({ usuarioId: usuario.id, accion: 'codigo_2fa_invalido', detalle: porContacto.motivo ?? null, ip });
     frenoCodigo.revisar(usuario.id);
-    throw new ErrorVisible('Código incorrecto o vencido.', 401);
+    // el motivo real (código bloqueado por reintentos, vencido) evita que la
+    // persona insista con un código que ya no va a andar nunca
+    throw new ErrorVisible(porContacto.motivo ?? 'Código incorrecto o vencido.', 401);
   }
   frenoCodigo.limpiar(usuario.id);
   invalidarCodigo(usuario.id);
@@ -152,7 +171,12 @@ async function seguirVerificacion(usuario, datos, { codigo, confiarEquipo, userA
   }
 
   const recordar = Boolean(datos.recordar);
-  await registrarAuditoria({ usuarioId: usuario.id, accion: 'ingreso_exitoso', detalle: recordar ? 'con recordarme' : null, ip });
+  await registrarAuditoria({
+    usuarioId: usuario.id,
+    accion: 'ingreso_exitoso',
+    detalle: recordar ? 'sesión abierta varios días en este equipo' : null,
+    ip,
+  });
   await avisarIngresoDesdeEquipoNuevo(usuario, { equipo: dispositivos.nombrarEquipo(userAgent), ip });
 
   let tokenDispositivo;
@@ -199,7 +223,7 @@ export async function enviarCodigoAlternativo({ tokenPre2fa, metodo }, ip) {
   }
   if (metodo !== 'email' && metodo !== 'sms') throw new ErrorVisible('Método no válido.');
   if (metodo === 'sms' && !String(usuario.telefono ?? '').trim()) {
-    throw new ErrorVisible('Esta cuenta no tiene un teléfono cargado para recibir el SMS.');
+    throw new ErrorVisible('Esta cuenta no tiene un teléfono cargado.');
   }
 
   const ahora = Date.now();
@@ -239,8 +263,30 @@ export async function salir(usuarioId, ip) {
   await registrarAuditoria({ usuarioId, accion: 'sesion_cerrada', ip });
 }
 
+// solo la cuenta del proveedor puede quedarse sin segundo paso: los usuarios
+// del colegio lo tienen siempre, que es lo que exige el requisito de seguridad
+export async function quitarDobleFactor({ usuarioId, clave }, ip) {
+  const [[usuario]] = await bd.query('SELECT rol, clave_hash, sin_2fa FROM usuarios WHERE id = ?', [usuarioId]);
+  if (!usuario) throw new ErrorVisible('La cuenta no está disponible.', 401);
+  if (usuario.rol !== ROLES.SUPERADMINISTRADOR) {
+    throw new ErrorVisible('La verificación en dos pasos solo se puede quitar en la cuenta del proveedor.', 403);
+  }
+  if (usuario.sin_2fa) return { sin2fa: true };
+  if (!await bcrypt.compare(String(clave ?? ''), usuario.clave_hash)) {
+    throw new ErrorVisible('La contraseña no es correcta.');
+  }
+  await bd.query('UPDATE usuarios SET sin_2fa = 1, secreto_2fa = NULL, activado_2fa = 0 WHERE id = ?', [usuarioId]);
+  await dispositivos.olvidarTodos(usuarioId);
+  await registrarAuditoria({ usuarioId, accion: '2fa_quitado', ip });
+  return { sin2fa: true };
+}
+
 export async function cambiarMetodo2fa({ usuarioId, metodo, telefono }, ip) {
   if (!METODOS_2FA.some((opcion) => opcion.valor === metodo)) throw new ErrorVisible('Método de verificación no válido.');
+  const [[quien]] = await bd.query('SELECT rol FROM usuarios WHERE id = ?', [usuarioId]);
+  if (quien?.rol === ROLES.SUPERADMINISTRADOR && metodo !== 'app') {
+    throw new ErrorVisible('La cuenta del proveedor verifica siempre con la app de autenticación.');
+  }
   if (metodo === 'sms') {
     if (!String(telefono ?? '').trim()) throw new ErrorVisible('Para el 2FA por SMS hace falta un teléfono.');
     if (!validarTelefono(telefono)) throw new ErrorVisible('El celular no es válido.');
@@ -259,12 +305,12 @@ export async function cambiarMetodo2fa({ usuarioId, metodo, telefono }, ip) {
   if (metodo === 'app') {
     const [[usuario]] = await bd.query('SELECT correo FROM usuarios WHERE id = ?', [usuarioId]);
     const secreto = authenticator.generateSecret();
-    await bd.query("UPDATE usuarios SET metodo_2fa='app', secreto_2fa=?, activado_2fa=0 WHERE id=?", [secreto, usuarioId]);
+    await bd.query("UPDATE usuarios SET metodo_2fa='app', secreto_2fa=?, activado_2fa=0, sin_2fa=0 WHERE id=?", [secreto, usuarioId]);
     otpauth = authenticator.keyuri(usuario.correo, SEGURIDAD.EMISOR_2FA, secreto);
   } else if (metodo === 'sms') {
-    await bd.query("UPDATE usuarios SET metodo_2fa='sms', telefono=?, activado_2fa=0 WHERE id=?", [telefono.trim(), usuarioId]);
+    await bd.query("UPDATE usuarios SET metodo_2fa='sms', telefono=?, activado_2fa=0, sin_2fa=0 WHERE id=?", [telefono.trim(), usuarioId]);
   } else {
-    await bd.query("UPDATE usuarios SET metodo_2fa='email', activado_2fa=0 WHERE id=?", [usuarioId]);
+    await bd.query("UPDATE usuarios SET metodo_2fa='email', activado_2fa=0, sin_2fa=0 WHERE id=?", [usuarioId]);
   }
   await dispositivos.olvidarTodos(usuarioId);
   await registrarAuditoria({ usuarioId, accion: 'metodo_2fa_cambiado', detalle: metodo, ip });

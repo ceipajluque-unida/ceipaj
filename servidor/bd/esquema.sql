@@ -247,3 +247,26 @@ CREATE TABLE IF NOT EXISTS planes (
   creado_en DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   actualizado_en DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_spanish_ci;
+
+-- solicitudes que llegan por la pagina publica: son interesados en contratar el
+-- sistema, del proveedor. no llevan institucion_id porque todavia no pertenecen
+-- a ninguna institucion; el proveedor las atiende y de ahi sale el alta.
+CREATE TABLE IF NOT EXISTS solicitudes (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  nombre VARCHAR(100) NOT NULL,
+  institucion VARCHAR(150) NULL, -- el colegio o instituto que representa
+  correo VARCHAR(150) NOT NULL,
+  telefono VARCHAR(30) NULL,
+  ciudad VARCHAR(80) NULL,
+  motivo VARCHAR(20) NOT NULL DEFAULT 'consulta',
+  plan VARCHAR(30) NULL, -- clave del plan elegido en la pagina, si eligio uno
+  mensaje VARCHAR(600) NULL,
+  estado VARCHAR(20) NOT NULL DEFAULT 'nueva',
+  nota VARCHAR(500) NULL, -- lo que anota el proveedor al atenderla
+  direccion_ip VARCHAR(45) NULL,
+  creado_en DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  atendida_en DATETIME NULL,
+  atendida_por INT UNSIGNED NULL,
+  KEY idx_solicitudes_estado (estado, creado_en),
+  CONSTRAINT fk_solicitudes_usuario FOREIGN KEY (atendida_por) REFERENCES usuarios(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_spanish_ci;

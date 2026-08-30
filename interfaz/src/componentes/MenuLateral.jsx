@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom';
 import Icono from './iconos.jsx';
 
 export const GRUPOS = [
-  { titulo: null, items: [{ clave: 'inicio', ruta: '/', texto: 'Inicio' }] },
+  { titulo: null, items: [{ clave: 'inicio', ruta: '/panel', texto: 'Inicio' }] },
   { titulo: 'Captación', items: [
     { clave: 'leads', ruta: '/leads', texto: 'Interesados' },
     { clave: 'seguimiento', ruta: '/seguimiento', texto: 'Seguimiento' },
@@ -17,8 +17,10 @@ export const GRUPOS = [
   ] },
 
   { titulo: 'Plataforma', items: [
+    { clave: 'plataforma', ruta: '/plataforma', texto: 'Cómo viene' },
     { clave: 'instituciones', ruta: '/instituciones', texto: 'Instituciones' },
     { clave: 'planes', ruta: '/planes', texto: 'Planes' },
+    { clave: 'solicitudes', ruta: '/solicitudes', texto: 'Solicitudes' },
   ] },
   { titulo: 'Gestión', items: [
     { clave: 'reportes', ruta: '/reportes', texto: 'Reportes' },
@@ -52,7 +54,7 @@ export default function MenuLateral({ puedeVer, bloqueados, plan, badges }) {
                 const trabado = bloqueados.includes(item.modulo ?? item.clave);
                 return (
                   <li key={item.clave}>
-                    <NavLink to={trabado ? '/suscripcion' : item.ruta} end={item.ruta === '/' || Boolean(item.fin)}
+                    <NavLink to={trabado ? '/suscripcion' : item.ruta} end={Boolean(item.fin)}
                       className={({ isActive }) => `${isActive && !trabado ? 'activo' : ''} ${trabado ? 'trabado' : ''}`}
                       title={trabado ? `El plan ${plan?.texto ?? ''} no incluye este módulo` : undefined}>
                       <span className="icono"><Icono nombre={item.icono ?? item.clave} /></span>{item.texto}

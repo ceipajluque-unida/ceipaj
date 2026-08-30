@@ -66,12 +66,18 @@ export async function verificarSmtp() {
   }
 }
 
-export async function enviarCorreo({ para, asunto, texto }) {
+export async function enviarCorreo({ para, asunto, texto, adjuntos }) {
   const smtp = configuracionSmtp();
   if (!smtp.host) return { enviado: false, motivo: 'smtp sin configurar' };
   try {
     const transporte = await crearTransporte(smtp);
-    await transporte.sendMail({ from: smtp.remitente, to: para, subject: asunto, text: texto });
+    await transporte.sendMail({
+      from: smtp.remitente,
+      to: para,
+      subject: asunto,
+      text: texto,
+      ...(adjuntos?.length ? { attachments: adjuntos } : {}),
+    });
     return { enviado: true };
   } catch (error) {
     return { enviado: false, motivo: explicar(error, smtp) };

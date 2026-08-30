@@ -20,7 +20,7 @@ export default function InteraccionLead({ abierto, lead, tipos, alCerrar, alGuar
 
   const campo = (clave) => (evento) => setInteraccion({ ...interaccion, [clave]: evento.target.value });
   const opcionesTipo = [
-    { value: '', label: 'Elegí el tipo' },
+    { value: '', label: 'Elegí…' },
     ...tipos.map((tipo) => ({ value: tipo, label: legible(tipo) })),
   ];
 
@@ -53,7 +53,7 @@ export default function InteraccionLead({ abierto, lead, tipos, alCerrar, alGuar
           />
         </label>
         <label>Detalle
-          <Input.TextArea placeholder="Preguntó por los horarios y quedó en venir el lunes" value={interaccion.detalle} onChange={campo('detalle')} />
+          <Input.TextArea value={interaccion.detalle} onChange={campo('detalle')} />
         </label>
         {error && <p className="error">{error}</p>}
         <div className="acciones">

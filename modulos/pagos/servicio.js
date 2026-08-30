@@ -33,7 +33,7 @@ export async function crearCobro({ concepto, monto, medio, plan }, usuario, ip) 
   await registrarAuditoria({
     usuarioId: usuario.id,
     accion: 'pago_creado',
-    detalle: `${cobro.referencia} — ${concepto} — ${monto} ${PASARELA.MONEDA} — ${medio}`,
+    detalle: `${cobro.referencia}: ${concepto}, ${monto} ${PASARELA.MONEDA}, ${medio}`,
     ip,
   });
   return { ...cobro, id: resultado.insertId, concepto, monto, medio, plan, moneda: PASARELA.MONEDA };
@@ -47,6 +47,31 @@ export async function listarPagos() {
     [institucionDelPedido()]
   );
   return filas;
+}
+
+// un cobro pendiente es un pedido que nunca se pagó: se descarta para sacarlo de la lista.
+// solo pendientes: un pago acreditado o rechazado es historia y no se toca
+export async function descartarPago(referencia, usuario, ip) {
+  const institucionId = institucionDelPedido();
+  const [[pago]] = await bd.query(
+    'SELECT id, estado, concepto, monto FROM pagos WHERE referencia = ? AND institucion_id = ?',
+    [referencia, institucionId]
+  );
+  if (!pago) throw new ErrorVisible('Cobro no encontrado.', 404);
+  if (pago.estado !== ESTADOS_PAGO.PENDIENTE) {
+    throw new ErrorVisible('Solo se pueden descartar los cobros que quedaron pendientes.', 409);
+  }
+  const [[suscripcion]] = await bd.query('SELECT id FROM suscripciones WHERE pago_id = ?', [pago.id]);
+  if (suscripcion) throw new ErrorVisible('Ese cobro ya activó una suscripción.', 409);
+
+  await bd.query('DELETE FROM pagos WHERE id = ? AND estado = ?', [pago.id, ESTADOS_PAGO.PENDIENTE]);
+  await registrarAuditoria({
+    usuarioId: usuario.id,
+    accion: 'pago_descartado',
+    detalle: `${referencia}: ${pago.concepto}, ${pago.monto} ${PASARELA.MONEDA}`,
+    ip,
+  });
+  return { referencia, descartado: true };
 }
 
 const consultas = new Map();
@@ -94,10 +119,6 @@ export async function buscarPago(referencia) {
   );
   if (!pago) throw new ErrorVisible('Pago no encontrado.', 404);
   return pago;
-}
-
-export async function marcarReciboEmitido(id, cuando) {
-  await bd.query('UPDATE pagos SET recibo_emitido_en = ? WHERE id = ? AND recibo_emitido_en IS NULL', [cuando, id]);
 }
 
 export async function listarMedios() {

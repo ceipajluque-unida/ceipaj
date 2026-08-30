@@ -3,6 +3,7 @@ import { registrarAuditoria } from '../../servidor/auditoria.js';
 import { ErrorVisible } from '../../servidor/errores.js';
 import { validarCorreo, validarTelefono, validarLargo, LARGOS } from '../../comun/validar.js';
 import * as ajustes from '../../servidor/ajustesSistema.js';
+import { correoConfigurado } from '../../servidor/correo.js';
 import { conInstitucion } from '../../servidor/contexto.js';
 import { modulosDelRol } from '../../configuracion/permisos.js';
 import { ROLES } from '../../configuracion/ajustes.js';
@@ -36,13 +37,16 @@ export async function listar() {
     `SELECT ${CAMPOS},
             (SELECT COUNT(*) FROM usuarios u WHERE u.institucion_id = i.id AND u.activo = 1) AS usuarios,
             (SELECT COUNT(*) FROM leads l WHERE l.institucion_id = i.id) AS interesados,
+            (SELECT COUNT(*) FROM usuarios u WHERE u.institucion_id = i.id AND u.rol = ? AND u.activo = 1) AS administradores,
             (SELECT s.plan FROM suscripciones s
               WHERE s.institucion_id = i.id AND s.estado = 'activa'
                 AND s.fecha_inicio <= NOW() AND s.fecha_fin > NOW()
               ORDER BY s.fecha_inicio DESC LIMIT 1) AS plan_vigente
-       FROM instituciones i ORDER BY i.creado_en DESC`
+       FROM instituciones i ORDER BY i.creado_en DESC`,
+    [ROLES.ADMINISTRADOR]
   );
-  return filas;
+  // el smtp es un ajuste de cada colegio: se resuelve con su contexto, no con el del proveedor
+  return filas.map((fila) => ({ ...fila, correoActivo: conInstitucion(fila.id, correoConfigurado) }));
 }
 
 export async function obtener(id) {
@@ -55,7 +59,7 @@ export async function crear(cuerpo, solicitante, ip) {
   const datos = datosValidados(cuerpo);
   const [[{ total }]] = await bd.query('SELECT COUNT(*) AS total FROM instituciones');
   if (Number(total) > 0) {
-    throw new ErrorVisible('Ya existe una institución registrada. Solo se permite una institución.', 409);
+    throw new ErrorVisible('Solo se permite una institución y ya hay una registrada.', 409);
   }
   const [resultado] = await bd.query(
     'INSERT INTO instituciones (nombre, ciudad, correo_contacto, telefono, direccion) VALUES (?, ?, ?, ?, ?)',
@@ -74,7 +78,7 @@ export async function editar(id, cuerpo, solicitante, ip) {
     [datos.nombre, datos.ciudad, datos.correo, datos.telefono, datos.direccion, id]
   );
   await copiarAAjustes(Number(id), datos);
-  await registrarAuditoria({ usuarioId: solicitante.id, accion: 'institucion_editada', detalle: `${antes.nombre} → ${datos.nombre}`, ip });
+  await registrarAuditoria({ usuarioId: solicitante.id, accion: 'institucion_editada', detalle: `cambió el nombre de ${antes.nombre} a ${datos.nombre}`, ip });
   return obtener(id);
 }
 
@@ -87,8 +91,19 @@ export async function detalleRoles(id) {
   const porRol = new Map(filas.map((fila) => [fila.rol, fila]));
   const plan = await conInstitucion(Number(id), () => planEnVigor());
 
+  const activosDe = (rol) => Number(porRol.get(rol)?.activos ?? 0);
+  const internos = [ROLES.ADMINISTRADOR, ROLES.COMERCIAL, ROLES.DIRECCION].reduce((suma, rol) => suma + activosDe(rol), 0);
+
   return {
     plan: plan.vigente ? plan.clave : null,
+    // cupos del plan, para que la pantalla muestre cuánto queda y no solo cuánto hay
+    cupo: {
+      plan: plan.texto,
+      usuarios: internos,
+      maxUsuarios: plan.maxUsuarios ?? null,
+      aliados: activosDe(ROLES.ALIADO),
+      maxAliados: plan.maxAliados ?? null,
+    },
     roles: [ROLES.ADMINISTRADOR, ROLES.COMERCIAL, ROLES.DIRECCION, ROLES.ALIADO].map((rol) => {
       const fila = porRol.get(rol);
       return {

@@ -32,7 +32,7 @@ export default function CambioClave() {
         cuerpo: { claveActual, claveNueva },
       });
       toast('Contraseña actualizada.');
-      navegar('/');
+      navegar('/panel');
     } catch (excepcion) {
       setError(excepcion.message);
     } finally {

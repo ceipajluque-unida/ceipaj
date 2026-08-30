@@ -33,7 +33,7 @@ async function enviarEnlace(usuario, correoLimpio, ip) {
   const enlace = `${ajustes.leer('APP_URL', APLICACION.URL)}/restablecer?token=${token}`;
   const envio = await enviarCorreo({
     para: correoLimpio,
-    asunto: `Restablecer contraseña — ${INSTITUCION.NOMBRE}`,
+    asunto: `Restablecer contraseña (${INSTITUCION.NOMBRE})`,
     texto: `Hola ${usuario.nombre}:\n\nPediste restablecer tu contraseña. Entrá a este enlace para elegir una nueva ` +
       `(vence en ${minutos} minutos y se usa una sola vez):\n\n${enlace}\n\nSi no fuiste vos, ignorá este correo.`,
   });
