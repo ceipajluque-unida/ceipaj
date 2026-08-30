@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Segmented, Table, Tag } from 'antd';
+import { Segmented, Table } from 'antd';
 import { fecha, guaranies, legible, contar } from '../servicios/formato.js';
+import Estado from './Estado.jsx';
 
 const FILTROS = [
   { value: 'todas', label: 'Todas' },
@@ -17,7 +18,7 @@ function situacion(fila) {
     const pronto = dias <= 15;
     return (
       <span>
-        <Tag color={pronto ? 'orange' : 'green'}>{pronto ? 'Vence pronto' : 'Vigente'}</Tag>
+        <Estado tono={pronto ? 'pendiente' : 'exitoso'}>{pronto ? 'Vence pronto' : 'Vigente'}</Estado>
         <br />
         <small className="nota">
           {dias <= 0 ? 'vence hoy' : `quedan ${contar(dias, 'día', 'días')}`}, hasta el {fecha(fila.venceEl)}
@@ -28,7 +29,7 @@ function situacion(fila) {
   if (fila.estadoPlan === 'vencido') {
     return (
       <span>
-        <Tag color="red">Vencido</Tag>
+        <Estado tono="rechazado">Vencido</Estado>
         <br />
         <small className="nota">
           hace {contar(fila.diasVencido, 'día', 'días')}, el {fecha(fila.vencioEl)}
@@ -38,7 +39,7 @@ function situacion(fila) {
   }
   return (
     <span>
-      <Tag>Nunca contrató</Tag>
+      <Estado>Nunca contrató</Estado>
       <br />
       <small className="nota">sigue en el plan Básico</small>
     </span>
@@ -58,7 +59,7 @@ export default function InstitucionesPlataforma({ instituciones }) {
           <strong>{nombre}</strong>
           <br />
           <small className="nota">
-            {fila.ciudad || 'sin ciudad'} · alta el {fecha(fila.creado_en)}
+            {fila.ciudad || 'sin ciudad'}, alta el {fecha(fila.creado_en)}
           </small>
         </span>
       ),
@@ -88,7 +89,7 @@ export default function InstitucionesPlataforma({ instituciones }) {
       title: 'Acceso',
       dataIndex: 'activo',
       width: 115,
-      render: (activo) => <Tag color={activo ? 'green' : 'red'}>{activo ? 'Activa' : 'Suspendida'}</Tag>,
+      render: (activo) => <Estado tono={activo ? 'exitoso' : 'rechazado'}>{activo ? 'Activa' : 'Suspendida'}</Estado>,
     },
   ];
 
@@ -108,7 +109,11 @@ export default function InstitucionesPlataforma({ instituciones }) {
       </div>
       {filas.length === 0
         ? <p className="nota">No hay ninguna institución en esa situación.</p>
-        : <Table rowKey="id" columns={columnas} dataSource={filas} size="small" pagination={{ pageSize: 15 }} />}
+        : (
+          <div className="tabla-envoltura">
+            <Table rowKey="id" columns={columnas} dataSource={filas} size="small" pagination={{ pageSize: 15 }} />
+          </div>
+        )}
     </>
   );
 }

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ConfigProvider } from 'antd';
 import { llamarApi } from '../servicios/api.js';
 import { animarLanding, fijarBarra } from '../servicios/animacion.js';
+import QueEsLanding from '../componentes/QueEsLanding.jsx';
 import FuncionesLanding from '../componentes/FuncionesLanding.jsx';
 import PlanesLanding from '../componentes/PlanesLanding.jsx';
 import PreguntasLanding from '../componentes/PreguntasLanding.jsx';
@@ -43,7 +44,7 @@ export default function Landing() {
   const [antes, despues] = resaltado && textos.PORTADA.TITULO.includes(resaltado)
     ? textos.PORTADA.TITULO.split(resaltado)
     : [textos.PORTADA.TITULO, null];
-  const datosContacto = [contacto.nombre, contacto.correo, contacto.telefono, contacto.direccion].filter(Boolean).join(' · ');
+  const datosContacto = [contacto.nombre, contacto.correo, contacto.telefono, contacto.direccion].filter(Boolean).join(', ');
   // la portada se mete debajo de las barras: cuánto sube depende de si la
   // franja de contacto llegó a dibujarse
   const haySuperior = Boolean(textos.BARRA_SUPERIOR?.MOSTRAR && (textos.BARRA_SUPERIOR.TEXTO || datosContacto));
@@ -96,6 +97,8 @@ export default function Landing() {
             </div>
           </div>
         </section>
+
+        <QueEsLanding textos={textos.QUE_ES} />
 
         <FuncionesLanding titulo={textos.FUNCIONES_TITULO} funciones={textos.FUNCIONES} />
 

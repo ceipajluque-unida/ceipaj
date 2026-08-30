@@ -158,7 +158,6 @@ export default function Instituciones() {
               rowKey="id"
               size="small"
               pagination={false}
-              scroll={{ x: 'max-content' }}
               expandable={{
                 expandedRowRender: (institucion) => (
                   <DetalleInstitucion

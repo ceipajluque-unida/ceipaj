@@ -1,6 +1,7 @@
 import { bd } from '../../servidor/bd/conexion.js';
 import { ErrorVisible } from '../../servidor/errores.js';
 import { institucionActual } from '../../servidor/contexto.js';
+import { aCsv } from '../../comun/tablaExportable.js';
 
 const FILAS_MAXIMAS = 5000;
 
@@ -82,17 +83,7 @@ export async function obtenerDatos(tabla) {
   return { encabezados: definicion.encabezados, filas: filas.map((fila) => Object.values(fila)) };
 }
 
-function escapar(valor) {
-  let texto = String(valor ?? '');
-  if (/^[=+\-@\t\r]/.test(texto)) texto = `'${texto}`;
-  return `"${texto.replace(/"/g, '""')}"`;
-}
 
 export async function generarCsv(tabla) {
-  const { encabezados, filas } = await obtenerDatos(tabla);
-  const lineas = [encabezados.map(escapar).join(';')];
-  for (const fila of filas) {
-    lineas.push(fila.map(escapar).join(';'));
-  }
-  return '\uFEFF' + lineas.join('\r\n');
+  return aCsv(await obtenerDatos(tabla));
 }

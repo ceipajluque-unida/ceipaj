@@ -33,7 +33,7 @@ export default function Solicitudes() {
 
   async function descartarViejas() {
     const ok = await confirmar({
-      titulo: 'Descartar las solicitudes sin atender?',
+      titulo: '¿Descartar las solicitudes sin atender?',
       texto: `Las que sigan en Nueva y tengan más de ${DIAS_DESCARTE} días pasan a Descartada.`,
       confirmar: 'Sí, descartar',
     });

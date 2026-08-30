@@ -49,7 +49,7 @@ export default function LeadDetalle() {
   async function cambiarEstado(estado) {
     const fuerte = estado === 'perdido' || estado === 'matriculado';
     const ok = await confirmar({
-      titulo: `Pasarlo a ${legible(estado)}?`,
+      titulo: `¿Pasarlo a ${legible(estado)}?`,
       texto: AVISO_PASO[estado],
       confirmar: 'Sí, cambiar',
       peligro: fuerte,

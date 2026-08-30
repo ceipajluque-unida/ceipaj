@@ -13,3 +13,9 @@ export function nombreDeRol(clave) {
   if (!clave) return '—';
   return nombres[clave] ?? clave.charAt(0).toUpperCase() + clave.slice(1);
 }
+
+// cuando la pantalla ya pidió la lista de roles al servidor, ese título es el
+// más fresco de todos; si no está, se usa el que llegó con el perfil
+export function nombreDeRolEn(roles, clave) {
+  return roles?.find((rol) => rol.clave === clave)?.titulo ?? nombreDeRol(clave);
+}

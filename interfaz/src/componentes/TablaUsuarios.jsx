@@ -1,9 +1,10 @@
 import { Button, Select, Table } from 'antd';
-import { fecha, legible } from '../servicios/formato.js';
+import { fecha } from '../servicios/formato.js';
+import { nombreDeRolEn } from '../servicios/nombresRol.js';
 
 export default function TablaUsuarios({ usuarios, miId, roles, alEditar, alCambiarRol, alCambiarActivo, alRestablecer }) {
   // un rol creado por el proveedor no esta en los textos fijos de la interfaz
-  const nombreDeRol = (clave) => roles.find((r) => r.clave === clave)?.titulo ?? legible(clave);
+  const nombreDeRol = (clave) => nombreDeRolEn(roles, clave);
   const columnas = [
     {
       title: 'Nombre',

@@ -20,7 +20,7 @@ export default function Legales({ variante = 'pie', texto = 'Ver la política de
       {variante === 'pie' ? (
         <footer className="pie-legal">
           <button type="button" onClick={() => setAbierto('politica')}>Política de privacidad</button>
-          <span aria-hidden="true">·</span>
+          <span aria-hidden="true">,</span>
           <button type="button" onClick={() => setAbierto('terminos')}>Términos y condiciones</button>
         </footer>
       ) : (

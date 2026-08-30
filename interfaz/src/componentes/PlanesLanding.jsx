@@ -1,5 +1,5 @@
 import { Check } from 'lucide-react';
-import { guaranies } from '../servicios/formato.js';
+import { guaranies, nombreModulo } from '../servicios/formato.js';
 
 const tope = (valor, singular, plural) => (valor === null ? `${plural} sin tope` : `${valor} ${valor === 1 ? singular : plural}`);
 
@@ -26,6 +26,12 @@ export default function PlanesLanding({ textos, planes, alElegir }) {
               <ul className="landing-lista-check">
                 <li><Check size={16} aria-hidden="true" />{tope(plan.maxUsuarios, 'usuario interno', 'usuarios internos')}</li>
                 <li><Check size={16} aria-hidden="true" />{tope(plan.maxAliados, 'aliado', 'aliados')}</li>
+                <li>
+                  <Check size={16} aria-hidden="true" />
+                  {plan.modulos?.length
+                    ? plan.modulos.map(nombreModulo).join(', ')
+                    : 'Todas las secciones del sistema'}
+                </li>
                 {plan.incluye.map((punto) => (
                   <li key={punto}><Check size={16} aria-hidden="true" />{punto}</li>
                 ))}

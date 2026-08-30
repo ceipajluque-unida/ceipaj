@@ -21,7 +21,7 @@ export default function Perfil() {
 
   async function quitarEquipo(equipo) {
     const ok = await confirmar({
-      titulo: `Quitar ${equipo.nombre}?`,
+      titulo: `¿Quitar ${equipo.nombre}?`,
       texto: 'La próxima vez que entres desde ahí se vuelve a pedir el código.',
       confirmar: 'Sí, quitar',
       peligro: true,
@@ -73,7 +73,7 @@ export default function Perfil() {
 
   async function quitarDosPasos() {
     const clave = await pedirClave({
-      titulo: 'Quitar la verificación en dos pasos?',
+      titulo: '¿Quitar la verificación en dos pasos?',
       texto: 'Vas a entrar solo con tu correo y tu contraseña. Escribí tu contraseña actual para confirmar.',
       confirmar: 'Sí, quitar',
     });

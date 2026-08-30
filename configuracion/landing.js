@@ -19,29 +19,56 @@ export const LANDING = {
 
   NAVEGACION: {
     ENLACES: [
-      { texto: 'Qué resuelve', ancla: 'funciones' },
+      { texto: '¿Qué es?', ancla: 'que-es' },
+      { texto: '¿Qué resuelve?', ancla: 'funciones' },
       { texto: 'Planes', ancla: 'planes' },
       { texto: 'Preguntas', ancla: 'preguntas' },
     ],
     INGRESAR: 'Ingresar',
-    BOTON: 'Solicitá tu plan',
+    BOTON: 'Solicitar demostración',
   },
 
   PORTADA: {
-    TITULO: 'Ordená la captación de estudiantes de punta a punta',
+    TITULO: 'Convierta cada consulta en una matrícula',
     // esta parte del título se pinta con el acento; vacío = título todo parejo
-    TITULO_RESALTADO: 'de punta a punta',
-    BAJADA: 'Centraliza el registro de interesados, ordena su seguimiento y entrega a la dirección '
-      + 'los indicadores para decidir. Dirigido a instituciones educativas que hoy manejan esa '
-      + 'información de forma dispersa.',
-    BOTON: 'Solicitá tu plan',
-    BOTON_PLANES: 'Ver los planes',
+    TITULO_RESALTADO: 'en una matrícula',
+    BAJADA: 'Un sistema de gestión para instituciones educativas: registra a cada interesado, '
+      + 'ordena su seguimiento y mide el resultado de la captación.',
+    BOTON: 'Solicitar demostración',
+    BOTON_PLANES: 'Ver planes y precios',
+  },
+
+  // lo primero que pregunta quien entra a la pagina: que es esto
+  QUE_ES: {
+    TITULO: '¿Qué es?',
+    TEXTO: 'Un sistema de gestión de la captación para instituciones educativas. Acompaña a cada '
+      + 'persona desde la primera consulta hasta que se matricula, y sigue acompañándola durante su '
+      + 'primer año. Trabaja junto al sistema académico que la institución ya utiliza: no lo '
+      + 'reemplaza ni duplica su trabajo.',
+    PASOS: [
+      {
+        titulo: 'Registra',
+        texto: 'Cada consulta queda anotada con sus datos y su canal de origen, venga de donde venga.',
+      },
+      {
+        titulo: 'Acompaña',
+        texto: 'Controla los plazos de contacto y avisa cuando un interesado queda sin respuesta o '
+          + 'cuando un alumno empieza a dar señales de riesgo de abandono.',
+      },
+      {
+        titulo: 'Mide',
+        texto: 'Compara cuántos interesados entran con cuántos llegan a matricularse, y muestra por '
+          + 'qué canal llegó cada uno.',
+      },
+    ],
   },
 
   // titulo de la seccion de tarjetas, centrado
   FUNCIONES_TITULO: {
-    TITULO: 'Qué resuelve',
-    BAJADA: '',
+    TITULO: '¿Qué resuelve?',
+    BAJADA: 'El sistema resuelve cuatro problemas concretos de la captación: la información dispersa '
+      + 'entre varios canales, el seguimiento que se pierde por falta de tiempo, las recomendaciones '
+      + 'que nadie atribuye y las decisiones que se toman sin datos.',
   },
 
   // tarjetas con icono. textos cortos a proposito: se leen de un vistazo
@@ -49,44 +76,47 @@ export const LANDING = {
     {
       etiqueta: 'Captación',
       icono: 'captacion',
-      titulo: 'Un registro único de interesados',
-      texto: 'Redes sociales, teléfono, mensajería o atención presencial: toda consulta entra al '
-        + 'mismo lugar.',
+      titulo: 'Reúna todas las consultas en un solo registro',
+      texto: 'Cada consulta queda anotada con su canal de origen, llegue por redes, por teléfono o '
+        + 'en la puerta de la institución.',
       puntos: [
         'Una sola ficha por persona, sin duplicados',
-        'Canal de origen de cada consulta',
-        'Autorización de datos registrada y revocable',
+        'El canal de origen de cada consulta',
+        'La misma información a la vista de todo el equipo',
       ],
     },
     {
       etiqueta: 'Seguimiento',
       icono: 'seguimiento',
-      titulo: 'Seguimiento con plazos definidos',
-      texto: 'Ningún interesado queda sin respuesta por olvido.',
+      titulo: 'No pierda un interesado por olvido',
+      texto: 'El sistema avisa cuando alguien lleva demasiados días sin contacto y cuando un alumno '
+        + 'empieza a mostrar riesgo de abandonar.',
       puntos: [
-        'Aviso cuando se supera el plazo sin contacto',
-        'Alerta de riesgo de deserción del estudiante',
-        'Registro de las acciones de acompañamiento',
+        'Aviso al superarse el plazo sin contacto',
+        'Alerta temprana de riesgo de deserción',
+        'Historial completo de cada gestión',
       ],
     },
     {
       etiqueta: 'Aliados',
       icono: 'aliados',
-      titulo: 'Recomendaciones con atribución',
-      texto: 'Docentes y directivos que acercan interesados, con su aporte medido.',
+      titulo: 'Mida cuánto aporta cada recomendación',
+      texto: 'Docentes y directivos cargan a sus recomendados desde su propio portal, y el sistema '
+        + 'calcula sus puntos y comisiones.',
       puntos: [
-        'Cada recomendación atribuida a quien la trajo',
-        'Puntos y comisiones calculados automáticamente',
-        'Carga desde su propio portal, sin ocupar al personal',
+        'Cada matriculado queda ligado al aliado que lo recomendó',
+        'Los puntos y las comisiones se calculan solos',
+        'El aliado carga y consulta desde su propio acceso',
       ],
     },
     {
       etiqueta: 'Gerencia',
       icono: 'gerencia',
-      titulo: 'Indicadores para decidir',
-      texto: 'La dirección decide con datos del propio proceso, no con estimaciones.',
+      titulo: 'Decida con números, no con impresiones',
+      texto: 'La dirección ve qué canales traen alumnos, cuánto se convierte y qué aliado rinde, y '
+        + 'descarga esa información cuando la necesita.',
       puntos: [
-        'Interesados por canal y tasas de conversión',
+        'Interesados por canal y tasa de conversión',
         'Rendimiento de cada aliado institucional',
         'Reportes exportables a PDF y Excel',
       ],
@@ -95,14 +125,14 @@ export const LANDING = {
 
   PLANES: {
     TITULO: 'Planes',
-    // la bajada quedó vacía a propósito: cada tarjeta ya muestra sus límites y
-    // su soporte, que es donde está la diferencia real entre un plan y otro
-    BAJADA: '',
+    // la bajada dice dónde está la diferencia real, que es lo primero que se
+    // pregunta quien compara tres precios
+    BAJADA: 'Se cambia de plan cuando haga falta, sin perder información.',
     // clave del plan que se muestra destacado; si no existe, no se destaca ninguno
     DESTACADO: 'estandar',
     ETIQUETA_DESTACADO: 'El más elegido',
-    BOTON: 'Me interesa este plan',
-    PIE: 'Precios por mes, en guaraníes.',
+    BOTON: 'Consultar por este plan',
+    PIE: 'Precios mensuales, en guaraníes.',
   },
 
   PREGUNTAS: {
@@ -110,58 +140,75 @@ export const LANDING = {
     LISTA: [
       {
         pregunta: '¿Reemplaza al sistema académico que ya utilizamos?',
-        respuesta: 'No. Lo complementa. Las inscripciones, las calificaciones y los certificados siguen '
-          + 'donde están hoy. Este sistema se ocupa de la etapa anterior: el seguimiento de cada '
-          + 'interesado desde la primera consulta hasta su matriculación.',
+        respuesta: 'No, lo complementa. Las inscripciones, las calificaciones y los certificados siguen '
+          + 'donde están hoy. Este sistema cubre la etapa anterior y la posterior: desde la primera '
+          + 'consulta hasta la matriculación, y el acompañamiento del alumno durante su primer año.',
       },
       {
-        pregunta: '¿El plan más caro incluye más funciones?',
-        respuesta: 'No. Los tres planes incluyen exactamente las mismas funciones. Lo que cambia es '
-          + 'cuántas personas de la institución pueden utilizarlo, cuántos aliados admite y el tipo de '
-          + 'soporte.',
+        pregunta: '¿En qué se diferencian los planes?',
+        respuesta: 'En qué secciones del sistema quedan habilitadas y cuántas personas y aliados '
+          + 'admite cada uno. Al subir de plan, las secciones nuevas quedan disponibles enseguida.',
       },
       {
-        pregunta: '¿Qué ocurre con los datos de las personas registradas?',
-        respuesta: 'Al registrar a un interesado se solicita su autorización para el uso de sus datos, y '
-          + 'esa autorización puede retirarse después. Toda acción relevante queda registrada con la '
-          + 'fecha, la hora y el responsable, conforme a la Ley 7593.',
+        pregunta: '¿Quiénes lo utilizan dentro de la institución?',
+        respuesta: 'El personal que atiende consultas registra y hace el seguimiento. La dirección '
+          + 'consulta los indicadores. El administrador gestiona las cuentas y la configuración.',
+      },
+      {
+        pregunta: '¿Qué son los aliados institucionales?',
+        respuesta: 'Docentes y directivos externos que recomiendan interesados. La institución les '
+          + 'crea un acceso propio desde donde cargan a sus recomendados y consultan su puntaje. '
+          + 'Cuando uno de ellos se matricula, el sistema calcula la comisión que le corresponde.',
+      },
+      {
+        pregunta: '¿Cómo se protegen los datos de las personas registradas?',
+        respuesta: 'El tratamiento se ajusta a la Ley N.º 7593/2025 de Protección de Datos Personales '
+          + 'de la República del Paraguay: se pide autorización al registrar y puede retirarse en '
+          + 'cualquier momento.',
       },
       {
         pregunta: '¿Es necesario instalar algo?',
-        respuesta: 'No. Se utiliza desde el navegador, tanto en la computadora como en el celular. No '
-          + 'requiere instalar ningún programa ni descargar una aplicación.',
+        respuesta: 'No. Se utiliza desde el navegador, en computadora o celular, dentro y fuera de '
+          + 'la institución.',
+      },
+      {
+        pregunta: '¿Se puede cargar la información que ya tenemos?',
+        respuesta: 'Sí. Los matriculados se importan desde una planilla, y el sistema los cruza por '
+          + 'número de cédula con los interesados ya registrados para marcar automáticamente quiénes '
+          + 'se convirtieron.',
       },
       {
         pregunta: '¿Qué ocurre si no se renueva la suscripción?',
-        respuesta: 'No se pierde información. La institución pasa al plan Básico y continúa trabajando '
-          + 'con menos usuarios, hasta que renueve el plan que tenía.',
+        respuesta: 'No se pierde ninguna información. La institución pasa al plan Free, desde donde '
+          + 'puede consultar todo lo que ya tenía cargado, y recupera el resto de las secciones al '
+          + 'volver a contratar.',
       },
       {
         pregunta: '¿Cómo se contrata?',
-        respuesta: 'Dejás tus datos en el formulario de esta página. Te escribimos para coordinar una '
-          + 'demostración y desde ahí se contrata el plan.',
+        respuesta: 'Complete el formulario de esta página. Coordinamos una demostración y desde allí '
+          + 'se contrata el plan.',
       },
     ],
   },
 
   CIERRE: {
-    TITULO: 'Conocelo por dentro',
-    TEXTO: 'Coordinamos una demostración y respondemos todas tus consultas.',
-    BOTON: 'Solicitá tu plan',
+    TITULO: 'Vea el sistema funcionando',
+    TEXTO: 'Coordinamos una demostración con su equipo y respondemos sus consultas.',
+    BOTON: 'Solicitar demostración',
   },
 
   CONTACTO: {
-    TITULO: 'Dejanos tus datos',
-    BAJADA: 'Completá el formulario y nos comunicamos con vos.',
-    EXITO: 'Recibimos tu solicitud. Te vamos a escribir al correo que dejaste.',
+    TITULO: 'Contacto',
+    BAJADA: 'Complete el formulario y nos comunicamos a la brevedad.',
+    EXITO: 'Recibimos su solicitud. Le escribimos al correo indicado.',
     // debajo del formulario queda solo el enlace a la política
     AVISO: '',
     ENLACE_AVISO: 'Cómo tratamos los datos',
     // opciones del desplegable; el valor viaja tal cual al sistema del proveedor
     MOTIVOS: [
-      { valor: 'demostracion', texto: 'Quiero una demostración' },
-      { valor: 'plan', texto: 'Quiero contratar un plan' },
-      { valor: 'consulta', texto: 'Tengo una consulta' },
+      { valor: 'demostracion', texto: 'Solicitud de demostración' },
+      { valor: 'plan', texto: 'Contratación de un plan' },
+      { valor: 'consulta', texto: 'Consulta general' },
     ],
   },
 
@@ -169,12 +216,13 @@ export const LANDING = {
     TEXTO: '',
     COLUMNAS: [
       { titulo: 'El sistema', enlaces: [
-        { texto: 'Qué resuelve', ancla: 'funciones' },
+        { texto: '¿Qué es?', ancla: 'que-es' },
+        { texto: '¿Qué resuelve?', ancla: 'funciones' },
         { texto: 'Planes', ancla: 'planes' },
         { texto: 'Preguntas frecuentes', ancla: 'preguntas' },
       ] },
       { titulo: 'Contacto', enlaces: [
-        { texto: 'Solicitá tu plan', ancla: 'contacto' },
+        { texto: 'Solicitar demostración', ancla: 'contacto' },
       ] },
     ],
   },

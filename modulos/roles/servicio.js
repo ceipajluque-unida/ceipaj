@@ -129,6 +129,25 @@ function validarModulos(clave, modulos) {
   return limpios;
 }
 
+// la clave de los cinco roles de fábrica está escrita en el código en decenas
+// de lugares (quién entra a qué, a dónde va cada uno al entrar, la guarda que
+// impide dejar a un colegio sin administrador): cambiarla los rompería. la de un
+// rol creado por el proveedor no la usa nadie más, así que sí se puede cambiar.
+async function validarCambioDeClave(rol, pedida) {
+  if (pedida === undefined || pedida === null) return null;
+  const limpia = validarClave(pedida);
+  if (limpia === rol.clave) return null;
+  if (rol.delSistema) {
+    throw new ErrorVisible(
+      `La clave de ${rol.titulo} no se puede cambiar: el sistema la usa por dentro para saber quién entra a qué. `
+      + 'El nombre que se ve en pantalla sí lo podés cambiar.'
+    );
+  }
+  const filas = await matriz();
+  if (filas.some((r) => r.clave === limpia)) throw new ErrorVisible('Ya existe un rol con esa clave.');
+  return limpia;
+}
+
 async function buscar(clave) {
   const filas = await matriz();
   const rol = filas.find((r) => r.clave === clave);
@@ -160,6 +179,7 @@ export async function editar(clave, datos, usuario, ip) {
   const titulo = validarTitulo(datos?.titulo ?? rol.titulo);
   const modulos = validarModulos(clave, datos?.modulos ?? rol.modulos);
   const activo = datos?.activo === undefined ? rol.activo : Boolean(datos.activo);
+  const claveNueva = await validarCambioDeClave(rol, datos?.clave);
 
   if (!activo) {
     if (rol.delSistema) throw new ErrorVisible('Los roles que trae el sistema no se pueden desactivar.');
@@ -169,11 +189,16 @@ export async function editar(clave, datos, usuario, ip) {
     }
   }
 
+  // la clave va primero: usuarios.rol apunta acá con ON UPDATE CASCADE, así que
+  // al cambiarla el sistema arrastra solo a las cuentas que tenían ese rol
+  if (claveNueva) await bd.query('UPDATE roles SET clave = ? WHERE clave = ?', [claveNueva, clave]);
+  const actual = claveNueva ?? clave;
+
   await bd.query('UPDATE roles SET titulo = ?, modulos = ?, activo = ? WHERE clave = ?',
-    [titulo, modulos.join('\n'), activo ? 1 : 0, clave]);
+    [titulo, modulos.join('\n'), activo ? 1 : 0, actual]);
   limpiarCacheRoles();
-  await registrarAuditoria({ usuarioId: usuario.id, accion: 'rol_editado', detalle: `${titulo} (${clave}): ${rol.modulos.length} módulos antes, ${modulos.length} ahora`, ip });
-  return { clave, titulo, modulos, activo };
+  await registrarAuditoria({ usuarioId: usuario.id, accion: 'rol_editado', detalle: `${titulo} (${actual}): ${rol.modulos.length} módulos antes, ${modulos.length} ahora` + (claveNueva ? `, clave ${clave} a ${claveNueva}` : ''), ip });
+  return { clave: actual, titulo, modulos, activo };
 }
 
 export async function borrar(clave, usuario, ip) {

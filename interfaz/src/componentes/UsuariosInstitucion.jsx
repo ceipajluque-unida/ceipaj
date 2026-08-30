@@ -4,7 +4,7 @@ import Modal from './Modal.jsx';
 import FormularioUsuario from './FormularioUsuario.jsx';
 import { llamarApi } from '../servicios/api.js';
 import { confirmar, avisarError, toast, mostrarClave } from '../servicios/avisos.js';
-import { legible } from '../servicios/formato.js';
+import { nombreDeRolEn } from '../servicios/nombresRol.js';
 import { rolesAsignables } from '../servicios/roles.js';
 
 const VACIO = { nombre: '', correo: '', telefono: '', direccion: '', rol: '' };
@@ -14,7 +14,7 @@ export default function UsuariosInstitucion({ institucion, alCambiar }) {
   const [usuarios, setUsuarios] = useState(null);
   const [roles, setRoles] = useState([]);
   // un rol creado por el proveedor no esta en los textos fijos de la interfaz
-  const nombreDeRol = (clave) => roles.find((r) => r.clave === clave)?.titulo ?? legible(clave);
+  const nombreDeRol = (clave) => nombreDeRolEn(roles, clave);
   const [editando, setEditando] = useState(null);
   const [formulario, setFormulario] = useState(VACIO);
   const [error, setError] = useState(null);

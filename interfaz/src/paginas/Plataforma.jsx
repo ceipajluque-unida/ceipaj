@@ -14,23 +14,9 @@ const FORMATOS = [
 ];
 
 const REPORTES = [
-  {
-    clave: 'planes',
-    titulo: 'Ingresos por plan',
-    detalle: 'Qué factura cada plan: su precio, cuántas instituciones lo tienen hoy, cuántos períodos se '
-      + 'vendieron, cuánto se cobró y cuánto pesa en el total.',
-  },
-  {
-    clave: 'instituciones',
-    titulo: 'Instituciones',
-    detalle: 'Una fila por institución, con la situación de su plan, sus usuarios, aliados, interesados y '
-      + 'lo que lleva pagado.',
-  },
-  {
-    clave: 'meses',
-    titulo: 'Recaudación por mes',
-    detalle: 'Cuánto entró cada mes, con cuántos pagos y de cuántas instituciones. Los últimos tres años.',
-  },
+  { clave: 'planes', titulo: 'Ingresos por plan' },
+  { clave: 'instituciones', titulo: 'Instituciones' },
+  { clave: 'meses', titulo: 'Recaudación por mes' },
 ];
 
 export default function Plataforma() {
@@ -67,7 +53,7 @@ export default function Plataforma() {
     { title: 'Plan', dataIndex: 'titulo' },
     { title: 'Precio por mes', dataIndex: 'precio', render: guaranies, align: 'right', width: 140 },
     { title: 'Instituciones que lo tienen hoy', dataIndex: 'institucionesVigentes', align: 'right', width: 200 },
-    { title: 'Ingreso mensual que aporta', dataIndex: 'ingresoMensual', render: guaranies, align: 'right', width: 190 },
+    { title: 'Ingreso mensual aproximado', dataIndex: 'ingresoMensual', render: guaranies, align: 'right', width: 190 },
     { title: 'Períodos vendidos', dataIndex: 'periodosVendidos', align: 'right', width: 145 },
     { title: 'Cobrado en total', dataIndex: 'recaudado', render: guaranies, align: 'right', width: 150 },
     {
@@ -92,13 +78,9 @@ export default function Plataforma() {
       key: 'planes',
       label: 'Ingresos por plan',
       children: (
-        <>
-          <p className="nota">
-            El ingreso mensual es el precio de lista multiplicado por las instituciones que hoy tienen
-            ese plan: es lo que entra cada mes mientras lo mantengan.
-          </p>
+        <div className="tabla-envoltura">
           <Table rowKey="clave" columns={columnasPlan} dataSource={planes} size="small" pagination={false} />
-        </>
+        </div>
       ),
     },
     {
@@ -111,20 +93,22 @@ export default function Plataforma() {
       label: 'Recaudación mensual',
       children: meses.length === 0
         ? <p className="nota">Todavía no hay ningún pago acreditado con fecha.</p>
-        : <Table rowKey="mes" columns={columnasMes} dataSource={meses} size="small" pagination={false} />,
+        : (
+          <div className="tabla-envoltura">
+            <Table rowKey="mes" columns={columnasMes} dataSource={meses} size="small" pagination={false} />
+          </div>
+        ),
     },
     {
       key: 'reportes',
       label: 'Reportes',
       children: (
         <>
-          <p className="nota">Cada reporte se baja con los datos de este momento y de todas las instituciones.</p>
           <div className="lista-reportes">
             {REPORTES.map((reporte) => (
               <article className="reporte" key={reporte.clave}>
                 <div>
                   <strong>{reporte.titulo}</strong>
-                  <p className="nota">{reporte.detalle}</p>
                 </div>
                 <div className="acciones">
                   {FORMATOS.map((formato) => (

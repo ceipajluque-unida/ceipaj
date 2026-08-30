@@ -34,7 +34,7 @@ export default function Comisiones() {
 
   async function pagar(comision) {
     const ok = await confirmar({
-      titulo: `Pagar la comisión de ${comision.aliado}?`,
+      titulo: `¿Pagar la comisión de ${comision.aliado}?`,
       texto: `${guaranies(comision.monto)} por la matrícula de ${comision.interesado}.`,
       confirmar: 'Sí, pagar',
     });

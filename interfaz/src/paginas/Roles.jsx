@@ -54,7 +54,7 @@ export default function Roles() {
       if (editando) {
         await llamarApi(`/api/roles/${editando.clave}`, {
           metodo: 'PUT',
-          cuerpo: { titulo: formulario.titulo, modulos: formulario.modulos },
+          cuerpo: { clave: formulario.clave, titulo: formulario.titulo, modulos: formulario.modulos },
         });
         toast('Rol actualizado.');
       } else {
@@ -73,7 +73,7 @@ export default function Roles() {
 
   async function borrar(rol) {
     const ok = await confirmar({
-      titulo: `Borrar el rol ${rol.titulo}?`,
+      titulo: `¿Borrar el rol ${rol.titulo}?`,
       texto: 'Deja de aparecer al dar de alta o editar una cuenta. Como no lo usa nadie, no hay nadie a quien afecte.',
       confirmar: 'Sí, borrar',
       peligro: true,
@@ -150,18 +150,21 @@ export default function Roles() {
               placeholder="Por ejemplo: Coordinador de sede"
             />
           </label>
-          {!editando && (
-            <label>
-              <span>Clave interna</span>
-              <Input
-                value={formulario.clave}
-                maxLength={30}
-                onChange={(e) => setFormulario({ ...formulario, clave: e.target.value.toLowerCase().replace(/[^a-z_]/g, '') })}
-                placeholder="coordinador_sede"
-              />
-              <small className="nota">Es la que se guarda en la base. Va en minúsculas y no se puede cambiar después.</small>
-            </label>
-          )}
+          <label>
+            <span>Clave interna</span>
+            <Input
+              value={formulario.clave}
+              maxLength={30}
+              disabled={Boolean(editando?.delSistema)}
+              onChange={(e) => setFormulario({ ...formulario, clave: e.target.value.toLowerCase().replace(/[^a-z_]/g, '') })}
+              placeholder="coordinador_sede"
+            />
+            <small className="nota">
+              {editando?.delSistema
+                ? 'La de los roles que trae el sistema no se cambia: el sistema la usa por dentro para saber quién entra a qué.'
+                : 'Es la que se guarda en la base, en minúsculas y sin espacios. Al cambiarla, las cuentas con este rol se mueven solas.'}
+            </small>
+          </label>
           <fieldset className="grupo-casillas">
             <legend>Módulos habilitados para este rol</legend>
             <div className="casillas">

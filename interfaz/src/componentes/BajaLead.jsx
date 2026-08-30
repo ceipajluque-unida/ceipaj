@@ -37,7 +37,7 @@ export default function BajaLead({ lead, alActualizar }) {
 
   async function reactivar() {
     const ok = await confirmar({
-      titulo: 'Reactivar al interesado?',
+      titulo: '¿Reactivar al interesado?',
       texto: `${lead.nombre} vuelve al listado y a las alertas de seguimiento.`,
       confirmar: 'Sí, reactivar',
     });
@@ -53,7 +53,7 @@ export default function BajaLead({ lead, alActualizar }) {
 
   async function revocar() {
     const ok = await confirmar({
-      titulo: 'Revocar la autorización de datos?',
+      titulo: '¿Revocar la autorización de datos?',
       texto: `${lead.nombre} deja de poder ser contactado y queda dado de baja. Sus datos quedan guardados solo como constancia de que estuvo, porque retirar la autorización es un derecho suyo que la Ley 7593 reconoce.`,
       confirmar: 'Sí, revocar',
       peligro: true,

@@ -95,7 +95,7 @@ export default function FormularioSolicitud({ textos, planes, claveCaptcha, plan
       {error && <p className="error">{error}</p>}
 
       <button type="submit" className="landing-boton" disabled={enviando}>
-        {enviando ? 'Enviando…' : 'Enviar la solicitud'}
+        {enviando ? 'Enviando…' : 'Enviar solicitud'}
       </button>
 
       <p className="landing-aviso">

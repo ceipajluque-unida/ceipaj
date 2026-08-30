@@ -56,7 +56,7 @@ export default function Pagos() {
 
   async function descartar(pago) {
     const ok = await confirmar({
-      titulo: 'Descartar este cobro?',
+      titulo: '¿Descartar este cobro?',
       texto: `${pago.concepto}, ${guaranies(pago.monto)}, referencia ${pago.referencia}. Se borra del historial y no se puede recuperar.`,
       confirmar: 'Sí, descartar',
       peligro: true,

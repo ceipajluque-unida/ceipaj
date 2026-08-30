@@ -3,7 +3,8 @@ import { useOutletContext } from 'react-router-dom';
 import { Button } from 'antd';
 import { llamarApi, usuarioActual } from '../servicios/api.js';
 import { confirmar, avisarError, toast, mostrarClave } from '../servicios/avisos.js';
-import { contar, legible } from '../servicios/formato.js';
+import { contar } from '../servicios/formato.js';
+import { nombreDeRolEn } from '../servicios/nombresRol.js';
 import { rolesAsignables } from '../servicios/roles.js';
 import Modal from '../componentes/Modal.jsx';
 import FormularioUsuario from '../componentes/FormularioUsuario.jsx';
@@ -20,7 +21,7 @@ export default function Usuarios() {
   const [editando, setEditando] = useState(null);
   const [roles, setRoles] = useState([]);
   // un rol creado por el proveedor no está en los textos fijos de la interfaz
-  const nombreDeRol = (clave) => roles.find((r) => r.clave === clave)?.titulo ?? legible(clave);
+  const nombreDeRol = (clave) => nombreDeRolEn(roles, clave);
   const [formulario, setFormulario] = useState(FORMULARIO_VACIO);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState(null);
@@ -86,7 +87,7 @@ export default function Usuarios() {
 
   async function cambiarRol(usuario, rol) {
     const ok = await confirmar({
-      titulo: 'Cambiar el rol?',
+      titulo: '¿Cambiar el rol?',
       texto: `${usuario.nombre} pasa a ${nombreDeRol(rol)}. Si está trabajando en el sistema, va a tener que volver a entrar.`,
       confirmar: 'Sí, cambiar',
     });

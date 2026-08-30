@@ -25,23 +25,23 @@ export default function CifrasPlataforma({ resumen }) {
             ? `${contar(r.sinPlanPago, 'institución sigue', 'instituciones siguen')} en el plan Básico`
             : 'todas están al día')}
 
-        {cifra('Ingreso mensual comprometido', guaranies(r.ingresoMensual),
-          'lo que entra cada mes si nadie se da de baja')}
+        {cifra('Ingreso mensual aproximado', guaranies(r.ingresoMensual),
+          'cálculo en base a planes activos')}
 
-        {cifra('Cobrado desde el inicio', guaranies(r.recaudado),
+        {cifra('Cobrado en total', guaranies(r.recaudado),
           r.pagos === 0
             ? 'todavía no se acreditó ningún pago'
-            : `${contar(r.pagos, 'pago acreditado', 'pagos acreditados')}, de ${guaranies(r.ticketPromedio)} en promedio`)}
+            : contar(r.pagos, 'pago acreditado', 'pagos acreditados'))}
 
         {cifra('Cobros sin acreditar', guaranies(r.montoPendiente),
           r.pagosPendientes === 0
-            ? 'no quedó ningún pedido de pago sin cobrar'
+            ? 'no hay cobros pendientes'
             : `${contar(r.pagosPendientes, 'pedido de pago', 'pedidos de pago')} que todavía nadie pagó`)}
 
         {cifra('Solicitudes sin atender', r.solicitudesNuevas,
           r.solicitudesNuevas === 0
             ? 'no hay pedidos nuevos desde la página pública'
-            : 'instituciones que pidieron contratar desde la página pública')}
+            : 'instituciones con solicitud de contrato desde la página web')}
       </div>
 
       <p className="nota">
