@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { Button, Table } from 'antd';
-import { tokenActual } from '../servicios/api.js';
+import { descargarArchivo } from '../servicios/descargas.js';
 import { toast, avisarError } from '../servicios/avisos.js';
 
 const TABLAS = [
@@ -26,19 +26,10 @@ export default function Reportes() {
   async function descargar(tabla, formato) {
     setBajando(`${tabla}-${formato}`);
     try {
-      const respuesta = await fetch(`/api/reportes/exportar/${tabla}?formato=${formato}`, {
-        headers: { Authorization: `Bearer ${tokenActual()}` },
-      });
-      if (!respuesta.ok) {
-        const cuerpo = await respuesta.json().catch(() => ({}));
-        throw new Error(cuerpo.error ?? 'No se pudo exportar.');
-      }
-      const url = URL.createObjectURL(await respuesta.blob());
-      const enlace = document.createElement('a');
-      enlace.href = url;
-      enlace.download = `${tabla}-${new Date().toISOString().slice(0, 10)}.${formato}`;
-      enlace.click();
-      URL.revokeObjectURL(url);
+      await descargarArchivo(
+        `/api/reportes/exportar/${tabla}?formato=${formato}`,
+        `${tabla}-${new Date().toISOString().slice(0, 10)}.${formato}`
+      );
       toast('Reporte descargado.');
     } catch (excepcion) {
       avisarError(excepcion.message);

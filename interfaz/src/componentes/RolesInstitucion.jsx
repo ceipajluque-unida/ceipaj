@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Table, Tag } from 'antd';
+import { Table } from 'antd';
 import { llamarApi } from '../servicios/api.js';
 import { legible, nombreModulo, contar } from '../servicios/formato.js';
 
@@ -25,11 +25,11 @@ export default function RolesInstitucion({ institucionId, ruta, refresco }) {
         : `${contar(fila.activos, 'activo', 'activos')} de ${fila.usuarios}`),
     },
     {
-      title: detalle.plan ? `Accesos con el plan ${legible(detalle.plan)}` : 'Accesos (sin suscripción)',
+      title: 'Módulos a los que entra',
       key: 'modulos',
       render: (_, fila) => (fila.modulos.length === 0
-        ? <span className="nota">Sin accesos</span>
-        : fila.modulos.map((modulo) => <Tag key={modulo}>{nombreModulo(modulo)}</Tag>)),
+        ? <span className="nota">Ninguno</span>
+        : <span>{fila.modulos.map((modulo) => nombreModulo(modulo)).join(', ')}</span>),
     },
   ];
 
@@ -42,8 +42,10 @@ export default function RolesInstitucion({ institucionId, ruta, refresco }) {
     <>
       {cupo && (
         <p className="nota">
-          Plan {cupo.plan}: {tope(cupo.usuarios, cupo.maxUsuarios, 'usuario interno', 'usuarios internos')}
-          {' · '}{tope(cupo.aliados, cupo.maxAliados, 'aliado', 'aliados')}.
+          Con el plan {cupo.plan} puede tener{' '}
+          {tope(cupo.usuarios, cupo.maxUsuarios, 'usuario interno', 'usuarios internos')} y{' '}
+          {tope(cupo.aliados, cupo.maxAliados, 'aliado', 'aliados')}.
+          {' '}Abajo, qué ve cada rol dentro de esta institución.
         </p>
       )}
       <Table

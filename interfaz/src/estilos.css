@@ -443,3 +443,19 @@ tbody tr:hover td { background: var(--panel-2); }
   gap: 8px 16px;
   margin-top: 6px;
 }
+
+/* pestaña de reportes de la plataforma */
+.lista-reportes { display: grid; gap: 12px; margin-top: 12px; }
+.reporte {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+.reporte > div:first-child { flex: 1 1 320px; }
+.reporte .nota { margin: 4px 0 0; }
+.barra-filtros { margin-bottom: 12px; }

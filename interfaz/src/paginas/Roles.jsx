@@ -129,11 +129,11 @@ export default function Roles() {
     },
     { title: 'Cuentas activas', dataIndex: 'usuarios', align: 'right', width: 130 },
     {
-      title: 'Accede a',
+      title: 'Módulos a los que entra',
       dataIndex: 'modulos',
       render: (lista) => (lista.length === 0
         ? <span className="nota">Sin accesos</span>
-        : <span>{lista.map((m) => nombreModulo(m)).join(' · ')}</span>),
+        : <span>{lista.map((m) => nombreModulo(m)).join(', ')}</span>),
     },
     {
       title: '',
@@ -190,7 +190,7 @@ export default function Roles() {
             </label>
           )}
           <fieldset className="grupo-casillas">
-            <legend>A qué módulos accede</legend>
+            <legend>Módulos a los que puede entrar quien tenga este rol</legend>
             <div className="casillas">
             {modulos.map((modulo) => (
               <Checkbox
