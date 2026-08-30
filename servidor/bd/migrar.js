@@ -42,6 +42,36 @@ async function asegurarTipo(conexion, tabla, columna, tipoEsperado, definicion) 
   console.log(`columna ampliada: ${tabla}.${columna} ahora es ${tipoEsperado}`);
 }
 
+// va despues de sembrar los roles: antes fallaria porque la tabla de destino
+// todavia no existe. si algun usuario tiene un rol que no esta en la tabla, se
+// avisa y no se agrega, en vez de romper la migracion.
+async function quitarColumna(conexion, tabla, columna) {
+  const [filas] = await conexion.query(
+    'SELECT COUNT(*) AS existe FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = ?',
+    [BASE_DATOS.NOMBRE, tabla, columna]
+  );
+  if (filas[0].existe === 0) return;
+  await conexion.query(`ALTER TABLE \`${tabla}\` DROP COLUMN \`${columna}\``);
+  console.log(`columna retirada: ${tabla}.${columna}`);
+}
+
+async function asegurarClaveForanea(conexion, tabla, nombre, definicion) {
+  const [filas] = await conexion.query(
+    'SELECT COUNT(*) AS existe FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND CONSTRAINT_NAME = ?',
+    [BASE_DATOS.NOMBRE, tabla, nombre]
+  );
+  if (filas[0].existe > 0) return;
+  const [huerfanos] = await conexion.query(
+    'SELECT COUNT(*) AS n FROM usuarios u LEFT JOIN roles r ON r.clave = u.rol WHERE r.clave IS NULL'
+  );
+  if (huerfanos[0].n > 0) {
+    console.log(`no se agrega ${nombre}: hay ${huerfanos[0].n} usuario(s) con un rol que no existe en roles`);
+    return;
+  }
+  await conexion.query(`ALTER TABLE \`${tabla}\` ADD CONSTRAINT \`${nombre}\` ${definicion}`);
+  console.log(`clave foranea agregada: ${nombre}`);
+}
+
 async function asegurarClavePrimaria(conexion, tabla, columnasEsperadas, definicion) {
   const [filas] = await conexion.query(
     `SELECT GROUP_CONCAT(COLUMN_NAME ORDER BY SEQ_IN_INDEX) AS columnas
@@ -121,8 +151,8 @@ async function sembrarPlanes(conexion) {
   if (Number(total) === 0) {
     for (const [orden, plan] of PLANES_SUSCRIPCION.entries()) {
       await conexion.query(
-        'INSERT INTO planes (clave, titulo, precio, meses, incluye, max_usuarios, max_aliados, modulos_incluidos, orden) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-        [plan.valor, plan.texto, plan.precio, plan.meses, plan.incluye.join('\n'), plan.maxUsuarios, plan.maxAliados, plan.modulos.join('\n'), orden]
+        'INSERT INTO planes (clave, titulo, precio, meses, incluye, max_usuarios, max_aliados, orden) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        [plan.valor, plan.texto, plan.precio, plan.meses, plan.incluye.join('\n'), plan.maxUsuarios, plan.maxAliados, orden]
       );
     }
     console.log(`planes cargados: ${PLANES_SUSCRIPCION.length}`);
@@ -130,9 +160,8 @@ async function sembrarPlanes(conexion) {
   }
   for (const plan of PLANES_SUSCRIPCION) {
     const [resultado] = await conexion.query(
-      `UPDATE planes SET max_usuarios = ?, modulos_incluidos = ?
-        WHERE clave = ? AND max_usuarios IS NULL AND modulos_incluidos IS NULL`,
-      [plan.maxUsuarios, plan.modulos.join('\n'), plan.valor]
+      'UPDATE planes SET max_usuarios = ? WHERE clave = ? AND max_usuarios IS NULL',
+      [plan.maxUsuarios, plan.valor]
     );
     if (resultado.affectedRows > 0) console.log(`límites completados en el plan ${plan.valor}`);
     if (plan.maxAliados !== null) {
@@ -152,9 +181,9 @@ async function emparejarPlanesConTesis(conexion) {
   for (const plan of PLANES_SUSCRIPCION) {
     if (!preciosViejos[plan.valor]) continue;
     const [resultado] = await conexion.query(
-      `UPDATE planes SET precio = ?, max_usuarios = ?, max_aliados = ?, modulos_incluidos = ?, incluye = ?
+      `UPDATE planes SET precio = ?, max_usuarios = ?, max_aliados = ?, incluye = ?
         WHERE clave = ? AND precio = ?`,
-      [plan.precio, plan.maxUsuarios, plan.maxAliados, plan.modulos.join('\n'), plan.incluye.join('\n'),
+      [plan.precio, plan.maxUsuarios, plan.maxAliados, plan.incluye.join('\n'),
        plan.valor, preciosViejos[plan.valor]]
     );
     if (resultado.affectedRows > 0) console.log(`plan ${plan.valor} emparejado con la tabla 19 de la tesis`);
@@ -223,7 +252,21 @@ async function migrar() {
   await asegurarColumna(conexion, 'planes', 'max_usuarios', 'INT UNSIGNED NULL AFTER incluye');
   await asegurarColumna(conexion, 'planes', 'max_aliados', 'INT UNSIGNED NULL AFTER max_usuarios');
   await asegurarColumna(conexion, 'usuarios', 'sin_2fa', "TINYINT(1) NOT NULL DEFAULT 0 AFTER activado_2fa");
-  await asegurarColumna(conexion, 'planes', 'modulos_incluidos', 'TEXT NULL AFTER max_aliados');
+  await asegurarColumna(conexion, 'suscripciones', 'motivo_cierre', 'VARCHAR(20) NULL AFTER cancelada_en');
+  // dejar de renovar y despues llegar a la fecha es un vencimiento, no una baja:
+  // una version anterior de este paso las confundia
+  await conexion.query(
+    "UPDATE suscripciones SET motivo_cierre = 'vencimiento' "
+    + "WHERE motivo_cierre = 'baja' AND (cancelada_en IS NULL OR fecha_fin > cancelada_en)"
+  );
+  // las que ya estaban cerradas y no tienen motivo: si llegaron a su fecha, fue
+  // vencimiento; si se cortaron antes, fue una baja
+  await conexion.query(
+    `UPDATE suscripciones SET motivo_cierre = CASE
+       WHEN cancelada_en IS NOT NULL AND fecha_fin <= cancelada_en THEN 'baja'
+       ELSE 'vencimiento' END
+      WHERE estado <> 'activa' AND motivo_cierre IS NULL`
+  );
 
   await asegurarTipo(conexion, 'ajustes_sistema', 'valor', 'mediumtext', 'MEDIUMTEXT NULL');
 
@@ -250,7 +293,11 @@ async function migrar() {
   // usuarios.rol deja de ser ENUM: si no, no se podria asignar un rol nuevo
   await asegurarTipo(conexion, 'usuarios', 'rol', 'varchar(30)', "VARCHAR(30) NOT NULL DEFAULT 'comercial'");
   await sembrarRoles(conexion);
+  await asegurarClaveForanea(conexion, 'usuarios', 'fk_usuarios_rol',
+    'FOREIGN KEY (rol) REFERENCES roles (clave) ON UPDATE CASCADE');
   await borrarAjustesRetirados(conexion);
+  // el plan ya no decide modulos: se retira cuando nada de arriba la usa
+  await quitarColumna(conexion, 'planes', 'modulos_incluidos');
 
   await conexion.end();
   console.log(`base "${BASE_DATOS.NOMBRE}" lista con todas las tablas del sistema.`);

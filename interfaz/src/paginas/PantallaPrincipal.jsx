@@ -12,7 +12,7 @@ function fechaDeHoy() {
 export default function PantallaPrincipal() {
   const usuario = usuarioActual();
   const navegar = useNavigate();
-  const { modulos, bloqueados = [] } = useOutletContext() ?? {};
+  const { modulos } = useOutletContext() ?? {};
   const esAliado = usuario?.rol === 'aliado';
 
   const esProveedor = usuario?.rol === 'superadministrador';
@@ -42,7 +42,7 @@ export default function PantallaPrincipal() {
   const maximoCanal = Math.max(...datos.leadsPorCanal.map((fila) => fila.total), 1);
   const maximoEstado = Math.max(...datos.leadsPorEstado.map((fila) => fila.total), 1);
 
-  const disponible = (clave) => modulos?.includes(clave) && !bloqueados.includes(clave);
+  const disponible = (clave) => modulos?.includes(clave);
   const veLeads = disponible('leads');
   const veSeguimiento = disponible('seguimiento');
   const veReportes = disponible('reportes');

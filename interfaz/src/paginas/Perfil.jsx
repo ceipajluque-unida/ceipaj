@@ -3,6 +3,7 @@ import { Button, Input, Select, Table } from 'antd';
 import { llamarApi, guardarSesion, tokenActual, usuarioActual } from '../servicios/api.js';
 import { avisarError, confirmar, toast, pedirClave } from '../servicios/avisos.js';
 import { fecha, legible, nombreModulo } from '../servicios/formato.js';
+import { nombreDeRol, guardarNombresDeRol } from '../servicios/nombresRol.js';
 
 export default function Perfil() {
   const [perfil, setPerfil] = useState(null);
@@ -37,6 +38,7 @@ export default function Perfil() {
 
   async function cargar() {
     const respuesta = await llamarApi('/api/autenticacion/perfil');
+    guardarNombresDeRol(respuesta.roles);
     setPerfil(respuesta);
     await cargarEquipos();
     setDatos({
@@ -151,7 +153,7 @@ export default function Perfil() {
             <Input value={datos.direccion} onChange={(e) => setDatos({ ...datos, direccion: e.target.value })} />
           </label>
           <div className="menu-fila">
-            <span className="nota">Rol: <span className="rol-chip">{legible(perfil.usuario.rol)}</span></span>
+            <span className="nota">Rol: <span className="rol-chip">{nombreDeRol(perfil.usuario.rol)}</span></span>
             <Button type="primary" htmlType="submit" disabled={guardando}>{guardando ? 'Guardando…' : 'Guardar cambios'}</Button>
           </div>
         </form>

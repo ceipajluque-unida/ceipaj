@@ -50,6 +50,11 @@ export async function rolesDelModulo(modulo) {
   }
 }
 
+// clave y nombre de todos los roles, para que la interfaz los muestre bien
+export async function nombresDeRol() {
+  return Object.fromEntries((await matriz()).map((r) => [r.clave, r.titulo]));
+}
+
 export async function modulosDeRol(rol) {
   const filas = await matriz();
   return filas.find((r) => r.clave === rol)?.modulos ?? [];
@@ -183,15 +188,4 @@ export async function borrar(clave, usuario, ip) {
   await bd.query('DELETE FROM roles WHERE clave = ?', [clave]);
   limpiarCacheRoles();
   await registrarAuditoria({ usuarioId: usuario.id, accion: 'rol_borrado', detalle: `${rol.titulo} (${clave})`, ip });
-}
-
-// devuelve los cinco roles del sistema a los accesos con los que vienen de fabrica
-export async function restaurarDeFabrica(usuario, ip) {
-  for (const clave of Object.keys(TITULOS_ROL)) {
-    const modulos = MODULOS.filter((m) => PERMISOS[m].includes(clave));
-    await bd.query('UPDATE roles SET titulo = ?, modulos = ?, activo = 1 WHERE clave = ?',
-      [TITULOS_ROL[clave], modulos.join('\n'), clave]);
-  }
-  limpiarCacheRoles();
-  await registrarAuditoria({ usuarioId: usuario.id, accion: 'roles_restaurados', detalle: 'los roles del sistema volvieron a sus accesos de fábrica', ip });
 }

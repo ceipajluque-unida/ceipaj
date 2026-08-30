@@ -23,7 +23,3 @@ rutasRoles.delete('/:clave', async (req, res) => {
   res.json({ ok: true });
 });
 
-rutasRoles.post('/restaurar', async (req, res) => {
-  await servicio.restaurarDeFabrica(req.usuario, req.ip);
-  res.json(await servicio.listar());
-});

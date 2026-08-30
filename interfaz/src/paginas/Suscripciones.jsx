@@ -16,6 +16,12 @@ function textoPeriodo(meses) {
   return `cada ${meses} meses`;
 }
 
+// el mismo vocabulario que ve el proveedor en la ficha de la institución
+const SITUACION = {
+  en_curso: 'En curso', programada: 'Programada', solapada: 'Solapada',
+  vencida: 'Vencida', dada_de_baja: 'Dada de baja', reemplazada: 'Reemplazada por otro plan',
+};
+
 export default function Suscripciones() {
   const navegar = useNavigate();
   const esAdministrador = usuarioActual()?.rol === 'administrador';
@@ -169,7 +175,9 @@ export default function Suscripciones() {
       title: 'Estado',
       dataIndex: 'estado',
       key: 'estado',
-      render: (valor) => <span className={`estado estado-${valor}`}>{legible(valor)}</span>,
+      render: (_, periodo) => (
+        <span className={`estado estado-${periodo.estado}`}>{SITUACION[periodo.situacion] ?? legible(periodo.estado)}</span>
+      ),
     },
     { title: 'Referencia de pago', dataIndex: 'referencia', key: 'referencia', render: (valor) => valor ?? '—' },
     {

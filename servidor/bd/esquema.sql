@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
   clave_hash VARCHAR(100) NOT NULL,
   -- superadministrador es la cuenta del proveedor del servicio; va al final de la lista
   -- porque mysql guarda el enum por índice y agregar en el medio renumera las filas
-  rol VARCHAR(30) NOT NULL DEFAULT 'comercial', -- referencia logica a roles.clave; no es ENUM para que el proveedor pueda crear roles propios
+  rol VARCHAR(30) NOT NULL DEFAULT 'comercial', -- clave foranea a roles.clave; la agrega migrar.js, una vez sembrada esa tabla
   telefono VARCHAR(30) NULL, -- celular; también sirve para el 2fa por sms
   direccion VARCHAR(150) NULL,
   -- puede ser 'app', 'email' o 'sms'
@@ -197,6 +197,9 @@ CREATE TABLE IF NOT EXISTS suscripciones (
   -- cancelar no corta el servicio: no hay reembolso, así que el período contratado se
   -- respeta hasta su fecha de fin y lo único que se pierde es la renovación
   cancelada_en DATETIME NULL,
+  -- por qué se cerró: vencimiento (llegó a su fecha), baja (la cortó el proveedor)
+  -- o cambio_de_plan (la reemplazó otro plan). nulo mientras sigue activa
+  motivo_cierre VARCHAR(20) NULL,
   institucion_id INT UNSIGNED NULL,
   creado_por INT UNSIGNED NULL,
   creado_en DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -240,7 +243,6 @@ CREATE TABLE IF NOT EXISTS planes (
   incluye TEXT NULL, -- una línea por punto
   max_usuarios INT UNSIGNED NULL, -- cuántos usuarios internos admite; nulo es sin tope
   max_aliados INT UNSIGNED NULL, -- cuántos aliados activos admite; nulo es sin tope
-  modulos_incluidos TEXT NULL, -- una clave de módulo por línea; vacío es todos
   imagen VARCHAR(200) NULL, -- archivo subido, dentro de subidas/planes
   activo TINYINT(1) NOT NULL DEFAULT 1,
   orden TINYINT UNSIGNED NOT NULL DEFAULT 0,

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Navigate, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { Button } from 'antd';
 import { cerrarSesion, llamarApi, usuarioActual } from '../servicios/api.js';
+import { guardarNombresDeRol } from '../servicios/nombresRol.js';
 import MenuUsuario from './MenuUsuario.jsx';
 import MenuLateral, { MODULO_POR_RUTA, NOMBRE_MODULO } from './MenuLateral.jsx';
 import AvisoSinAcceso from './AvisoSinAcceso.jsx';
@@ -24,7 +25,6 @@ export default function Diseno() {
   const usuario = usuarioActual();
   const ubicacion = useLocation();
   const [modulos, setModulos] = useState(null);
-  const [bloqueados, setBloqueados] = useState([]);
   const [plan, setPlan] = useState(null);
   const [correoActivo, setCorreoActivo] = useState(false);
   const [badges, setBadges] = useState({});
@@ -42,7 +42,7 @@ export default function Diseno() {
       llamarApi('/api/autenticacion/perfil')
         .then((respuesta) => {
           setModulos(respuesta.modulos);
-          setBloqueados(respuesta.modulosBloqueados ?? []);
+          guardarNombresDeRol(respuesta.roles);
           setPlan(respuesta.plan ?? null);
           setCorreoActivo(Boolean(respuesta.correoActivo));
         })
@@ -82,13 +82,10 @@ export default function Diseno() {
 
   if (raiz === '/panel' && inicio !== '/panel') return <Navigate to={inicio} replace />;
 
-  const motivo = !moduloPedido ? null
-    : !puedeVer(moduloPedido) ? 'rol'
-    : bloqueados.includes(moduloPedido) ? 'plan'
-    : null;
+  const motivo = !moduloPedido || puedeVer(moduloPedido) ? null : 'rol';
 
   if (motivo) {
-    const destino = motivo === 'plan' && modulos.includes('suscripcion') ? '/suscripcion' : inicio;
+    const destino = inicio;
     const seRepite = destino === ubicacion.pathname || destino === raiz;
     if (!seRepite) {
       return <Navigate to={destino} replace state={{ sinAcceso: { motivo, plan: plan?.texto, modulo: NOMBRE_MODULO[moduloPedido] } }} />;
@@ -114,7 +111,7 @@ export default function Diseno() {
           <span className="marca-logo"><Icono nombre="marca" tam={24} /></span>
           <span>{esProveedor ? 'Panel del proveedor' : institucion.nombre}</span>
         </div>
-        <MenuLateral puedeVer={puedeVer} bloqueados={bloqueados} plan={plan} badges={badges} />
+        <MenuLateral puedeVer={puedeVer} plan={plan} badges={badges} />
       </aside>
 
       <div className="principal">
@@ -143,7 +140,7 @@ export default function Diseno() {
         </header>
         <main className="contenido">
           <AvisoSinAcceso />
-          <Outlet context={{ usuario, modulos, bloqueados, inicio, correoActivo }} />
+          <Outlet context={{ usuario, modulos, inicio, correoActivo }} />
         </main>
       </div>
     </div>

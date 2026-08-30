@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from 'antd';
 import { salir } from './Diseno.jsx';
-import { legible } from '../servicios/formato.js';
+
+import { nombreDeRol } from '../servicios/nombresRol.js';
 
 const ESTILO_ENLACE = { textAlign: 'left' };
 
@@ -44,7 +45,7 @@ export default function MenuUsuario({ usuario }) {
         <div className="menu-desplegable">
           <div className="menu-cabecera">
             <strong>{usuario?.nombre}</strong>
-            <span className="rol-chip">{legible(usuario?.rol)}</span>
+            <span className="rol-chip">{nombreDeRol(usuario?.rol)}</span>
           </div>
 
           <div className="menu-seccion">

@@ -68,12 +68,12 @@ export default function Solicitudes() {
   if (!datos) return <p className="mensaje-centrado">Cargando…</p>;
 
   return (
-    <section className="panel">
-      <header className="cabecera-panel">
+    <>
+      <header className="encabezado-pagina">
         <h2>Solicitudes de contacto</h2>
-        <p className="nota">{contar(datos.length, 'solicitud', 'solicitudes')} en la vista actual.</p>
       </header>
 
+      <section className="panel">
       <div className="filtros">
         <Select
           value={filtros.estado}
@@ -100,6 +100,7 @@ export default function Solicitudes() {
           alGuardar={() => { setAbierta(null); cargar(); }}
         />
       )}
-    </section>
+      </section>
+    </>
   );
 }

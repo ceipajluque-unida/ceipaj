@@ -115,8 +115,9 @@ export async function aplicarReduccion(claveDestino, usuario, ip) {
   try {
     await conexion.beginTransaction();
     await conexion.query(
-      'UPDATE suscripciones SET estado = ?, fecha_fin = NOW() WHERE id = ? AND institucion_id = ?',
-      [ESTADOS_SUSCRIPCION.VENCIDA, vigente.id, institucionId]
+      `UPDATE suscripciones SET estado = ?, fecha_fin = NOW(), motivo_cierre = 'cambio_de_plan'
+        WHERE id = ? AND institucion_id = ?`,
+      [ESTADOS_SUSCRIPCION.CANCELADA, vigente.id, institucionId]
     );
     await conexion.query(
       `INSERT INTO suscripciones (institucion_id, plan, estado, monto, fecha_inicio, fecha_fin, creado_por)
@@ -141,17 +142,38 @@ export async function aplicarReduccion(claveDestino, usuario, ip) {
   return { plan: cambio.plan, dias: cambio.diasQueCubre, credito: cambio.credito };
 }
 
+// varios periodos pueden estar activos a la vez (renovaciones encadenadas), pero
+// solo uno rige: el que cubre hoy y llega mas lejos. decirles a todos "Activa"
+// confunde, asi que cada uno informa su situacion real.
+function conSituacion(filas) {
+  const ahora = Date.now();
+  const enVigencia = filas.filter((f) => f.estado === ESTADOS_SUSCRIPCION.ACTIVA
+    && new Date(f.fecha_inicio).getTime() <= ahora && new Date(f.fecha_fin).getTime() > ahora);
+  const rige = enVigencia.sort((a, b) => new Date(b.fecha_fin) - new Date(a.fecha_fin))[0];
+
+  return filas.map((f) => {
+    // el motivo manda: las que se cerraron antes de existir esta columna quedaron
+    // como vencidas aunque hubieran sido una baja, y el motivo las distingue
+    if (f.motivo_cierre === 'cambio_de_plan') return { ...f, situacion: 'reemplazada' };
+    if (f.motivo_cierre === 'baja') return { ...f, situacion: 'dada_de_baja' };
+    if (f.estado !== ESTADOS_SUSCRIPCION.ACTIVA) return { ...f, situacion: 'vencida' };
+    if (new Date(f.fecha_inicio).getTime() > ahora) return { ...f, situacion: 'programada' };
+    if (new Date(f.fecha_fin).getTime() <= ahora) return { ...f, situacion: 'vencida' };
+    return { ...f, situacion: rige && rige.id === f.id ? 'en_curso' : 'solapada' };
+  });
+}
+
 export async function listarSuscripciones() {
   const [filas] = await bd.query(
-    `SELECT s.id, s.plan, s.estado, s.monto, s.fecha_inicio, s.fecha_fin, p.referencia,
-            p.estado AS estado_pago
+    `SELECT s.id, s.plan, s.estado, s.monto, s.fecha_inicio, s.fecha_fin,
+            s.cancelada_en, s.motivo_cierre, p.referencia, p.estado AS estado_pago
        FROM suscripciones s
        LEFT JOIN pagos p ON p.id = s.pago_id
       WHERE s.institucion_id = ?
       ORDER BY s.fecha_inicio DESC LIMIT 50`,
     [institucionDelPedido()]
   );
-  return filas;
+  return conSituacion(filas);
 }
 
 export async function activarPorPago({ pagoId, institucionId, plan, monto, usuarioId }, ip, conexion = bd) {
@@ -176,8 +198,9 @@ export async function activarPorPago({ pagoId, institucionId, plan, monto, usuar
     const [[planViejo]] = await conexion.query('SELECT precio FROM planes WHERE clave = ?', [enCurso.plan]);
     if (Number(planNuevo?.precio ?? 0) > Number(planViejo?.precio ?? 0)) {
       await conexion.query(
-        'UPDATE suscripciones SET estado = ?, fecha_fin = NOW() WHERE id = ?',
-        [ESTADOS_SUSCRIPCION.VENCIDA, enCurso.id]
+        `UPDATE suscripciones SET estado = ?, fecha_fin = NOW(), motivo_cierre = 'cambio_de_plan'
+          WHERE id = ?`,
+        [ESTADOS_SUSCRIPCION.CANCELADA, enCurso.id]
       );
       desde = new Date();
     }
@@ -217,9 +240,10 @@ export async function darDeBajaAhora(id, motivo, usuario, ip) {
 
   const institucionId = institucionDelPedido();
   const [resultado] = await bd.query(
-    `UPDATE suscripciones SET estado = ?, fecha_fin = NOW(), cancelada_en = COALESCE(cancelada_en, NOW())
+    `UPDATE suscripciones SET estado = ?, fecha_fin = NOW(), cancelada_en = COALESCE(cancelada_en, NOW()),
+            motivo_cierre = 'baja'
       WHERE id = ? AND institucion_id = ? AND estado = ?`,
-    [ESTADOS_SUSCRIPCION.VENCIDA, id, institucionId, ESTADOS_SUSCRIPCION.ACTIVA]
+    [ESTADOS_SUSCRIPCION.CANCELADA, id, institucionId, ESTADOS_SUSCRIPCION.ACTIVA]
   );
   if (resultado.affectedRows === 0) throw new ErrorVisible('La suscripción no existe o ya no estaba activa.', 404);
 
@@ -232,7 +256,8 @@ export async function darDeBajaAhora(id, motivo, usuario, ip) {
 
 export async function marcarVencidas() {
   const [resultado] = await bd.query(
-    'UPDATE suscripciones SET estado = ? WHERE estado = ? AND fecha_fin <= NOW()',
+    `UPDATE suscripciones SET estado = ?, motivo_cierre = 'vencimiento'
+      WHERE estado = ? AND fecha_fin <= NOW()`,
     [ESTADOS_SUSCRIPCION.VENCIDA, ESTADOS_SUSCRIPCION.ACTIVA]
   );
   if (resultado.affectedRows > 0) limpiarCachePlan();

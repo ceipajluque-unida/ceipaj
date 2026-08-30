@@ -16,7 +16,6 @@ function armar(fila) {
     incluye: aLista(fila.incluye),
     maxUsuarios: fila.max_usuarios === null ? null : Number(fila.max_usuarios),
     maxAliados: fila.max_aliados === null ? null : Number(fila.max_aliados),
-    modulos: aLista(fila.modulos_incluidos),
     imagen: fila.imagen,
     activo: Boolean(fila.activo),
   };
@@ -60,11 +59,11 @@ export async function crear(datos, usuario, ip) {
   if (existe.length > 0) clave = `${clave}-${Date.now().toString().slice(-4)}`;
 
   const [resultado] = await bd.query(
-    `INSERT INTO planes (clave, titulo, descripcion, precio, meses, incluye, max_usuarios, max_aliados, modulos_incluidos, orden)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, (SELECT COALESCE(MAX(o.orden), 0) + 1 FROM (SELECT orden FROM planes) o))`,
+    `INSERT INTO planes (clave, titulo, descripcion, precio, meses, incluye, max_usuarios, max_aliados, orden)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, (SELECT COALESCE(MAX(o.orden), 0) + 1 FROM (SELECT orden FROM planes) o))`,
     [clave, titulo.slice(0, 80), String(datos?.descripcion ?? '').slice(0, 300) || null,
      precio, Math.max(1, Number(datos?.meses) || 1), (datos?.incluye ?? []).join('\n'),
-     tope(datos?.maxUsuarios, 'usuarios'), tope(datos?.maxAliados, 'aliados'), (datos?.modulos ?? []).join('\n')]
+     tope(datos?.maxUsuarios, 'usuarios'), tope(datos?.maxAliados, 'aliados')]
   );
   await registrarAuditoria({ usuarioId: usuario.id, accion: 'plan_creado', detalle: titulo, ip });
   return { id: resultado.insertId, valor: clave };
@@ -85,10 +84,10 @@ export async function editar(id, datos, usuario, ip) {
 
   const [resultado] = await bd.query(
     `UPDATE planes SET titulo = ?, descripcion = ?, precio = ?, meses = ?, incluye = ?,
-            max_usuarios = ?, max_aliados = ?, modulos_incluidos = ?, activo = ? WHERE id = ?`,
+            max_usuarios = ?, max_aliados = ?, activo = ? WHERE id = ?`,
     [titulo.slice(0, 80), String(datos?.descripcion ?? '').slice(0, 300) || null, precio,
      Math.max(1, Number(datos?.meses) || 1), (datos?.incluye ?? []).join('\n'),
-     tope(datos?.maxUsuarios, 'usuarios'), tope(datos?.maxAliados, 'aliados'), (datos?.modulos ?? []).join('\n'),
+     tope(datos?.maxUsuarios, 'usuarios'), tope(datos?.maxAliados, 'aliados'),
      datos?.activo === false ? 0 : 1, id]
   );
   if (resultado.affectedRows === 0) throw new ErrorVisible('El plan no existe.', 404);

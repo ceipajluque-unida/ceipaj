@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Button, Checkbox, Input, Table, Tag } from 'antd';
+import { Button, Checkbox, Input, Table } from 'antd';
 import { llamarApi } from '../servicios/api.js';
 import { avisarError, toast, confirmar } from '../servicios/avisos.js';
 import { nombreModulo } from '../servicios/formato.js';
@@ -89,23 +89,6 @@ export default function Roles() {
     }
   }
 
-  async function restaurar() {
-    const ok = await confirmar({
-      titulo: 'Volver a los accesos de fábrica?',
-      texto: 'Los cinco roles que trae el sistema vuelven a los módulos con los que vienen. '
-        + 'Los roles que hayas creado vos no se tocan.',
-      confirmar: 'Sí, restaurar',
-    });
-    if (!ok) return;
-    try {
-      await llamarApi('/api/roles/restaurar', { metodo: 'POST' });
-      olvidarRoles();
-      toast('Los roles del sistema volvieron a sus accesos de fábrica.');
-      await cargar();
-    } catch (excepcion) {
-      avisarError(excepcion.message);
-    }
-  }
 
   const columnas = [
     {
@@ -119,17 +102,9 @@ export default function Roles() {
         </span>
       ),
     },
-    {
-      title: 'Origen',
-      dataIndex: 'delSistema',
-      width: 130,
-      render: (delSistema, rol) => (rol.bloqueado
-        ? <Tag color="red">Del sistema, fijo</Tag>
-        : delSistema ? <Tag>Del sistema</Tag> : <Tag color="blue">Propio</Tag>),
-    },
     { title: 'Cuentas activas', dataIndex: 'usuarios', align: 'right', width: 130 },
     {
-      title: 'Módulos a los que entra',
+      title: 'Módulos habilitados',
       dataIndex: 'modulos',
       render: (lista) => (lista.length === 0
         ? <span className="nota">Sin accesos</span>
@@ -148,23 +123,17 @@ export default function Roles() {
   ];
 
   return (
-    <section className="panel">
-      <header className="cabecera-panel">
-        <div>
-          <h2>Roles del sistema</h2>
-          <p className="nota">
-            Definen a qué módulos entra cada persona. Valen para todas las instituciones.
-          </p>
-        </div>
-        <div className="acciones">
-          <Button onClick={restaurar}>Volver a los accesos de fábrica</Button>
-          <Button type="primary" onClick={abrirNuevo}>+ Nuevo rol</Button>
-        </div>
+    <>
+      <header className="encabezado-pagina">
+        <h2>Roles del sistema</h2>
+        <Button type="primary" className="boton-crear" onClick={abrirNuevo}>+ Nuevo rol</Button>
       </header>
 
-      {cargando
-        ? <p className="mensaje-centrado">Cargando…</p>
-        : <Table rowKey="clave" columns={columnas} dataSource={roles} size="small" pagination={false} />}
+      <section className="panel">
+        {cargando
+          ? <p className="mensaje-centrado">Cargando…</p>
+          : <Table rowKey="clave" columns={columnas} dataSource={roles} size="small" pagination={false} />}
+      </section>
 
       <Modal abierto={abierto} titulo={editando ? `Editar ${editando.titulo}` : 'Nuevo rol'} alCerrar={() => setAbierto(false)}>
         <form onSubmit={guardar} className="formulario">
@@ -190,7 +159,7 @@ export default function Roles() {
             </label>
           )}
           <fieldset className="grupo-casillas">
-            <legend>Módulos a los que puede entrar quien tenga este rol</legend>
+            <legend>Módulos habilitados para este rol</legend>
             <div className="casillas">
             {modulos.map((modulo) => (
               <Checkbox
@@ -217,6 +186,6 @@ export default function Roles() {
           </div>
         </form>
       </Modal>
-    </section>
+    </>
   );
 }

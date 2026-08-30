@@ -23,7 +23,6 @@ import { rutasResumen } from '../modulos/resumen/rutas.js';
 import { rutasAuditoria } from '../modulos/auditoria/rutas.js';
 import { iniciarSincronizacionAutomatica } from '../modulos/conversion/servicio.js';
 import { iniciarControlDeVencimientos } from '../modulos/suscripciones/servicio.js';
-import { exigirPlan } from './middleware/exigirPlan.js';
 import * as ajustesSistema from './ajustesSistema.js';
 
 const aplicacion = express();
@@ -56,13 +55,13 @@ aplicacion.get('/api/salud', (req, res) => res.json({ estado: 'ok' }));
 aplicacion.use('/api/autenticacion', rutasAutenticacion);
 aplicacion.use('/api/usuarios', rutasUsuarios);
 
-aplicacion.use('/api/leads', exigirPlan('leads'), rutasLeads);
-aplicacion.use('/api/aliados', exigirPlan('aliados'), rutasAliados);
-aplicacion.use('/api/portal', exigirPlan('portal'), rutasPortal);
-aplicacion.use('/api/comisiones', exigirPlan('comisiones'), rutasComisiones);
-aplicacion.use('/api/conversion', exigirPlan('conversion'), rutasConversion);
-aplicacion.use('/api/seguimiento', exigirPlan('seguimiento'), rutasSeguimiento);
-aplicacion.use('/api/reportes', exigirPlan('reportes'), rutasReportes);
+aplicacion.use('/api/leads', rutasLeads);
+aplicacion.use('/api/aliados', rutasAliados);
+aplicacion.use('/api/portal', rutasPortal);
+aplicacion.use('/api/comisiones', rutasComisiones);
+aplicacion.use('/api/conversion', rutasConversion);
+aplicacion.use('/api/seguimiento', rutasSeguimiento);
+aplicacion.use('/api/reportes', rutasReportes);
 aplicacion.use('/api/pagos', rutasPagos);
 aplicacion.use('/api/suscripciones', rutasSuscripciones);
 aplicacion.use('/api/planes', rutasPlanes);

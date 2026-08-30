@@ -1,14 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Button, Table, Tabs } from 'antd';
+import { Button, Table } from 'antd';
 import { llamarApi } from '../servicios/api.js';
 import { confirmar, avisarError, toast, mostrarClave } from '../servicios/avisos.js';
 import { fecha, legible } from '../servicios/formato.js';
 import FormularioInstitucion from '../componentes/FormularioInstitucion.jsx';
 import AltaAdministrador from '../componentes/AltaAdministrador.jsx';
-import RolesInstitucion from '../componentes/RolesInstitucion.jsx';
-import UsuariosInstitucion from '../componentes/UsuariosInstitucion.jsx';
-import AliadosInstitucion from '../componentes/AliadosInstitucion.jsx';
-import SuscripcionInstitucion from '../componentes/SuscripcionInstitucion.jsx';
+import DetalleInstitucion from '../componentes/DetalleInstitucion.jsx';
 
 const FORMULARIO_VACIO = { nombre: '', ciudad: '', correoContacto: '', telefono: '', direccion: '' };
 
@@ -164,39 +161,11 @@ export default function Instituciones() {
               scroll={{ x: 'max-content' }}
               expandable={{
                 expandedRowRender: (institucion) => (
-                  <div className="detalle-institucion">
-                    <Tabs
-                      size="small"
-                      destroyOnHidden={false}
-                      items={[
-                        {
-                          key: 'roles',
-                          label: 'Roles y accesos',
-                          children: <RolesInstitucion institucionId={institucion.id} refresco={version} />,
-                        },
-                        {
-                          key: 'usuarios',
-                          label: 'Usuarios',
-                          children: (
-                            <UsuariosInstitucion
-                              institucion={institucion}
-                              alCambiar={() => setVersion((anterior) => anterior + 1)}
-                            />
-                          ),
-                        },
-                        {
-                          key: 'aliados',
-                          label: 'Aliados',
-                          children: <AliadosInstitucion institucion={institucion} />,
-                        },
-                        {
-                          key: 'suscripcion',
-                          label: 'Suscripción',
-                          children: <SuscripcionInstitucion institucionId={institucion.id} refresco={version} />,
-                        },
-                      ]}
-                    />
-                  </div>
+                  <DetalleInstitucion
+                    institucion={institucion}
+                    version={version}
+                    alCambiar={() => setVersion((anterior) => anterior + 1)}
+                  />
                 ),
                 rowExpandable: () => true,
               }}

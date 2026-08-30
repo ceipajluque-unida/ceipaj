@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Button, Table, Tabs } from 'antd';
+import { Button, Table } from 'antd';
 import { llamarApi } from '../servicios/api.js';
 import { descargarArchivo } from '../servicios/descargas.js';
 import { avisarError, toast } from '../servicios/avisos.js';
@@ -37,6 +37,7 @@ export default function Plataforma() {
   const [datos, setDatos] = useState(null);
   const [momento, setMomento] = useState(null);
   const [bajando, setBajando] = useState(null);
+  const [seccion, setSeccion] = useState(0);
 
   useEffect(() => {
     llamarApi('/api/plataforma')
@@ -85,7 +86,7 @@ export default function Plataforma() {
     { title: 'Recaudado', dataIndex: 'recaudado', render: guaranies, align: 'right' },
   ];
 
-  const pestanas = [
+  const secciones = [
     { key: 'resumen', label: 'Resumen general', children: <CifrasPlataforma resumen={resumen} /> },
     {
       key: 'planes',
@@ -102,7 +103,7 @@ export default function Plataforma() {
     },
     {
       key: 'instituciones',
-      label: `Instituciones (${instituciones.length})`,
+      label: `Detalle por institución (${instituciones.length})`,
       children: <InstitucionesPlataforma instituciones={instituciones} />,
     },
     {
@@ -146,17 +147,31 @@ export default function Plataforma() {
   ];
 
   return (
-    <section className="panel">
-      <header className="cabecera-panel">
-        <div>
-          <h2>Estadísticas de la plataforma</h2>
-          <p className="nota">
-            Cómo viene el negocio, sumando las {contar(resumen.instituciones, 'institución', 'instituciones')}.
-            Consultado el {fechaHora(momento)}.
-          </p>
-        </div>
+    <>
+      <header className="encabezado-pagina">
+        <h2>Estadísticas de la plataforma</h2>
+        <span className="nota">Consultado el {fechaHora(momento)}</span>
       </header>
-      <Tabs items={pestanas} />
-    </section>
+
+      <div className="config">
+        <nav className="config-secciones" aria-label="Secciones de las estadísticas">
+          {secciones.map((item, indice) => (
+            <Button
+              key={item.key}
+              type="text"
+              className={indice === seccion ? 'activa' : ''}
+              onClick={() => setSeccion(indice)}
+            >
+              {item.label}
+            </Button>
+          ))}
+        </nav>
+
+        <section className="panel">
+          <h3>{secciones[seccion].label}</h3>
+          {secciones[seccion].children}
+        </section>
+      </div>
+    </>
   );
 }

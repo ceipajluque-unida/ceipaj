@@ -20,7 +20,7 @@ const FORMATOS = [
 ];
 
 export default function Reportes() {
-  const { modulos = [], bloqueados = [] } = useOutletContext() ?? {};
+  const { modulos = [] } = useOutletContext() ?? {};
   const [bajando, setBajando] = useState(null);
 
   async function descargar(tabla, formato) {
@@ -70,7 +70,7 @@ export default function Reportes() {
         <div className="tabla-envoltura">
           <Table
             columns={columnasDescargas}
-            dataSource={TABLAS.filter((tabla) => modulos.includes(tabla.modulo) && !bloqueados.includes(tabla.modulo))}
+            dataSource={TABLAS.filter((tabla) => modulos.includes(tabla.modulo))}
             rowKey="clave"
             size="small"
             pagination={false}

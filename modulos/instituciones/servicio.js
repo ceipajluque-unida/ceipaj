@@ -7,7 +7,7 @@ import { correoConfigurado } from '../../servidor/correo.js';
 import { conInstitucion } from '../../servidor/contexto.js';
 import { listar as listarRoles } from '../roles/servicio.js';
 import { ROLES } from '../../configuracion/ajustes.js';
-import { planEnVigor, moduloIncluido } from '../suscripciones/plan.js';
+import { planEnVigor } from '../suscripciones/plan.js';
 
 const CAMPOS = 'id, nombre, ciudad, correo_contacto, telefono, direccion, activo, creado_en';
 
@@ -113,7 +113,7 @@ export async function detalleRoles(id) {
           titulo: r.titulo,
           usuarios: Number(fila?.total ?? 0),
           activos: Number(fila?.activos ?? 0),
-          modulos: r.modulos.filter((modulo) => moduloIncluido(plan, modulo)),
+          modulos: r.modulos,
         };
       }),
   };

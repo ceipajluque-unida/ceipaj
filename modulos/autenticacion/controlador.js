@@ -2,7 +2,7 @@ import QRCode from 'qrcode';
 import * as servicio from './servicio.js';
 import { bd } from '../../servidor/bd/conexion.js';
 import { validarCorreo, validarTelefono } from '../../comun/validar.js';
-import { modulosDeRol } from '../roles/servicio.js';
+import { modulosDeRol, nombresDeRol } from '../roles/servicio.js';
 import { METODOS_2FA, INSTITUCION, PLATAFORMA, ROLES } from '../../configuracion/ajustes.js';
 import * as ajustes from '../../servidor/ajustesSistema.js';
 import * as recuperacion from './recuperacion.js';
@@ -11,7 +11,7 @@ import * as politica from '../../servidor/politicaClave.js';
 import { ErrorVisible } from '../../servidor/errores.js';
 import * as captcha from '../../servidor/recaptcha.js';
 import { correoConfigurado } from '../../servidor/correo.js';
-import { planEnVigor, moduloIncluido } from '../suscripciones/plan.js';
+import { planEnVigor } from '../suscripciones/plan.js';
 
 export async function estado(req, res) {
   res.json({
@@ -124,12 +124,15 @@ export async function quitar2fa(req, res) {
 export async function perfil(req, res) {
   const [[extra]] = await bd.query('SELECT metodo_2fa, telefono, direccion, sin_2fa FROM usuarios WHERE id = ?', [req.usuario.id]);
   const modulos = await modulosDeRol(req.usuario.rol);
+  // los nombres de los roles viven en la base y el proveedor los puede
+  // cambiar, asi que la interfaz no los puede tener escritos
+  const roles = await nombresDeRol();
 
   const plan = await planEnVigor();
   res.json({
     usuario: { ...req.usuario, metodo_2fa: extra?.metodo_2fa ?? 'app', telefono: extra?.telefono ?? '', direccion: extra?.direccion ?? '' },
     modulos,
-    modulosBloqueados: modulos.filter((clave) => !moduloIncluido(plan, clave)),
+    roles,
     plan: { clave: plan.clave, texto: plan.texto, vigente: plan.vigente, fechaFin: plan.fechaFin, diasRestantes: plan.diasRestantes },
     // al proveedor solo se le ofrece la app: el correo y el sms son ajustes
     // del colegio y su cuenta no pertenece a ninguna institucion
