@@ -19,12 +19,13 @@ De acuerdo a los módulos del sistema, podrán recopilarse los siguientes datos:
 - De los aliados institucionales: nombre, datos de contacto, credenciales de acceso e información de desempeño (leads registrados, puntaje acumulado, comisiones generadas).
 - De los usuarios internos: nombre, usuario y contraseña, almacenada mediante mecanismos seguros de hash.
 - Registros de auditoría de acceso y de acciones administrativas críticas.
+- De quien completa el formulario de la página pública para pedir información sobre la contratación del sistema: nombre, institución que representa, correo electrónico, teléfono, ciudad, el plan que le interesa, el mensaje que escriba y la dirección de origen de la conexión, que se conserva como constancia de quién envió la solicitud.
 
 El sistema no recolecta datos biométricos ni categorías de datos especialmente sensibles.
 
 3. Finalidad del tratamiento
 
-Los datos personales se tratan exclusivamente para gestionar el registro e identificación de usuarios, permitir el acceso a las funcionalidades del sistema según el rol correspondiente, dar seguimiento al proceso de captación y conversión de leads, calcular y administrar las comisiones de los aliados institucionales, generar indicadores y reportes institucionales, y mantener los registros de auditoría necesarios para garantizar la seguridad e integridad del sistema. Los datos no serán utilizados para finalidades incompatibles con las aquí establecidas.
+Los datos personales se tratan exclusivamente para gestionar el registro e identificación de usuarios, permitir el acceso a las funcionalidades del sistema según el rol correspondiente, dar seguimiento al proceso de captación y conversión de leads, calcular y administrar las comisiones de los aliados institucionales, generar indicadores y reportes institucionales, y mantener los registros de auditoría necesarios para garantizar la seguridad e integridad del sistema. Los datos de quien completa el formulario de la página pública se tratan únicamente para responder a esa consulta y avanzar, si corresponde, con la contratación del servicio. Los datos no serán utilizados para finalidades incompatibles con las aquí establecidas.
 
 4. Base jurídica del tratamiento
 

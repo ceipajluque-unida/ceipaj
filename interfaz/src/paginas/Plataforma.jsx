@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Table, Tag } from 'antd';
 import { llamarApi } from '../servicios/api.js';
 import { avisarError } from '../servicios/avisos.js';
-import { fecha, guaranies, legible } from '../servicios/formato.js';
+import { contar, fecha, guaranies, legible } from '../servicios/formato.js';
 
 const cifra = (etiqueta, valor, detalle) => (
   <div className="tarjeta-cifra" key={etiqueta}>
@@ -67,10 +67,10 @@ export default function Plataforma() {
           <p className="nota">Las cifras salen de todas las instituciones juntas.</p>
         </header>
         <div className="cifras">
-          {cifra('Instituciones', resumen.instituciones, `${resumen.activas} activas`)}
-          {cifra('Usuarios internos', resumen.usuarios, `${resumen.aliados} aliados`)}
-          {cifra('Con plan vigente', resumen.conPlanVigente, `de ${resumen.instituciones} instituciones`)}
-          {cifra('Recaudado', guaranies(resumen.recaudado), `${resumen.pagos} pagos acreditados`)}
+          {cifra('Instituciones', resumen.instituciones, contar(resumen.activas, 'activa', 'activas'))}
+          {cifra('Usuarios internos', resumen.usuarios, contar(resumen.aliados, 'aliado', 'aliados'))}
+          {cifra('Con plan vigente', resumen.conPlanVigente, 'de ' + contar(resumen.instituciones, 'institución', 'instituciones'))}
+          {cifra('Recaudado', guaranies(resumen.recaudado), contar(resumen.pagos, 'pago acreditado', 'pagos acreditados'))}
           {cifra('Cobros pendientes', resumen.pagosPendientes)}
           {cifra('Solicitudes sin atender', resumen.solicitudesNuevas)}
         </div>
