@@ -41,7 +41,7 @@ function situacion(fila) {
     <span>
       <Estado>Nunca contrató</Estado>
       <br />
-      <small className="nota">sigue en el plan Básico</small>
+      <small className="nota">sigue en el plan Free</small>
     </span>
   );
 }

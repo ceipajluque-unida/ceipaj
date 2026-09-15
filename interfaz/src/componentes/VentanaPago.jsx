@@ -113,7 +113,7 @@ export default function VentanaPago({ cobro, alAcreditar, alCerrar }) {
         <Alert
           type="error"
           showIcon
-          message="No llegó la confirmación. Si ya pagaste, usá Conciliar pagos en el historial."
+          message="No llegó la confirmación. Si ya pagaste, usá Actualizar estados en la pantalla Pagos."
         />
       )}
     </section>

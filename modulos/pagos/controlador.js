@@ -50,7 +50,7 @@ export async function pagarPlan(req, res) {
   const cambio = await calcularCambio(elegido.valor);
   if (cambio.tipo === 'no_permitido') throw new ErrorVisible(cambio.motivo, 409);
   if (cambio.aPagar <= 0) {
-    throw new ErrorVisible('Ese cambio no lleva pago: usá el botón de bajar de plan.', 409);
+    throw new ErrorVisible('Ese cambio no lleva ningún pago, así que no hay nada que cobrar.', 409);
   }
   await validarMedio(medio, cambio.aPagar);
   const detalle = cambio.tipo === 'mejora'

@@ -10,6 +10,13 @@ export const ETIQUETA_CAMBIO = {
   no_permitido: 'No disponible con tu plan',
 };
 
+// para las preguntas de confirmación: la etiqueta del botón ya dice "plan"
+export const TITULO_CAMBIO = {
+  alta: 'Contratar el plan',
+  renovacion: 'Renovar el plan',
+  mejora: 'Mejorar al plan',
+};
+
 function textoPeriodo(meses) {
   if (meses === 1) return 'por mes';
   if (meses === 12) return 'por año';

@@ -22,7 +22,7 @@ export default function CifrasPlataforma({ resumen }) {
 
         {cifra('Con plan pago vigente', `${r.conPlanVigente} de ${r.instituciones}`,
           r.sinPlanPago > 0
-            ? `${contar(r.sinPlanPago, 'institución sigue', 'instituciones siguen')} en el plan Básico`
+            ? `${contar(r.sinPlanPago, 'institución sigue', 'instituciones siguen')} en el plan Free`
             : 'todas están al día')}
 
         {cifra('Ingreso mensual aproximado', guaranies(r.ingresoMensual),

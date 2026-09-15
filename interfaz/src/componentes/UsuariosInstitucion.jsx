@@ -63,7 +63,7 @@ export default function UsuariosInstitucion({ institucion, alCambiar }) {
 
   async function restablecer(usuario) {
     const ok = await confirmar({
-      titulo: correoActivo ? 'Enviar la clave temporal por correo?' : 'Restablecer la clave?',
+      titulo: correoActivo ? '¿Enviar la clave temporal por correo?' : '¿Restablecer la clave?',
       texto: correoActivo
         ? `Se genera una clave temporal para ${usuario.nombre} y se envía a ${usuario.correo}. La anterior deja de servir.`
         : `Se genera una clave temporal para ${usuario.nombre} y se muestra en pantalla, porque no hay correo configurado. La anterior deja de servir.`,
@@ -84,7 +84,7 @@ export default function UsuariosInstitucion({ institucion, alCambiar }) {
   async function cambiarActivo(usuario) {
     const desactivar = Boolean(usuario.activo);
     const ok = await confirmar({
-      titulo: desactivar ? `Desactivar a ${usuario.nombre}?` : `Reactivar a ${usuario.nombre}?`,
+      titulo: desactivar ? `¿Desactivar a ${usuario.nombre}?` : `¿Reactivar a ${usuario.nombre}?`,
       texto: desactivar
         ? `${usuario.nombre} no va a poder entrar al sistema hasta que lo reactives. Su cuenta y su trabajo quedan como están.`
         : `${usuario.nombre} vuelve a poder entrar al sistema.`,

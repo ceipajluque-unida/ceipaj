@@ -8,7 +8,7 @@ import Modal from '../componentes/Modal.jsx';
 import VentanaPago from '../componentes/VentanaPago.jsx';
 import { abrirVentanaPago, llevarVentanaPagoA, cerrarVentanaPago } from '../servicios/ventanaPago.js';
 import { descargarArchivo } from '../servicios/descargas.js';
-import TarjetasPlanes, { ETIQUETA_CAMBIO } from '../componentes/TarjetasPlanes.jsx';
+import TarjetasPlanes, { TITULO_CAMBIO } from '../componentes/TarjetasPlanes.jsx';
 import Estado from '../componentes/Estado.jsx';
 import { situacionDe } from '../servicios/situaciones.js';
 
@@ -62,7 +62,7 @@ export default function Suscripciones() {
     if (medios.length === 1) {
       const unico = medios[0];
       const ok = await confirmar({
-        titulo: `¿${ETIQUETA_CAMBIO[cambio?.tipo] ?? 'Contratar'} plan ${plan.texto}?`,
+        titulo: `¿${TITULO_CAMBIO[cambio?.tipo] ?? 'Contratar el plan'} ${plan.texto}?`,
         texto: resumenDelPago(plan, cambio),
         confirmar: 'Sí, ir a pagar',
       });
@@ -250,7 +250,7 @@ export default function Suscripciones() {
         )}
       </section>
 
-      <Modal abierto={Boolean(planElegido)} titulo={`${ETIQUETA_CAMBIO[planElegido?.cambio?.tipo] ?? 'Contratar'} plan ${planElegido?.texto ?? ''}`} alCerrar={() => setPlanElegido(null)}>
+      <Modal abierto={Boolean(planElegido)} titulo={`${TITULO_CAMBIO[planElegido?.cambio?.tipo] ?? 'Contratar el plan'} ${planElegido?.texto ?? ''}`} alCerrar={() => setPlanElegido(null)}>
         <form onSubmit={pagarPlan}>
           <p className="ayuda">
             Vas a pagar <strong>{guaranies(planElegido?.cambio?.aPagar ?? planElegido?.precio ?? 0)}</strong>{' '}

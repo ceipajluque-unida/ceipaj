@@ -76,7 +76,7 @@ export default function Aliados() {
 
   async function reenviarAcceso(aliado) {
     const ok = await confirmar({
-      titulo: correoActivo ? 'Enviar el acceso por correo?' : 'Reenviar el acceso?',
+      titulo: correoActivo ? '¿Enviar el acceso por correo?' : '¿Reenviar el acceso?',
       texto: correoActivo
         ? `Se genera una clave temporal para ${aliado.nombre} y se envía a ${aliado.correo}. La anterior deja de servir.`
         : `Se genera una clave temporal para ${aliado.nombre} y se muestra en pantalla, porque no hay correo configurado. La anterior deja de servir.`,
@@ -96,7 +96,7 @@ export default function Aliados() {
   async function cambiarActivo(aliado) {
     const desactivar = aliado.activo;
     const ok = await confirmar({
-      titulo: desactivar ? 'Desactivar aliado?' : 'Activar aliado?',
+      titulo: desactivar ? '¿Desactivar aliado?' : '¿Activar aliado?',
       texto: desactivar ? `${aliado.nombre} no podrá ingresar a su portal hasta reactivarlo.` : `${aliado.nombre} podrá ingresar de nuevo a su portal.`,
       confirmar: desactivar ? 'Sí, desactivar' : 'Sí, activar',
       peligro: desactivar,

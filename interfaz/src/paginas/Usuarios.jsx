@@ -102,7 +102,7 @@ export default function Usuarios() {
   async function cambiarActivo(usuario) {
     const desactivar = usuario.activo;
     const ok = await confirmar({
-      titulo: desactivar ? 'Desactivar usuario?' : 'Activar usuario?',
+      titulo: desactivar ? '¿Desactivar usuario?' : '¿Activar usuario?',
       texto: desactivar ? `${usuario.nombre} no podrá volver a ingresar hasta reactivarlo.` : `${usuario.nombre} podrá ingresar de nuevo.`,
       confirmar: desactivar ? 'Sí, desactivar' : 'Sí, activar',
       peligro: desactivar,
@@ -117,7 +117,7 @@ export default function Usuarios() {
 
   async function restablecer(usuario) {
     const ok = await confirmar({
-      titulo: correoActivo ? 'Enviar la clave temporal por correo?' : 'Restablecer la clave?',
+      titulo: correoActivo ? '¿Enviar la clave temporal por correo?' : '¿Restablecer la clave?',
       texto: correoActivo
         ? `Se genera una clave temporal para ${usuario.nombre} y se envía a ${usuario.correo}. La anterior deja de servir.`
         : `Se genera una clave temporal para ${usuario.nombre} y se muestra en pantalla, porque no hay correo configurado. La anterior deja de servir.`,

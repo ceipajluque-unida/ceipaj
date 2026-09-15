@@ -70,7 +70,7 @@ export default function Instituciones() {
   async function cambiarActivo(institucion) {
     const desactivar = institucion.activo;
     const ok = await confirmar({
-      titulo: desactivar ? `Suspender ${institucion.nombre}?` : `Reactivar ${institucion.nombre}?`,
+      titulo: desactivar ? `¿Suspender ${institucion.nombre}?` : `¿Reactivar ${institucion.nombre}?`,
       texto: desactivar
         ? 'Sus usuarios no van a poder entrar hasta que la reactives. No se borra nada: toda su información queda donde está.'
         : 'Sus usuarios vuelven a poder ingresar.',

@@ -3,7 +3,9 @@ import { ConfigProvider, theme } from 'antd';
 import esES from 'antd/locale/es_ES';
 import { llamarApi } from '../servicios/api.js';
 
-const COLOR_POR_DEFECTO = '#35597e';
+// el primero de COLORES_SISTEMA: es lo que se pinta hasta que llega la
+// configuración de la institución, así que tiene que ser un color de la lista
+const COLOR_POR_DEFECTO = '#0958d9';
 const CONTRASTE_ALTO = '#0a3157';
 
 const Contexto = createContext(null);

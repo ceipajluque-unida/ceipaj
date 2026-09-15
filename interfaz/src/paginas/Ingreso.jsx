@@ -153,7 +153,7 @@ export default function Ingreso() {
             <Button type="primary" htmlType="submit" disabled={cargando || (captcha.activo && !captchaRespuesta)}>
               {cargando ? 'Verificando…' : 'Continuar'}
             </Button>
-            <p className="ayuda"><Link to="/recuperar">Olvidaste tu contraseña?</Link></p>
+            <p className="ayuda"><Link to="/recuperar">¿Olvidaste tu contraseña?</Link></p>
           </form>
         )}
 
@@ -180,7 +180,7 @@ export default function Ingreso() {
               <div className="alternativas-2fa">
                 {!verAlternativas ? (
                   <Button type="link" onClick={() => setVerAlternativas(true)}>
-                    {dos.metodo === 'app' ? 'No tenés acceso a tu app?' : 'No te llegó el código?'}
+                    {dos.metodo === 'app' ? '¿No tenés acceso a tu app?' : '¿No te llegó el código?'}
                   </Button>
                 ) : (
                   <div className="acciones">

@@ -1,4 +1,4 @@
-// las seis situaciones en que puede estar un período contratado, con el color
+// las siete situaciones en que puede estar un período contratado, con el color
 // que le corresponde. viven acá porque las leen dos pantallas: la del colegio y
 // la ficha de la institución que ve el proveedor. el rótulo se explica solo, sin
 // nota al pie que lo aclare.
