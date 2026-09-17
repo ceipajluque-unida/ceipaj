@@ -35,6 +35,8 @@ export async function datosPublicos() {
       precio: plan.precio,
       meses: plan.meses,
       incluye: plan.incluye,
+      // sin esto la pagina publica decia "todas las secciones" en los cuatro planes
+      modulos: plan.modulos,
       maxUsuarios: plan.maxUsuarios,
       maxAliados: plan.maxAliados,
     })),
