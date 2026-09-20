@@ -49,12 +49,9 @@ aplicacion.use((req, res, siguiente) => {
 });
 
 aplicacion.use('/api/fondo', express.static(CARPETA_FONDO, { maxAge: '1d' }));
-
 aplicacion.get('/api/salud', (req, res) => res.json({ estado: 'ok' }));
-
 aplicacion.use('/api/autenticacion', rutasAutenticacion);
 aplicacion.use('/api/usuarios', rutasUsuarios);
-
 aplicacion.use('/api/leads', rutasLeads);
 aplicacion.use('/api/aliados', rutasAliados);
 aplicacion.use('/api/portal', rutasPortal);

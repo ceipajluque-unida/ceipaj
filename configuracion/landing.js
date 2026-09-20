@@ -1,17 +1,11 @@
-// contenido de la pagina publica que ofrece el sistema. todo lo que se lee ahi
-// se edita aca: la pagina no trae ningun texto escrito adentro.
-// los datos de contacto del proveedor no se repiten: salen de RECIBO_EMISOR_*.
 import { COLORES_SISTEMA } from './ajustes.js';
 
 export const LANDING = {
-  // con esto en false la pagina y el formulario dejan de responder
-  ACTIVA: true,
+  ACTIVA: true, //activa o no la pagina publica
 
-  // el azul de la paleta del sistema
   COLOR: COLORES_SISTEMA[0].valor,
 
-  // franja fina de arriba de todo. si no hay texto ni datos del proveedor
-  // cargados, la pagina no la dibuja
+  // si no hay texto ni datos del proveedor cargados, la pagina no la dibuja
   BARRA_SUPERIOR: {
     TEXTO: '',
     MOSTRAR: true,
@@ -30,7 +24,6 @@ export const LANDING = {
 
   PORTADA: {
     TITULO: 'Convierta cada consulta en una matrícula',
-    // esta parte del título se pinta con el acento; vacío = título todo parejo
     TITULO_RESALTADO: 'en una matrícula',
     BAJADA: 'Un sistema de gestión para instituciones educativas: registra a cada interesado, '
       + 'ordena su seguimiento y mide el resultado de la captación.',
@@ -38,7 +31,6 @@ export const LANDING = {
     BOTON_PLANES: 'Ver planes y precios',
   },
 
-  // lo primero que pregunta quien entra a la pagina: que es esto
   QUE_ES: {
     TITULO: '¿Qué es?',
     TEXTO: 'Un sistema de gestión de la captación para instituciones educativas. Acompaña a cada '
@@ -71,7 +63,6 @@ export const LANDING = {
       + 'que nadie atribuye y las decisiones que se toman sin datos.',
   },
 
-  // tarjetas con icono. textos cortos a proposito: se leen de un vistazo
   FUNCIONES: [
     {
       etiqueta: 'Captación',
@@ -125,10 +116,7 @@ export const LANDING = {
 
   PLANES: {
     TITULO: 'Planes',
-    // la bajada dice dónde está la diferencia real, que es lo primero que se
-    // pregunta quien compara tres precios
     BAJADA: 'Se cambia de plan cuando haga falta, sin perder información.',
-    // clave del plan que se muestra destacado; si no existe, no se destaca ninguno
     DESTACADO: 'estandar',
     ETIQUETA_DESTACADO: 'El más elegido',
     BOTON: 'Consultar por este plan',
@@ -204,7 +192,6 @@ export const LANDING = {
     // debajo del formulario queda solo el enlace a la política
     AVISO: '',
     ENLACE_AVISO: 'Cómo tratamos los datos',
-    // opciones del desplegable; el valor viaja tal cual al sistema del proveedor
     MOTIVOS: [
       { valor: 'demostracion', texto: 'Solicitud de demostración' },
       { valor: 'plan', texto: 'Contratación de un plan' },
@@ -228,7 +215,6 @@ export const LANDING = {
   },
 };
 
-// largos maximos de cada campo del formulario publico, tambien usados por el servidor
 export const LARGOS_SOLICITUD = {
   nombre: 100,
   institucion: 150,
@@ -238,13 +224,12 @@ export const LARGOS_SOLICITUD = {
   mensaje: 600,
 };
 
-// numeros del modulo de solicitudes, para que no queden escritos en la logica
 export const SOLICITUDES = {
-  TOPE_LISTADO: 500,          // cuantas trae el listado del proveedor de una vez
-  LARGO_NOTA: 500,            // largo de la nota interna
-  DIAS_DESCARTE: 90,          // los que ofrece el boton de descarte masivo
-  DIAS_DESCARTE_MINIMO: 30,   // por debajo de esto el servidor no descarta en masa
-  DIAS_DESCARTE_MAXIMO: 3650, // techo, para que un numero enorme no barra con todo
+  TOPE_LISTADO: 500,
+  LARGO_NOTA: 500,
+  DIAS_DESCARTE: 90,
+  DIAS_DESCARTE_MINIMO: 30,
+  DIAS_DESCARTE_MAXIMO: 3650,
 };
 
 export const ESTADOS_SOLICITUD = [

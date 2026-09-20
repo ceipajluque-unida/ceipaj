@@ -12,8 +12,6 @@ function exigirActiva() {
   if (!LANDING.ACTIVA) throw new ErrorVisible('La página de contacto no está disponible.', 404);
 }
 
-// lo que la pagina publica necesita para dibujarse. no sale de aca nada que no
-// se muestre en pantalla: ni ajustes internos ni datos de ninguna institucion.
 export async function datosPublicos() {
   exigirActiva();
   const planes = await listarActivos();
@@ -35,7 +33,6 @@ export async function datosPublicos() {
       precio: plan.precio,
       meses: plan.meses,
       incluye: plan.incluye,
-      // sin esto la pagina publica decia "todas las secciones" en los cuatro planes
       modulos: plan.modulos,
       maxUsuarios: plan.maxUsuarios,
       maxAliados: plan.maxAliados,
@@ -43,7 +40,6 @@ export async function datosPublicos() {
   };
 }
 
-// solo se aceptan textos: un objeto o un arreglo no se convierte, se rechaza
 function texto(valor, campo) {
   if (valor === undefined || valor === null) return '';
   if (typeof valor !== 'string' && typeof valor !== 'number') {
@@ -54,7 +50,6 @@ function texto(valor, campo) {
 
 function limitado(valor, campo, largo) {
   const limpio = texto(valor, campo);
-  // se avisa en vez de cortar por lo bajo: quien escribe tiene que enterarse
   if (limpio.length > largo) throw new ErrorVisible(`El campo ${campo} no puede pasar de ${largo} caracteres.`);
   return limpio;
 }
@@ -87,8 +82,6 @@ async function validar(cuerpo) {
 export async function registrar(cuerpo, ip) {
   exigirActiva();
 
-  // el captcha se valida antes que nada, para que el formulario no sirva de
-  // sonda: si esta activo y no viene resuelto, no se toca la base
   const captcha = await verificarCaptcha(texto(cuerpo?.captcha, 'captcha'), ip, true);
   if (!captcha.ok) throw new ErrorVisible(captcha.motivo);
 
@@ -106,6 +99,5 @@ export async function registrar(cuerpo, ip) {
     ip,
   });
 
-  // a quien completa el formulario no se le devuelve el id ni nada interno
   return { recibido: true, mensaje: LANDING.CONTACTO.EXITO };
 }

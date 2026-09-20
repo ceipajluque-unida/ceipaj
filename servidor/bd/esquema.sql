@@ -1,5 +1,3 @@
--- esquema completo del sistema, idempotente. se aplica con npm run migrar
-
 -- usuarios internos y aliados. la clave siempre va con hash bcrypt.
 CREATE TABLE IF NOT EXISTS usuarios (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,

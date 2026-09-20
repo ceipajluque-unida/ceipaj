@@ -13,7 +13,6 @@ function idDeRuta(req) {
   return id;
 }
 
-// lo publico va antes del autenticar: son las dos unicas rutas sin sesion
 rutasSolicitudes.get('/publico', frenoGeneral, async (req, res) => res.json(await publico.datosPublicos()));
 rutasSolicitudes.post('/', frenoSolicitud, async (req, res) =>
   res.status(201).json(await publico.registrar(req.body, req.ip))

@@ -42,9 +42,6 @@ async function asegurarTipo(conexion, tabla, columna, tipoEsperado, definicion) 
   console.log(`columna ampliada: ${tabla}.${columna} ahora es ${tipoEsperado}`);
 }
 
-// va despues de sembrar los roles: antes fallaria porque la tabla de destino
-// todavia no existe. si algun usuario tiene un rol que no esta en la tabla, se
-// avisa y no se agrega, en vez de romper la migracion.
 async function quitarColumna(conexion, tabla, columna) {
   const [filas] = await conexion.query(
     'SELECT COUNT(*) AS existe FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = ?',
@@ -102,9 +99,6 @@ async function asegurarUnico(conexion, tabla, nombre, columnas, indiceViejo) {
   console.log(`índice único nuevo: ${tabla} (${columnas})`);
 }
 
-// los roles pasan a la base para que el proveedor los pueda editar. la semilla
-// es la matriz de configuracion/permisos.js, asi que una base ya existente
-// arranca comportandose exactamente igual que antes.
 async function sembrarRoles(conexion) {
   const [filas] = await conexion.query('SELECT clave FROM roles');
   const existentes = new Set(filas.map((f) => f.clave));
@@ -159,8 +153,6 @@ async function sembrarPlanes(conexion) {
     return;
   }
   for (const [orden, plan] of PLANES_SUSCRIPCION.entries()) {
-    // los planes de la semilla que todavia no estan en la base se agregan; los
-    // que ya estan no se tocan, para respetar lo que el proveedor haya editado
     const [[{ existe }]] = await conexion.query(
       'SELECT COUNT(*) AS existe FROM planes WHERE clave = ?', [plan.valor]
     );
@@ -171,8 +163,6 @@ async function sembrarPlanes(conexion) {
          plan.maxUsuarios, plan.maxAliados, plan.modulos.join(String.fromCharCode(10)), orden]
       );
       console.log('plan agregado: ' + plan.valor);
-      // al entrar un plan nuevo adelante, los de la semilla se reacomodan en el
-      // orden en que se los presenta. los planes propios del proveedor no se tocan.
       for (const [posicion, otro] of PLANES_SUSCRIPCION.entries()) {
         await conexion.query('UPDATE planes SET orden = ? WHERE clave = ?', [posicion, otro.valor]);
       }
@@ -183,8 +173,6 @@ async function sembrarPlanes(conexion) {
       [plan.maxUsuarios, plan.valor]
     );
     if (resultado.affectedRows > 0) console.log(`límites completados en el plan ${plan.valor}`);
-    // el Básico se sembró sin Aliados y su tope de 10 aliados no quería decir
-    // nada. se corrige una sola vez: el filtro por el valor viejo lo hace idempotente
     if (plan.valor === 'basico') {
       const [ajuste] = await conexion.query(
         'UPDATE planes SET modulos_incluidos = ? WHERE clave = ? AND modulos_incluidos = ?',
@@ -192,8 +180,6 @@ async function sembrarPlanes(conexion) {
       );
       if (ajuste.affectedRows > 0) console.log('el plan básico suma aliados y portal, que su tope ya suponía');
     }
-    // solo cuando nunca se definieron: al vaciarlos desde la pantalla se guarda
-    // una cadena vacía, que quiere decir "todos" y este paso no vuelve a tocar
     const [conModulos] = await conexion.query(
       'UPDATE planes SET modulos_incluidos = ? WHERE clave = ? AND modulos_incluidos IS NULL',
       [plan.modulos.join(String.fromCharCode(10)), plan.valor]
@@ -208,9 +194,6 @@ async function sembrarPlanes(conexion) {
   }
 }
 
-// 16/08: la tabla 19 de la tesis manda; los tres planes sembrados con los valores
-// viejos se pisan una sola vez (el filtro por precio viejo hace el paso idempotente
-// y respeta lo que el proveedor edite después)
 async function emparejarPlanesConTesis(conexion) {
   const preciosViejos = { basico: 250000, estandar: 450000, avanzado: 750000 };
   for (const plan of PLANES_SUSCRIPCION) {
@@ -235,7 +218,6 @@ async function actualizarColorAcento(conexion) {
   }
 }
 
-// ajustes que ya no existen en el catálogo y quedaron guardados en bases viejas
 async function borrarAjustesRetirados(conexion) {
   const [resultado] = await conexion.query(
     'DELETE FROM ajustes_sistema WHERE clave IN (?)',
@@ -289,15 +271,13 @@ async function migrar() {
   await asegurarColumna(conexion, 'planes', 'modulos_incluidos', 'TEXT NULL AFTER max_aliados');
   await asegurarColumna(conexion, 'usuarios', 'sin_2fa', "TINYINT(1) NOT NULL DEFAULT 0 AFTER activado_2fa");
   await asegurarColumna(conexion, 'suscripciones', 'motivo_cierre', 'VARCHAR(20) NULL AFTER cancelada_en');
-  // dejar de renovar y despues llegar a la fecha es un vencimiento, no una baja:
-  // una version anterior de este paso las confundia
+
   await conexion.query(
     "UPDATE suscripciones SET motivo_cierre = 'vencimiento' "
     + "WHERE motivo_cierre = 'baja' AND baja_en IS NULL "
     + "  AND (cancelada_en IS NULL OR fecha_fin > cancelada_en)"
   );
-  // las que ya estaban cerradas y no tienen motivo: si llegaron a su fecha, fue
-  // vencimiento; si se cortaron antes, fue una baja
+
   await conexion.query(
     `UPDATE suscripciones SET motivo_cierre = CASE
        WHEN cancelada_en IS NOT NULL AND fecha_fin <= cancelada_en THEN 'baja'
@@ -308,8 +288,7 @@ async function migrar() {
   await asegurarColumna(conexion, 'suscripciones', 'baja_en', 'DATETIME NULL AFTER motivo_cierre');
   await asegurarColumna(conexion, 'suscripciones', 'baja_por', 'INT UNSIGNED NULL AFTER baja_en');
   await asegurarColumna(conexion, 'suscripciones', 'motivo_baja', 'VARCHAR(200) NULL AFTER baja_por');
-  // las bajas anteriores solo quedaron en la auditoría: se rescatan de ahí para
-  // que la institución pueda ver por qué le cortaron el plan
+
   await conexion.query(
     `UPDATE suscripciones s
         JOIN (SELECT CAST(TRIM(TRAILING ':' FROM SUBSTRING_INDEX(SUBSTRING_INDEX(detalle, ' ', 2), ' ', -1))
@@ -344,7 +323,6 @@ async function migrar() {
   await emparejarPlanesConTesis(conexion);
   await actualizarColorAcento(conexion);
   await aplanarTextosLegales(conexion);
-  // usuarios.rol deja de ser ENUM: si no, no se podria asignar un rol nuevo
   await asegurarTipo(conexion, 'usuarios', 'rol', 'varchar(30)', "VARCHAR(30) NOT NULL DEFAULT 'comercial'");
   await sembrarRoles(conexion);
   await asegurarClaveForanea(conexion, 'usuarios', 'fk_usuarios_rol',

@@ -149,10 +149,4 @@ Correo electrónico: sbritos.j@gmail.com
 
 Estos Términos y Condiciones constituyen un modelo de referencia para el sistema desarrollado como Trabajo Final de Grado de la carrera de Ingeniería en Sistemas de la Universidad de la Integración de las Américas (UNIDA). En caso de que la solución sea implementada en un entorno operativo, deberán ser revisados y adecuados por la organización responsable, atendiendo a las características del servicio, la normativa vigente y las obligaciones jurídicas que resulten aplicables.`;
 
-export const PRESENTACION_LOGIN = `Sistema de Información Gerencial con enfoque CRM educativo. Reúne en un solo lugar la información de captación y seguimiento que hoy queda repartida entre redes sociales, llamadas telefónicas, mensajería y consultas presenciales.
-
-Registra a cada interesado con su canal de origen y el historial de sus interacciones, avisa cuando alguien queda sin seguimiento, marca como matriculado al que confirma su inscripción en el sistema académico y muestra los indicadores de captación, conversión y permanencia que la dirección necesita para decidir.
-
-Lo usan el personal administrativo y comercial, la dirección, y los aliados institucionales (docentes y directivos de la comunidad educativa) que recomiendan interesados desde su propio portal y siguen su puntaje.
-
-Complementa al sistema académico-administrativo, no lo reemplaza: la matrícula oficial, las calificaciones y las finanzas de la institución siguen donde estaban.`;
+export const PRESENTACION_LOGIN = `Sistema de Información Gerencial con enfoque CRM educativo.`;
