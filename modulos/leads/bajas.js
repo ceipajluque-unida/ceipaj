@@ -18,17 +18,26 @@ export async function darDeBaja(id, motivo, usuarioId, ip) {
 }
 
 export async function reactivar(id, usuarioId, ip) {
+  const institucionId = institucionDelPedido();
+  const [[lead]] = await bd.query(
+    'SELECT nombre, activo, consentimiento_revocado_en FROM leads WHERE id = ? AND institucion_id = ?',
+    [id, institucionId]
+  );
+  if (!lead) throw new ErrorVisible('Interesado no encontrado.', 404);
+  if (lead.activo) throw new ErrorVisible(`${lead.nombre} ya está activo.`, 409);
+  if (lead.consentimiento_revocado_en) {
+    throw new ErrorVisible(
+      `${lead.nombre} revocó la autorización para usar sus datos (Ley 7593), así que no se puede reactivar.`,
+      409
+    );
+  }
   const [resultado] = await bd.query(
     `UPDATE leads SET activo = 1, motivo_baja = NULL
       WHERE id = ? AND activo = 0 AND institucion_id = ? AND consentimiento_revocado_en IS NULL`,
-    [id, institucionDelPedido()]
+    [id, institucionId]
   );
   if (resultado.affectedRows === 0) {
-    throw new ErrorVisible(
-      'No se puede reactivar: el interesado no existe, ya estaba activo, o revocó su consentimiento y '
-      + 'hay que registrarlo de nuevo con su autorización.',
-      409
-    );
+    throw new ErrorVisible(`${lead.nombre} cambió mientras se procesaba. Recargá su ficha para ver cómo quedó.`, 409);
   }
   await registrarAuditoria({ usuarioId, accion: 'lead_reactivado', detalle: `lead ${id}`, ip });
   return { id: Number(id), activo: true };

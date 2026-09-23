@@ -78,7 +78,7 @@ export async function obtenerLead(id) {
        ORDER BY i.fecha DESC`,
     [id]
   );
-  return { ...lead, interacciones, transiciones: transicionesPosibles(lead.estado) };
+  return { ...lead, interacciones, transiciones: transicionesPosibles(lead) };
 }
 
 export async function listarAliadosParaElegir() {

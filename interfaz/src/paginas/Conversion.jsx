@@ -23,7 +23,8 @@ export default function Conversion() {
   async function sincronizar() {
     const ok = await confirmar({
       titulo: '¿Sincronizar con el sistema académico?',
-      texto: 'El interesado que coincida por cédula pasa a matriculado y, si lo recomendó un aliado, se genera su comisión.',
+      texto: 'El interesado que coincida por cédula pasa a matriculado y, si lo recomendó un aliado, se genera su comisión. '
+        + 'Los que estén dados de baja no se matriculan.',
       confirmar: 'Sí, sincronizar',
     });
     if (!ok) return;
@@ -33,14 +34,19 @@ export default function Conversion() {
       const convertidos = respuesta.convertidos;
       const nombres = convertidos.map((convertido) => convertido.nombre).join(', ');
       const enAcademico = contar(respuesta.enAcademico, 'matriculado', 'matriculados');
-      await avisarExito(
-        convertidos.length === 0
+      const omitidos = respuesta.omitidos ?? [];
+      const sinMatricular = omitidos.map((omitido) => `${omitido.nombre} (${omitido.motivo})`).join(', ');
+      let mensaje = convertidos.length === 1
+        ? `Ya quedó matriculado: ${nombres}.`
+        : `Quedaron matriculados ${convertidos.length} interesados: ${nombres}.`;
+      if (convertidos.length === 0) {
+        mensaje = omitidos.length === 0
           ? `El académico informa ${enAcademico} y ninguno coincide con interesados pendientes.`
-          : convertidos.length === 1
-            ? `Ya quedó matriculado: ${nombres}.`
-            : `Quedaron matriculados ${convertidos.length} interesados: ${nombres}.`,
-        'Sincronización lista'
-      );
+          : `El académico informa ${enAcademico} y ninguno quedó matriculado.`;
+      }
+      if (omitidos.length === 1) mensaje += ` Quedó sin matricular ${sinMatricular}.`;
+      if (omitidos.length > 1) mensaje += ` Quedaron sin matricular ${omitidos.length}: ${sinMatricular}.`;
+      await avisarExito(mensaje, 'Sincronización lista');
       await cargarMatriculados();
     } catch (excepcion) {
       avisarError(excepcion.message);

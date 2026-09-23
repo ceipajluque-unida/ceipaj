@@ -38,7 +38,7 @@ export default function BajaLead({ lead, alActualizar }) {
   async function reactivar() {
     const ok = await confirmar({
       titulo: '¿Reactivar al interesado?',
-      texto: `${lead.nombre} vuelve al listado y a las alertas de seguimiento.`,
+      texto: `${lead.nombre} vuelve al listado y a las alertas de seguimiento, y puede volver a avanzar hasta matricularse.`,
       confirmar: 'Sí, reactivar',
     });
     if (!ok) return;
@@ -96,15 +96,21 @@ export default function BajaLead({ lead, alActualizar }) {
         </div>
       </dl>
 
+      {lead.consentimiento_revocado_en && (
+        <p className="nota separado">No se puede reactivar: {lead.nombre} retiró la autorización para usar sus datos.</p>
+      )}
       <div className="acciones separado">
-        {lead.activo
-          ? <Button danger onClick={abrirBaja}>Dar de baja</Button>
-          : <Button type="primary" onClick={reactivar}>Reactivar</Button>}
+        {lead.activo && <Button danger onClick={abrirBaja}>Dar de baja</Button>}
+        {!lead.activo && !lead.consentimiento_revocado_en && <Button type="primary" onClick={reactivar}>Reactivar</Button>}
         {Boolean(lead.consentimiento_datos) && <Button danger onClick={revocar}>Revocar autorización</Button>}
       </div>
 
       <Modal abierto={abierto} titulo={`Dar de baja a ${lead.nombre}`} alCerrar={() => setAbierto(false)} ancho={460}>
         <form onSubmit={darDeBaja}>
+          <p className="nota">
+            Mientras esté dado de baja, {lead.nombre} no puede cambiar de estado ni matricularse, ni a mano ni por el
+            cruce con el sistema académico. Se puede reactivar después si retoma el contacto.
+          </p>
           <label>Motivo de la baja
             <Input.TextArea value={motivo} onChange={(evento) => setMotivo(evento.target.value)} />
           </label>

@@ -109,6 +109,12 @@ export default function LeadDetalle() {
               <div><dt>Aliado que lo recomendó</dt><dd>{lead.aliado ?? '—'}</dd></div>
               <div><dt>Registrado</dt><dd>{fechaHora(lead.creado_en)}</dd></div>
             </dl>
+            {!lead.activo && (
+              <p className="nota separado">
+                Está dado de baja, así que no puede cambiar de estado ni matricularse
+                {lead.consentimiento_revocado_en ? '.' : ' mientras no se lo reactive.'}
+              </p>
+            )}
             <div className="acciones separado">
               {lead.transiciones.map((estado) => (
                 <Button key={estado} type={estado === 'perdido' ? 'default' : 'primary'} danger={estado === 'perdido'} onClick={() => cambiarEstado(estado)}>

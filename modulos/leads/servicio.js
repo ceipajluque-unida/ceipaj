@@ -6,7 +6,7 @@ import { ESTADOS_LEAD, CANALES_CAPTACION, TIPOS_INTERACCION, ALIADOS } from '../
 import { VERSION_LEGALES } from '../../configuracion/legales.js';
 import { validarCedula, normalizarCedula, validarCorreo, validarTelefono, validarLargo, LARGOS } from '../../comun/validar.js';
 import { institucionDelPedido } from './consultas.js';
-import { puedeCambiar } from './estados.js';
+import { puedeCambiar, motivoDeBloqueo } from './estados.js';
 
 function validarDatosContacto({ nombre, telefono, correo, canal }) {
   if (!nombre?.trim()) throw new ErrorVisible('El nombre es obligatorio.');
@@ -75,7 +75,7 @@ export function montoDeComision() {
 export async function concretarMatricula(leadId, fecha, usuarioId, ip) {
   const institucionId = institucionDelPedido();
   const [[lead]] = await bd.query(
-    'SELECT id, estado, aliado_id FROM leads WHERE id = ? AND institucion_id = ?',
+    'SELECT id, nombre, estado, aliado_id, activo, consentimiento_revocado_en FROM leads WHERE id = ? AND institucion_id = ?',
     [leadId, institucionId]
   );
   if (!lead) throw new ErrorVisible('Interesado no encontrado.', 404);
@@ -83,14 +83,20 @@ export async function concretarMatricula(leadId, fecha, usuarioId, ip) {
   if (lead.estado === ESTADOS_LEAD.MATRICULADO) {
     return { id: lead.id, estado: lead.estado };
   }
+  const bloqueo = motivoDeBloqueo(lead);
+  if (bloqueo) throw new ErrorVisible(bloqueo, 409);
 
   const conexion = await bd.getConnection();
   try {
     await conexion.beginTransaction();
-    await conexion.query(
-      'UPDATE leads SET estado = ?, fecha_conversion = ? WHERE id = ? AND institucion_id = ?',
-      [ESTADOS_LEAD.MATRICULADO, fecha ?? new Date(), leadId, institucionId]
+    // la condicion se repite en el update: si lo dieron de baja recien, no pasa
+    const [cambio] = await conexion.query(
+      'UPDATE leads SET estado = ?, fecha_conversion = ? WHERE id = ? AND institucion_id = ? AND activo = 1 AND estado <> ?',
+      [ESTADOS_LEAD.MATRICULADO, fecha ?? new Date(), leadId, institucionId, ESTADOS_LEAD.MATRICULADO]
     );
+    if (cambio.affectedRows === 0) {
+      throw new ErrorVisible(`${lead.nombre} se dio de baja o ya fue matriculado mientras se procesaba. Recargá su ficha para ver cómo quedó.`, 409);
+    }
 
     if (lead.aliado_id) {
       await conexion.query(
@@ -142,15 +148,17 @@ export async function editarLead(id, { nombre, telefono, correo, canal, aliadoId
 export async function cambiarEstado(id, estadoNuevo, usuarioId, ip) {
   const institucionId = institucionDelPedido();
   const [[lead]] = await bd.query(
-    'SELECT id, estado FROM leads WHERE id = ? AND institucion_id = ?',
+    'SELECT id, nombre, estado, activo, consentimiento_revocado_en FROM leads WHERE id = ? AND institucion_id = ?',
     [id, institucionId]
   );
   if (!lead) throw new ErrorVisible('Interesado no encontrado.', 404);
+  const bloqueo = motivoDeBloqueo(lead);
+  if (bloqueo) throw new ErrorVisible(bloqueo, 409);
   if (!puedeCambiar(lead.estado, estadoNuevo)) {
     throw new ErrorVisible(`No se puede pasar de "${lead.estado}" a "${estadoNuevo}".`);
   }
   if (estadoNuevo === ESTADOS_LEAD.MATRICULADO) return concretarMatricula(id, null, usuarioId, ip);
-  await bd.query('UPDATE leads SET estado = ? WHERE id = ? AND institucion_id = ?', [estadoNuevo, id, institucionId]);
+  await bd.query('UPDATE leads SET estado = ? WHERE id = ? AND institucion_id = ? AND activo = 1', [estadoNuevo, id, institucionId]);
   await registrarAuditoria({ usuarioId, accion: 'lead_estado', detalle: `lead ${lead.id}: cambió el estado de ${lead.estado} a ${estadoNuevo}`, ip });
   return { id: lead.id, estado: estadoNuevo };
 }
