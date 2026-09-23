@@ -1,8 +1,7 @@
 import crypto from 'node:crypto';
 import bcrypt from 'bcryptjs';
 import { bd } from '../../servidor/bd/conexion.js';
-import { enviarCorreo, correoConfigurado } from '../../servidor/correo.js';
-import { revelar } from '../../servidor/modoPrueba.js';
+import { enviarCorreo } from '../../servidor/correo.js';
 import { registrarAuditoria } from '../../servidor/auditoria.js';
 import { ErrorVisible } from '../../servidor/errores.js';
 import * as politica from '../../servidor/politicaClave.js';
@@ -39,8 +38,7 @@ async function enviarEnlace(usuario, correoLimpio, ip) {
   });
   await registrarAuditoria({ usuarioId: usuario.id, accion: 'recuperacion_solicitada', ip });
 
-  const enlacePrueba = revelar(enlace, correoConfigurado());
-  return { enviado: envio.enviado, ...(enlacePrueba ? { enlacePrueba } : {}) };
+  return { enviado: envio.enviado };
 }
 
 export async function restablecer({ token, claveNueva }, ip) {

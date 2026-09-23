@@ -83,10 +83,10 @@ aplicacion.use((error, req, res, siguiente) => {
   res.status(estado).json({ error: visible ? error.message : 'Error interno del servidor.' });
 });
 
+// sin un secreto propio cualquiera podria firmar una sesion valida
 const secretoJwt = process.env.JWT_SECRETO ?? '';
-const secretosDebiles = ['CEIPAJULTRASECRETOUNIDA', 'cambiar-por-una-clave-larga-y-aleatoria', 'solo-desarrollo-cambiar-este-secreto'];
-if (secretoJwt.length < 24 || secretosDebiles.includes(secretoJwt)) {
-  console.error('\n✗ Definí un JWT_SECRETO propio, largo y aleatorio en el .env (firma las sesiones). El servidor no arranca por seguridad.\n');
+if (secretoJwt.length < 24 || secretoJwt === 'cambiar-por-una-clave-larga-y-aleatoria') {
+  console.error('\nFalta un JWT_SECRETO propio, largo y aleatorio en el .env. El servidor no arranca sin él.\n');
   process.exit(1);
 }
 

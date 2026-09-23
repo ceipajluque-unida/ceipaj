@@ -9,7 +9,6 @@ export default function RecuperarClave() {
   const institucion = useInstitucion();
   const [correo, setCorreo] = useState('');
   const [enviado, setEnviado] = useState(false);
-  const [enlacePrueba, setEnlacePrueba] = useState(null);
   const [error, setError] = useState(null);
   const [cargando, setCargando] = useState(false);
   const [captcha, setCaptcha] = useState({ activo: false, claveSitio: '' });
@@ -26,11 +25,10 @@ export default function RecuperarClave() {
     setError(null);
     setCargando(true);
     try {
-      const respuesta = await llamarApi('/api/autenticacion/recuperar', {
+      await llamarApi('/api/autenticacion/recuperar', {
         metodo: 'POST',
         cuerpo: { correo, captchaRespuesta },
       });
-      setEnlacePrueba(respuesta.enlacePrueba ?? null);
       setEnviado(true);
     } catch (excepcion) {
       setError(excepcion.message);
@@ -60,9 +58,6 @@ export default function RecuperarClave() {
         {enviado && (
           <>
             <p className="exito">Si ese correo está registrado, ya salió el enlace para cambiar la contraseña. Revisá tu bandeja y también el correo no deseado.</p>
-            {enlacePrueba && (
-              <p className="ayuda">Todavía no hay envío de correo configurado.<br /><a href={enlacePrueba}>{enlacePrueba}</a></p>
-            )}
             <p className="ayuda pie-auth"><Link to="/ingreso">Volver al ingreso</Link></p>
           </>
         )}

@@ -127,7 +127,6 @@ async function seguirIngreso(usuario, { recordar, tokenDispositivo }, ip) {
     respuesta.destino = usuario.metodo_2fa === 'sms' ? usuario.telefono : usuario.correo;
     respuesta.configurado = envio.configurado;
     respuesta.enviado = envio.enviado;
-    if (envio.codigoPrueba) respuesta.codigoPrueba = envio.codigoPrueba;
   }
   respuesta.alternativas = alternativasPara(usuario);
   return respuesta;
@@ -239,7 +238,6 @@ export async function enviarCodigoAlternativo({ tokenPre2fa, metodo }, ip) {
     destino: metodo === 'sms' ? usuario.telefono : usuario.correo,
     configurado: envio.configurado,
     enviado: envio.enviado,
-    ...(envio.codigoPrueba ? { codigoPrueba: envio.codigoPrueba } : {}),
   };
 }
 

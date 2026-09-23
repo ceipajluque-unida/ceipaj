@@ -1,7 +1,6 @@
 import { randomInt } from 'node:crypto';
 import { enviarCorreo, correoConfigurado } from '../../servidor/correo.js';
 import { verifyConfigurado, enviarVerificacion, comprobarVerificacion } from '../../servidor/verify.js';
-import { revelar } from '../../servidor/modoPrueba.js';
 import { SEGURIDAD, INSTITUCION } from '../../configuracion/ajustes.js';
 
 const pendientes = new Map();
@@ -29,8 +28,7 @@ export async function emitirCodigo(usuario, metodo = usuario.metodo_2fa) {
     const envio = await enviarCorreo({ para: usuario.correo, asunto: `Código de verificación (${INSTITUCION.NOMBRE})`, texto });
     enviado = envio.enviado;
   }
-  const codigoPrueba = revelar(codigo, configurado);
-  return { medio: 'email', configurado, enviado, ...(codigoPrueba ? { codigoPrueba } : {}) };
+  return { medio: 'email', configurado, enviado };
 }
 
 export async function verificarCodigo(usuario, codigo) {

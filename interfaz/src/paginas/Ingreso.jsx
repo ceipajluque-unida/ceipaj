@@ -61,7 +61,7 @@ export default function Ingreso() {
         return navegar(r.requiereCambioClave ? '/cambiar-clave' : '/panel');
       }
       setTokenPre2fa(r.tokenPre2fa);
-      setDos({ metodo: r.metodo, qr: r.qr ?? null, destino: r.destino, configurado: r.configurado, enviado: r.enviado, codigoPrueba: r.codigoPrueba, alternativas: r.alternativas ?? [] });
+      setDos({ metodo: r.metodo, qr: r.qr ?? null, destino: r.destino, configurado: r.configurado, enviado: r.enviado, alternativas: r.alternativas ?? [] });
       setVerAlternativas(false);
       setPaso(2);
     } catch (excepcion) {
@@ -113,7 +113,7 @@ export default function Ingreso() {
     }
     try {
       const r = await llamarApi('/api/autenticacion/codigo-alternativo', { metodo: 'POST', cuerpo: { tokenPre2fa, metodo } });
-      setDos((previo) => ({ ...previo, metodo: r.metodo, qr: null, destino: r.destino, configurado: r.configurado, enviado: r.enviado, codigoPrueba: r.codigoPrueba }));
+      setDos((previo) => ({ ...previo, metodo: r.metodo, qr: null, destino: r.destino, configurado: r.configurado, enviado: r.enviado }));
       setVerAlternativas(false);
     } catch (excepcion) {
       setError(excepcion.message);
@@ -169,8 +169,9 @@ export default function Ingreso() {
               <p className="ayuda">Te mandamos un código a {dos.destino}.</p>
             )}
             {dos.metodo !== 'app' && !dos.enviado && !dos.configurado && (
-              <p className="exito">
-                Todavía no está configurado el envío por {dos.metodo === 'sms' ? 'SMS' : 'correo'}, así que tu código es <strong>{dos.codigoPrueba}</strong>
+              <p className="error">
+                El envío de códigos por {dos.metodo === 'sms' ? 'SMS' : 'correo'} todavía no está configurado, así que no te pudimos mandar el código.
+                Si tenés la aplicación de autenticación, pedí el código por ahí; si no, avisale al administrador de tu institución.
               </p>
             )}
             {dos.metodo !== 'app' && !dos.enviado && dos.configurado && (

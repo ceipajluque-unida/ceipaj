@@ -93,11 +93,8 @@ export async function recuperar(req, res) {
 
   bloqueos.recuperacion.revisar(correo);
   bloqueos.recuperacion.anotar(correo);
-  const resultado = await recuperacion.solicitar(correo, req.ip);
-  res.json({
-    mensaje: 'Si el correo está registrado, te enviamos un enlace para restablecer la contraseña.',
-    ...(resultado.enlacePrueba ? { enlacePrueba: resultado.enlacePrueba } : {}),
-  });
+  await recuperacion.solicitar(correo, req.ip);
+  res.json({ mensaje: 'Si el correo está registrado, te enviamos un enlace para restablecer la contraseña.' });
 }
 
 export async function restablecer(req, res) {
