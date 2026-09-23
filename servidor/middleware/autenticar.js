@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import { SEGURIDAD } from '../../configuracion/ajustes.js';
 import { bd } from '../bd/conexion.js';
 import { conInstitucion } from '../contexto.js';
+import { renovar } from '../sesion.js';
 
 export async function autenticar(req, res, siguiente) {
   const encabezado = req.headers.authorization ?? '';
@@ -13,7 +14,7 @@ export async function autenticar(req, res, siguiente) {
 
     if (datos.alcance !== 'sesion') throw new Error('alcance incorrecto');
   } catch {
-    return res.status(401).json({ error: 'Sesión inválida o vencida.' });
+    return res.status(401).json({ error: 'Tu sesión venció por inactividad o ya no es válida. Volvé a ingresar para seguir.' });
   }
 
   const [[usuario]] = await bd.query(
@@ -31,6 +32,7 @@ export async function autenticar(req, res, siguiente) {
     id: datos.id, nombre: usuario.nombre, correo: usuario.correo,
     rol: usuario.rol, institucionId: usuario.institucion_id ?? null,
   };
+  renovar(datos, usuario, res);
 
   return conInstitucion(req.usuario.institucionId, siguiente);
 }
@@ -59,7 +61,7 @@ export function permitirModulo(modulo, { porPlan = true } = {}) {
       const plan = await planEnVigor();
       if (!moduloIncluido(plan, modulo)) {
         return res.status(402).json({
-          error: `El plan ${plan.texto} no incluye esta sección. Por favor considere una suscripcion a un plan con privilegios.`,
+          error: `El plan ${plan.texto} no incluye esta sección. Por favor considere una suscripción a un plan con privilegios.`,
           modulo,
           plan: plan.clave,
         });

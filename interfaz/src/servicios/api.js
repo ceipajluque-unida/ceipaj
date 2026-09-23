@@ -9,8 +9,44 @@ export function motivoDeSalida() {
   return motivo;
 }
 
+const CABECERA_RENOVADA = 'X-Sesion-Renovada';
+let temporizadorCierre = null;
+
 function leer(clave) {
   return localStorage.getItem(clave) ?? sessionStorage.getItem(clave);
+}
+
+function venceEn(token) {
+  try {
+    const carga = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+    return carga.exp * 1000;
+  } catch {
+    return null;
+  }
+}
+
+// si la pantalla queda quieta hasta que vence la sesion, se cierra sola: asi no
+// quedan datos a la vista de quien se siente despues frente a la computadora
+function programarCierre() {
+  clearTimeout(temporizadorCierre);
+  const token = leer(CLAVE_TOKEN);
+  const vence = token && venceEn(token);
+  if (!vence) return;
+  temporizadorCierre = setTimeout(() => {
+    if (leer(CLAVE_TOKEN) !== token) return programarCierre();
+    cerrarSesion();
+    sessionStorage.setItem(CLAVE_MOTIVO_SALIDA, 'Tu sesión se cerró por inactividad. Volvé a ingresar para seguir.');
+    window.location.assign('/ingreso');
+  }, Math.max(0, vence - Date.now()));
+}
+
+export function recibirRenovacion(respuesta) {
+  const nuevo = respuesta.headers.get(CABECERA_RENOVADA);
+  if (!nuevo) return;
+  const almacen = localStorage.getItem(CLAVE_TOKEN) ? localStorage : sessionStorage;
+  if (!almacen.getItem(CLAVE_TOKEN)) return;
+  almacen.setItem(CLAVE_TOKEN, nuevo);
+  programarCierre();
 }
 
 export function guardarSesion(token, usuario, recordar) {
@@ -19,11 +55,13 @@ export function guardarSesion(token, usuario, recordar) {
   const almacen = recordarla ? localStorage : sessionStorage;
   almacen.setItem(CLAVE_TOKEN, token);
   almacen.setItem(CLAVE_USUARIO, JSON.stringify(usuario));
+  programarCierre();
 
   window.dispatchEvent(new Event('sesion'));
 }
 
 export function cerrarSesion() {
+  clearTimeout(temporizadorCierre);
   for (const almacen of [localStorage, sessionStorage]) {
     almacen.removeItem(CLAVE_TOKEN);
     almacen.removeItem(CLAVE_USUARIO);
@@ -75,6 +113,7 @@ export async function llamarApi(ruta, { metodo = 'GET', cuerpo } = {}) {
   } catch {
     throw new Error('No hay conexión con el servidor.');
   }
+  recibirRenovacion(respuesta);
 
   const datos = await respuesta.json().catch(() => ({}));
   if (!respuesta.ok) {
@@ -87,3 +126,5 @@ export async function llamarApi(ruta, { metodo = 'GET', cuerpo } = {}) {
   }
   return datos;
 }
+
+programarCierre();

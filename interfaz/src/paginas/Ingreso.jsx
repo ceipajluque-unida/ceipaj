@@ -145,7 +145,7 @@ export default function Ingreso() {
             <label>Correo<Input type="email" value={correo} onChange={(e) => setCorreo(e.target.value)} required /></label>
             <label>Contraseña<Input.Password value={clave} onChange={(e) => setClave(e.target.value)} required /></label>
             <Checkbox checked={recordar} onChange={(e) => setRecordar(e.target.checked)}>
-              Mantener la sesión abierta varios días en este equipo
+              Mantener la sesión abierta aunque se cierre el navegador
             </Checkbox>
             {captcha.activo && <Captcha claveSitio={captcha.claveSitio} alResolver={setCaptchaRespuesta} />}
             {!error && salida && <p className="aviso-sesion">{salida}</p>}

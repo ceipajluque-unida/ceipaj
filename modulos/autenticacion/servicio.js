@@ -15,6 +15,7 @@ import { validarTelefono, validarCorreo } from '../../comun/validar.js';
 import { clave as frenoClave, codigo2fa as frenoCodigo } from './bloqueos.js';
 import * as dispositivos from './dispositivos.js';
 import { avisarIngresoDesdeEquipoNuevo } from './avisoAcceso.js';
+import { firmarSesion } from '../../servidor/sesion.js';
 
 function emitirToken(usuario, alcance, minutos, extra = {}) {
   return jwt.sign(
@@ -25,9 +26,8 @@ function emitirToken(usuario, alcance, minutos, extra = {}) {
   );
 }
 
-function minutosDeSesion(recordar) {
-  if (recordar) return ajustes.leerNumero('DIAS_RECORDAR_SESION', SEGURIDAD.DIAS_RECORDAR_SESION) * 24 * 60;
-  return ajustes.leerNumero('MINUTOS_EXPIRACION_SESION', SEGURIDAD.MINUTOS_EXPIRACION_SESION);
+function sesionDe(usuario, recordar) {
+  return firmarSesion({ id: usuario.id, nombre: usuario.nombre, rol: usuario.rol, sv: usuario.sesion_version, rec: recordar });
 }
 
 const ultimoEnvioAlterno = new Map();
@@ -93,7 +93,7 @@ async function seguirIngreso(usuario, { recordar, tokenDispositivo }, ip) {
     await registrarAuditoria({ usuarioId: usuario.id, accion: 'ingreso_exitoso', detalle: 'equipo de confianza', ip });
     return {
       requiereCodigo: false,
-      token: emitirToken(usuario, 'sesion', minutosDeSesion(recordar)),
+      token: sesionDe(usuario, recordar),
       usuario: { id: usuario.id, nombre: usuario.nombre, correo: usuario.correo, rol: usuario.rol },
       requiereCambioClave: Boolean(usuario.debe_cambiar_clave),
       recordar: Boolean(recordar),
@@ -105,7 +105,7 @@ async function seguirIngreso(usuario, { recordar, tokenDispositivo }, ip) {
     await registrarAuditoria({ usuarioId: usuario.id, accion: 'ingreso_exitoso', detalle: 'sin verificacion en dos pasos', ip });
     return {
       requiereCodigo: false,
-      token: emitirToken(usuario, 'sesion', minutosDeSesion(recordar)),
+      token: sesionDe(usuario, recordar),
       usuario: { id: usuario.id, nombre: usuario.nombre, correo: usuario.correo, rol: usuario.rol },
       requiereCambioClave: Boolean(usuario.debe_cambiar_clave),
       recordar: Boolean(recordar),
@@ -173,7 +173,7 @@ async function seguirVerificacion(usuario, datos, { codigo, confiarEquipo, userA
   await registrarAuditoria({
     usuarioId: usuario.id,
     accion: 'ingreso_exitoso',
-    detalle: recordar ? 'sesión abierta varios días en este equipo' : null,
+    detalle: recordar ? 'sesión recordada en este navegador' : null,
     ip,
   });
   await avisarIngresoDesdeEquipoNuevo(usuario, { equipo: dispositivos.nombrarEquipo(userAgent), ip });
@@ -185,7 +185,7 @@ async function seguirVerificacion(usuario, datos, { codigo, confiarEquipo, userA
   }
 
   return {
-    token: emitirToken(usuario, 'sesion', minutosDeSesion(recordar)),
+    token: sesionDe(usuario, recordar),
     usuario: { id: usuario.id, nombre: usuario.nombre, correo: usuario.correo, rol: usuario.rol },
     requiereCambioClave: Boolean(usuario.debe_cambiar_clave),
     recordar,
