@@ -42,8 +42,8 @@ export default function SuscripcionInstitucion({ institucionId, refresco }) {
     const motivo = await pedirTexto({
       titulo: `¿Dar de baja el plan ${legible(fila.plan)}?`,
       texto: `El período se cierra hoy, aunque estaba pago hasta el ${fecha(fila.fecha_fin)}. `
-        + 'La institución pasa al plan Free en el momento: sus usuarios van a poder consultar lo que ya '
-        + 'está cargado, pero no trabajar. '
+        + 'La institución pasa al plan Free en el momento: sus usuarios solo van a poder trabajar con los '
+        + 'interesados, y el resto de las secciones vuelve cuando contrate un plan. No se borra nada. '
         + 'Escribí por qué la das de baja: queda registrado con tu nombre.',
       marcador: 'Por ejemplo: falta de pago',
       confirmar: 'Dar de baja',

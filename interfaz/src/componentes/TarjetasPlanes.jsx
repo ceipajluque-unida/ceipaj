@@ -47,8 +47,11 @@ export default function TarjetasPlanes({ planes, vigente, cambios = {}, esAdmini
             <p className="cifra">{guaranies(plan.precio)}</p>
             <p className="nota">{textoPeriodo(plan.meses)}</p>
             <ul className="lista-plan">
-              <li>{plan.maxUsuarios ? `Hasta ${contar(plan.maxUsuarios, 'usuario', 'usuarios')}` : 'Usuarios sin límite'}</li>
-              <li>{plan.maxAliados ? `Hasta ${contar(plan.maxAliados, 'aliado institucional', 'aliados institucionales')}` : 'Aliados ilimitados'}</li>
+              <li>{plan.maxUsuarios == null ? 'Usuarios sin límite' : `Hasta ${contar(plan.maxUsuarios, 'usuario', 'usuarios')}`}</li>
+              {/* un tope de 0 no es ilimitado: el Free no admite aliados */}
+              <li>{plan.maxAliados == null ? 'Aliados ilimitados'
+                : plan.maxAliados === 0 ? 'Sin aliados institucionales'
+                  : `Hasta ${contar(plan.maxAliados, 'aliado institucional', 'aliados institucionales')}`}</li>
               <li>{plan.modulos?.length ? `Secciones: ${plan.modulos.map(nombreModulo).join(', ')}` : 'Todas las secciones'}</li>
               {plan.incluye.map((punto) => <li key={punto}>{punto}</li>)}
             </ul>

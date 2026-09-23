@@ -124,8 +124,8 @@ export default function Suscripciones() {
       titulo: '¿Dejar de renovar el plan?',
       texto: `Vas a seguir usando el plan ${vigente.texto_plan} con todo lo que incluye hasta el `
         + `${fecha(vigente.fecha_fin)}, que es el período que ya pagaste. Desde esa fecha el sistema `
-        + 'pasa al plan Free, desde donde se puede consultar todo lo cargado. No hay reembolso por los '
-        + 'días sin usar.',
+        + 'pasa al plan Free: queda habilitada solo la sección de interesados, y el resto vuelve '
+        + 'apenas se contrate un plan. No se borra nada. No hay reembolso por los días sin usar.',
       confirmar: 'Sí, dar de baja',
       peligro: true,
     });

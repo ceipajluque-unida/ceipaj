@@ -167,9 +167,9 @@ export const LANDING = {
       },
       {
         pregunta: '¿Qué ocurre si no se renueva la suscripción?',
-        respuesta: 'No se pierde ninguna información. La institución pasa al plan Free, desde donde '
-          + 'puede consultar todo lo que ya tenía cargado, y recupera el resto de las secciones al '
-          + 'volver a contratar.',
+        respuesta: 'No se pierde ninguna información. La institución pasa al plan Free, que mantiene '
+          + 'habilitada la sección de interesados, y recupera el resto de las secciones al volver a '
+          + 'contratar.',
       },
       {
         pregunta: '¿Cómo se contrata?',
