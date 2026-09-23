@@ -30,18 +30,6 @@ function ajustesDeCheckout() {
   };
 }
 
-export async function crear(req, res) {
-  const { concepto, monto, medio } = req.body ?? {};
-  const montoNumero = Number(monto);
-  if (!concepto?.trim()) throw new ErrorVisible('El concepto es obligatorio.');
-  if (!Number.isInteger(montoNumero) || montoNumero <= 0) {
-    throw new ErrorVisible('El monto debe ser un entero positivo en guaraníes.');
-  }
-  await validarMedio(medio, montoNumero);
-  const cobro = await servicio.crearCobro({ concepto: concepto.trim(), monto: montoNumero, medio }, req.usuario, req.ip);
-  res.status(201).json({ ...cobro, ...ajustesDeCheckout() });
-}
-
 export async function pagarPlan(req, res) {
   const { plan, medio } = req.body ?? {};
   const elegido = await buscarPlan(plan);

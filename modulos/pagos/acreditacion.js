@@ -26,11 +26,27 @@ function guardarDatosDelPago(conexion, referencia, aviso = {}) {
   );
 }
 
+// el monto se compara en los tres caminos que acreditan (aviso, consulta y
+// conciliacion), siempre que la pasarela lo informe
+async function exigirMontoCorrecto(conexion, referencia, aviso, ip) {
+  if (!Number.isFinite(Number(aviso?.monto))) return;
+  const [[registrado]] = await conexion.query('SELECT monto FROM pagos WHERE referencia = ? FOR UPDATE', [referencia]);
+  if (registrado && Number(registrado.monto) !== Number(aviso.monto)) {
+    await registrarAuditoria({
+      accion: 'pago_monto_no_coincide',
+      detalle: `${referencia}: se esperaban ${registrado.monto} y la pasarela informó ${aviso.monto}`,
+      ip,
+    });
+    throw new ErrorVisible('El monto que informó la pasarela no coincide con el del pago, así que no se acredita.', 409);
+  }
+}
+
 export async function aplicarResultado({ referencia, estado, usuarioId, aviso }, ip) {
   const conexion = await bd.getConnection();
   let pago;
   try {
     await conexion.beginTransaction();
+    if (estado === ESTADOS_PAGO.EXITOSO) await exigirMontoCorrecto(conexion, referencia, aviso, ip);
 
     const [actualizacion] = await conexion.query(
       'UPDATE pagos SET estado = ? WHERE referencia = ? AND estado <> ?',

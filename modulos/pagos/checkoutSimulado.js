@@ -1,5 +1,6 @@
 import { bd } from '../../servidor/bd/conexion.js';
 import { ErrorVisible } from '../../servidor/errores.js';
+import { institucionActual } from '../../servidor/contexto.js';
 import { esSimulada } from './proveedor.js';
 import { avisoDePago } from './pasarelas/simulada.js';
 import { procesarNotificacion } from './acreditacion.js';
@@ -12,8 +13,8 @@ async function buscarPedido(hash) {
   const [[pago]] = await bd.query(
     `SELECT p.referencia, p.concepto, p.monto, p.moneda, p.medio_pago, p.estado, i.nombre AS institucion
        FROM pagos p LEFT JOIN instituciones i ON i.id = p.institucion_id
-      WHERE p.identificador_externo = ?`,
-    [hash]
+      WHERE p.identificador_externo = ? AND p.institucion_id = ?`,
+    [hash, institucionActual()]
   );
   if (!pago) throw new ErrorVisible('El pedido no existe o ya venció.', 404);
   return pago;
