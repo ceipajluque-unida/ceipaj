@@ -65,7 +65,7 @@ Esta Política podrá actualizarse ante cambios normativos, funcionales o tecnol
 
 11. Responsable del tratamiento
 
-El responsable del tratamiento de los datos personales gestionados por el sistema es el Centro Educativo Integral para Adultos y Jóvenes (CEIPAJ), en su carácter de institución titular del sistema. Las solicitudes de acceso, rectificación, supresión u oposición podrán canalizarse a través del personal administrativo-académico designado por la institución para dicha gestión.
+El responsable del tratamiento de los datos personales gestionados por el sistema es el Centro Educativo Integral para Adultos y Jóvenes (CEIPAJ), en su carácter de institución titular del sistema. Las solicitudes de acceso, rectificación, supresión u oposición podrán canalizarse a través del personal comercial designado por la institución para dicha gestión.
 
 12. Contacto
 
@@ -92,7 +92,7 @@ El acceso o uso del sistema implica que el usuario ha leído, comprendido y acep
 
 3. Uso permitido del sistema
 
-El usuario (Administrador, Personal administrativo-académico, Gerencia Institucional o Aliado institucional) se compromete a utilizar el sistema exclusivamente para las finalidades previstas según su rol, proporcionar información veraz cuando sea requerida, mantener la confidencialidad de sus credenciales de acceso y notificar cualquier uso no autorizado de su cuenta.
+El usuario (Administrador, Comercial, Gerencia Institucional o Aliado institucional) se compromete a utilizar el sistema exclusivamente para las finalidades previstas según su rol, proporcionar información veraz cuando sea requerida, mantener la confidencialidad de sus credenciales de acceso y notificar cualquier uso no autorizado de su cuenta.
 
 4. Usos prohibidos
 

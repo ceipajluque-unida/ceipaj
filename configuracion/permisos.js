@@ -54,7 +54,7 @@ export const PERMISOS_EXPORTACION = {
 // nombre de cada rol tal como se ve en pantalla. es la semilla de la tabla roles
 export const TITULOS_ROL = {
   [ROLES.ADMINISTRADOR]: 'Administrador',
-  [ROLES.COMERCIAL]: 'Personal administrativo-académico',
+  [ROLES.COMERCIAL]: 'Comercial',
   [ROLES.DIRECCION]: 'Gerencia institucional',
   [ROLES.ALIADO]: 'Aliado institucional',
   [ROLES.SUPERADMINISTRADOR]: 'Proveedor del servicio',

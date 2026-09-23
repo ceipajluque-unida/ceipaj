@@ -112,6 +112,12 @@ async function sembrarRoles(conexion) {
     );
     console.log(`rol sembrado: ${clave} con ${suyos.length} modulos`);
   }
+  // el rol comercial se sembro con el nombre viejo; solo se cambia si nadie lo edito
+  const [renombrado] = await conexion.query(
+    'UPDATE roles SET titulo = ? WHERE clave = ? AND titulo = ?',
+    [TITULOS_ROL.comercial, 'comercial', 'Personal administrativo-académico']
+  );
+  if (renombrado.affectedRows > 0) console.log('rol comercial renombrado a ' + TITULOS_ROL.comercial);
 }
 
 async function sembrarInstitucion(conexion) {
@@ -172,7 +178,7 @@ async function sembrarPlanes(conexion) {
       'UPDATE planes SET max_usuarios = ? WHERE clave = ? AND max_usuarios IS NULL',
       [plan.maxUsuarios, plan.valor]
     );
-    if (resultado.affectedRows > 0) console.log(`límites completados en el plan ${plan.valor}`);
+    if (resultado.changedRows > 0) console.log(`límites completados en el plan ${plan.valor}`);
     if (plan.valor === 'basico') {
       const [ajuste] = await conexion.query(
         'UPDATE planes SET modulos_incluidos = ? WHERE clave = ? AND modulos_incluidos = ?',
@@ -206,6 +212,16 @@ async function emparejarPlanesConTesis(conexion) {
     );
     if (resultado.affectedRows > 0) console.log(`plan ${plan.valor} emparejado con la tabla 19 de la tesis`);
   }
+}
+
+// un pago con estado vacio lo dejo guardar una base sin modo estricto. nunca se
+// completo y no activo nada, asi que queda como rechazado
+async function repararPagosSinEstado(conexion) {
+  const [resultado] = await conexion.query(
+    `UPDATE pagos SET estado = 'rechazado'
+      WHERE estado = '' AND id NOT IN (SELECT pago_id FROM suscripciones WHERE pago_id IS NOT NULL)`
+  );
+  if (resultado.affectedRows > 0) console.log(`pagos con estado vacío marcados como rechazados: ${resultado.affectedRows}`);
 }
 
 async function actualizarColorAcento(conexion) {
@@ -328,6 +344,7 @@ async function migrar() {
   await asegurarClaveForanea(conexion, 'usuarios', 'fk_usuarios_rol',
     'FOREIGN KEY (rol) REFERENCES roles (clave) ON UPDATE CASCADE');
   await borrarAjustesRetirados(conexion);
+  await repararPagosSinEstado(conexion);
 
   await conexion.end();
   console.log(`base "${BASE_DATOS.NOMBRE}" lista con todas las tablas del sistema.`);
