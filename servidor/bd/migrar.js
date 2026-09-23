@@ -22,7 +22,7 @@ async function aplanarTextosLegales(conexion) {
     "SELECT institucion_id, clave, valor FROM ajustes_sistema WHERE clave IN ('TEXTO_POLITICA', 'TEXTO_TERMINOS', 'TEXTO_AVISO_PRIVACIDAD', 'TEXTO_CONSENTIMIENTO')"
   );
   for (const fila of filas) {
-    const plano = String(fila.valor ?? '').replace(/^## /gm, '').replace(/**([^*]+)**/g, '$1');
+    const plano = String(fila.valor ?? '').replace(/^## /gm, '').replace(/\*\*([^*]+)\*\*/g, '$1');
     if (plano === fila.valor) continue;
     await conexion.query(
       'UPDATE ajustes_sistema SET valor = ? WHERE institucion_id = ? AND clave = ?',
