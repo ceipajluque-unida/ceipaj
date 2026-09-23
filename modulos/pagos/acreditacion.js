@@ -146,7 +146,8 @@ export async function conciliarPendientes(ip) {
   for (const pago of porRevisar) {
     try {
       const aviso = await proveedor.consultarEstado(pago.identificador_externo);
-      if (aviso.estado === pago.estado || aviso.estado === ESTADOS_PAGO.PENDIENTE) continue;
+      // sin un estado conocido no se toca el pago: si no, queda con el estado vacío
+      if (!aviso.estado || aviso.estado === pago.estado || aviso.estado === ESTADOS_PAGO.PENDIENTE) continue;
       await aplicarResultado({ referencia: pago.referencia, estado: aviso.estado, usuarioId: null, aviso }, ip);
       await registrarAuditoria({ accion: `pago_conciliado_${aviso.estado}`, detalle: pago.referencia, ip });
       actualizados += 1;
