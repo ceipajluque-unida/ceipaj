@@ -9,4 +9,4 @@ rutasComisiones.get('/', autenticar, permitirModulo('comisiones'), controlador.l
 
 rutasComisiones.get('/:id/recibo', autenticar, permitirModulo('comisiones'), controlador.recibo);
 
-rutasComisiones.put('/:id/estado', autenticar, permitirRoles(...PERMISOS_ESCRITURA.comisiones), controlador.pagar);
+rutasComisiones.put('/:id/estado', autenticar, permitirModulo('comisiones'), permitirRoles(...PERMISOS_ESCRITURA.comisiones), controlador.pagar);

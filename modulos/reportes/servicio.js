@@ -31,7 +31,7 @@ export async function obtenerIndicadores() {
     `SELECT COUNT(*) AS total
        FROM leads l
        WHERE l.estado = ?
-         AND l.institucion_id = ?
+         AND l.institucion_id = ? AND l.activo = 1
          AND DATEDIFF(NOW(), COALESCE(${ULTIMA_ACCION}, l.fecha_conversion)) > ?`,
     [ESTADOS_LEAD.MATRICULADO, institucionId, ajustes.leerNumero('DIAS_SIN_ACOMPANAMIENTO_RIESGO', LIMITES.DIAS_SIN_ACOMPANAMIENTO_RIESGO)]
   );
@@ -40,7 +40,7 @@ export async function obtenerIndicadores() {
     `SELECT COUNT(*) AS total
        FROM leads l
        WHERE l.estado IN (?, ?)
-         AND l.institucion_id = ?
+         AND l.institucion_id = ? AND l.activo = 1
          AND DATEDIFF(NOW(), COALESCE(${ULTIMA_INTERACCION}, l.creado_en)) > ?`,
     [ESTADOS_LEAD.NUEVO, ESTADOS_LEAD.INTERESADO, institucionId, ajustes.leerNumero('DIAS_SIN_SEGUIMIENTO_PARA_ALERTA', LIMITES.DIAS_SIN_SEGUIMIENTO_PARA_ALERTA)]
   );

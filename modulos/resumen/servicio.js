@@ -24,7 +24,7 @@ export async function contarBadges(usuario) {
       `SELECT COUNT(*) AS total FROM leads l
         WHERE l.estado IN (?, ?)
           AND l.institucion_id = ? AND l.activo = 1
-          AND COALESCE((SELECT MAX(i.fecha) FROM interacciones i WHERE i.lead_id = l.id), l.creado_en) < (NOW() - INTERVAL ? DAY)`,
+          AND DATEDIFF(NOW(), COALESCE((SELECT MAX(i.fecha) FROM interacciones i WHERE i.lead_id = l.id), l.creado_en)) > ?`,
       [ESTADOS_LEAD.NUEVO, ESTADOS_LEAD.INTERESADO, institucion(), dias]
     );
     badges.leads = Number(fila.total);
@@ -36,7 +36,7 @@ export async function contarBadges(usuario) {
       `SELECT COUNT(*) AS total FROM leads l
         WHERE l.estado = ?
           AND l.institucion_id = ? AND l.activo = 1
-          AND COALESCE((SELECT MAX(a.fecha) FROM acciones_seguimiento a WHERE a.lead_id = l.id), l.fecha_conversion) < (NOW() - INTERVAL ? DAY)`,
+          AND DATEDIFF(NOW(), COALESCE((SELECT MAX(a.fecha) FROM acciones_seguimiento a WHERE a.lead_id = l.id), l.fecha_conversion)) > ?`,
       [ESTADOS_LEAD.MATRICULADO, institucion(), dias]
     );
     badges.seguimiento = Number(fila.total);

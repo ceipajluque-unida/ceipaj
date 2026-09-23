@@ -105,6 +105,7 @@ export async function estadoDePago(referencia) {
     const aviso = await proveedor.consultarEstado(pago.identificador_externo);
     if (!aviso.estado || aviso.estado === ESTADOS_PAGO.PENDIENTE || aviso.estado === pago.estado) return respuesta;
     await aplicarResultado({ referencia, estado: aviso.estado, usuarioId: null, aviso });
+    await registrarAuditoria({ accion: `pago_${aviso.estado}`, detalle: `${referencia}: consulta del estado a la pasarela` });
     consultas.delete(referencia);
     return { ...respuesta, estado: aviso.estado };
   } catch {
