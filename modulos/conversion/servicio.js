@@ -6,6 +6,7 @@ import { normalizarCedula } from '../../comun/validar.js';
 import { concretarMatricula } from '../leads/servicio.js';
 import { motivoDeBloqueo } from '../leads/estados.js';
 import { conInstitucion, institucionActual } from '../../servidor/contexto.js';
+import { planEnVigor, moduloIncluido } from '../suscripciones/plan.js';
 import * as csv from './academico/csv.js';
 
 function institucionDelPedido() {
@@ -77,7 +78,11 @@ export function iniciarSincronizacionAutomatica() {
     try {
       const [instituciones] = await bd.query('SELECT id FROM instituciones WHERE activo = 1');
       for (const institucion of instituciones) {
-        await conInstitucion(institucion.id, () => sincronizar(null, 'automatica'));
+        await conInstitucion(institucion.id, async () => {
+          // el cruce automático respeta el plan: sin la sección de conversión no convierte
+          if (!moduloIncluido(await planEnVigor(), 'conversion')) return;
+          await sincronizar(null, 'automatica');
+        });
       }
     } catch (error) {
       console.error('Falló la sincronización automática:', error.message);

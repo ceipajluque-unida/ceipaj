@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import { SERVIDOR, SEGURIDAD } from '../configuracion/ajustes.js';
+import { SERVIDOR, SEGURIDAD, APLICACION } from '../configuracion/ajustes.js';
 import { rutasAutenticacion } from '../modulos/autenticacion/rutas.js';
 import { rutasUsuarios } from '../modulos/usuarios/rutas.js';
 import { rutasLeads } from '../modulos/leads/rutas.js';
@@ -35,7 +35,19 @@ aplicacion.use(express.json({
     if (req.originalUrl.startsWith('/api/pagos/notificacion')) req.cuerpoCrudo = cuerpo.toString('utf8');
   },
 }));
-aplicacion.use(cors());
+// la interfaz llama a la api desde su mismo dominio y no necesita cors: solo se
+// le abre la puerta a otro origen si es la dirección web configurada del sistema
+function origenPermitido(origen, responder) {
+  const direccion = ajustesSistema.leer('APP_URL', APLICACION.URL);
+  try {
+    responder(null, new URL(/^https?:\/\//.test(direccion) ? direccion : `https://${direccion}`).origin === origen);
+  } catch {
+    responder(null, false);
+  }
+}
+
+aplicacion.disable('x-powered-by');
+aplicacion.use(cors({ origin: origenPermitido }));
 
 aplicacion.use((req, res, siguiente) => {
   res.set('X-Content-Type-Options', 'nosniff');

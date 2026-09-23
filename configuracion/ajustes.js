@@ -225,9 +225,9 @@ export const MODULOS_NUCLEO = ['usuarios', 'configuracion', 'suscripcion', 'pago
 // semilla de los planes. los módulos son el punto de partida: el proveedor los
 // edita desde la pantalla Planes. lista vacía = el plan habilita todos.
 export const PLANES_SUSCRIPCION = [
-  // el plan al que cae una institución sin suscripción vigente. deja consultar
-  // lo que ya se cargó y nada más: sin aliados, sin comisiones y sin reportes.
-  // no se cobra, así que su precio es cero y no pasa por la pasarela.
+  // el plan al que cae una institución sin suscripción vigente: solo la sección
+  // de interesados, sin aliados, sin comisiones y sin reportes. no se cobra, así
+  // que su precio es cero y no pasa por la pasarela.
   {
     valor: 'free',
     texto: 'Free',
@@ -236,7 +236,7 @@ export const PLANES_SUSCRIPCION = [
     maxUsuarios: 1,
     maxAliados: 0,
     modulos: ['leads'],
-    incluye: ['Consulta de los interesados ya cargados', 'Sin costo'],
+    incluye: ['Solo la sección de interesados', 'Sin costo'],
   },
   {
     valor: 'basico',
@@ -251,7 +251,7 @@ export const PLANES_SUSCRIPCION = [
   {
     valor: 'estandar',
     texto: 'Estándar',
-    precio: 1200000,
+    precio: 800000,
     meses: 1,
     maxUsuarios: 8,
     maxAliados: 25,
@@ -261,7 +261,7 @@ export const PLANES_SUSCRIPCION = [
   {
     valor: 'avanzado',
     texto: 'Avanzado',
-    precio: 2200000,
+    precio: 1000000,
     meses: 1,
     maxUsuarios: null,
     maxAliados: null,
