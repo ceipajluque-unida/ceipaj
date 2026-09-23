@@ -90,7 +90,7 @@ export default function Planes() {
     },
     {
       title: 'Aliados', dataIndex: 'maxAliados', key: 'maxAliados',
-      render: (valor) => (valor === null ? 'Sin tope' : `Hasta ${valor}`),
+      render: (valor) => (valor === null ? 'Sin tope' : valor === 0 ? 'Ninguno' : `Hasta ${valor}`),
     },
     {
       title: 'Secciones que habilita', dataIndex: 'modulos', key: 'modulos',

@@ -236,7 +236,7 @@ export const PLANES_SUSCRIPCION = [
     maxUsuarios: 1,
     maxAliados: 0,
     modulos: ['leads'],
-    incluye: ['Solo la sección de interesados', 'Sin costo'],
+    incluye: ['Sin costo'],
   },
   {
     valor: 'basico',

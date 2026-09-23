@@ -93,7 +93,7 @@ a { color: var(--acento); }
 .aviso-privacidad { font-size: 0.78rem; color: var(--texto-suave); line-height: 1.45; margin: 0.6rem 0 0; }
 
 .chip-plan {
-  display: inline-flex; align-items: center; gap: 0.15rem; text-decoration: none;
+  display: inline-flex; align-items: center; text-decoration: none;
   background: var(--acento-suave); color: var(--acento); border-radius: 999px;
   padding: 0.2rem 0.7rem; font-size: 0.76rem; font-weight: 600; white-space: nowrap;
 }
