@@ -38,7 +38,7 @@ export async function crearLead({ nombre, cedula, telefono, correo, canal, conse
   validarDatosContacto({ nombre, telefono, correo, canal });
   if (!validarCedula(cedula)) throw new ErrorVisible('La cédula debe ser numérica, de 6 a 8 dígitos.');
   if (consentimiento !== true) {
-    throw new ErrorVisible('Falta el consentimiento del interesado para el uso de sus datos (Ley 7593).');
+    throw new ErrorVisible('Marcá el consentimiento del interesado para el uso de sus datos (Ley N.º 7593/2025).');
   }
   const cedulaNormalizada = normalizarCedula(cedula);
 
