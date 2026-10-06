@@ -231,14 +231,16 @@ export async function enviarCodigoAlternativo({ tokenPre2fa, metodo }, ip) {
   }
   ultimoEnvioAlterno.set(usuario.id, ahora);
 
-  const envio = await emitirCodigo(usuario, metodo);
-  await registrarAuditoria({ usuarioId: usuario.id, accion: 'codigo_2fa_alternativo', detalle: metodo, ip });
-  return {
-    metodo,
-    destino: metodo === 'sms' ? usuario.telefono : usuario.correo,
-    configurado: envio.configurado,
-    enviado: envio.enviado,
-  };
+  return conInstitucion(usuario.institucion_id ?? null, async () => {
+    const envio = await emitirCodigo(usuario, metodo);
+    await registrarAuditoria({ usuarioId: usuario.id, accion: 'codigo_2fa_alternativo', detalle: metodo, ip });
+    return {
+      metodo,
+      destino: metodo === 'sms' ? usuario.telefono : usuario.correo,
+      configurado: envio.configurado,
+      enviado: envio.enviado,
+    };
+  });
 }
 
 export async function cambiarClave({ usuarioId, claveActual, claveNueva }, ip) {
