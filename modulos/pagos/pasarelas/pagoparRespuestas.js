@@ -12,7 +12,7 @@ export function estadoDePedido(datos) {
 
 export function datosDelPago(datos) {
   return {
-    fechaPago: datos?.fecha_pago || null,
+    fechaPago: datos?.fecha_pago ? (d => (isNaN(d) ? null : d))(new Date(String(datos.fecha_pago).replace(' ', 'T') + '-03:00')) : null,
     formaPago: datos?.forma_pago || null,
     comprobante: datos?.numero_comprobante_interno || null,
     pagadorNombre: datos?.nombre_comprador || datos?.comprador || null,
