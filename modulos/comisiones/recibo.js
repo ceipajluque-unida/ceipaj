@@ -58,7 +58,7 @@ export function generarReciboComision(comision, emision) {
     numero: numeroDeReciboComision(comision),
     emision: {
       fecha: fechaCorta(emision.ahora),
-      hora: emision.ahora.toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' }),
+      hora: emision.ahora.toLocaleTimeString('es-PY', { timeZone: 'America/Asuncion', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' }),
       estado: emision.estado,
     },
     parIzquierdo: {

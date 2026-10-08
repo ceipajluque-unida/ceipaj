@@ -23,12 +23,12 @@ export function enGuaranies(monto) {
 }
 
 export function fechaCorta(valor) {
-  return new Date(valor).toLocaleDateString('es-PY', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  return new Date(valor).toLocaleDateString('es-PY', { timeZone: 'America/Asuncion', day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
 export function fechaYHora(valor) {
   const fecha = new Date(valor);
-  return `${fecha.toLocaleDateString('es-PY', { day: '2-digit', month: '2-digit', year: 'numeric' })} ${fecha.toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' })}`;
+  return `${fecha.toLocaleDateString('es-PY', { timeZone: 'America/Asuncion', day: '2-digit', month: '2-digit', year: 'numeric' })} ${fecha.toLocaleTimeString('es-PY', { timeZone: 'America/Asuncion', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' })}`;
 }
 
 export function nombreDelEmisor() {
@@ -92,7 +92,7 @@ export async function generarRecibo(pago, emision) {
     numero: numeroDeRecibo(pago),
     emision: {
       fecha: fechaCorta(emision.ahora),
-      hora: emision.ahora.toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' }),
+      hora: emision.ahora.toLocaleTimeString('es-PY', { timeZone: 'America/Asuncion', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' }),
       estado: emision.estado,
     },
     parIzquierdo: {
