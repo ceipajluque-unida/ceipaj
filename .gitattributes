@@ -1,0 +1,9 @@
+# los archivos de texto se guardan con fin de línea LF en el repositorio,
+# que es lo que usa el servidor; en Windows se trabajan igual
+* text=auto eol=lf
+
+# binarios
+*.woff2 binary
+*.png binary
+*.jpg binary
+*.ico binary

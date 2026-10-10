@@ -1,0 +1,19 @@
+# dependencias
+node_modules/
+
+# configuración local con los secretos
+.env
+
+# interfaz compilada
+interfaz/dist/
+
+# lo que genera el sistema al funcionar
+subidas/
+respaldos/
+*.log
+
+# editor y sistema operativo
+.vscode/
+.cache/
+.DS_Store
+Thumbs.db
