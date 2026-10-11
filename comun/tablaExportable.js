@@ -1,5 +1,6 @@
 import ExcelJS from 'exceljs';
 import PDFDocument from 'pdfkit';
+import { fechaLocal } from './fechas.js';
 
 // un solo generador para todas las descargas del sistema: las de la institución
 // y las del proveedor. sin adornos a propósito: encabezado en negrita y la
@@ -34,9 +35,7 @@ export async function aXlsx({ titulo, autor, encabezados, filas }) {
   return Buffer.from(await libro.xlsx.writeBuffer());
 }
 
-const momento = () => new Date().toLocaleString('es-PY', {
-  day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
-});
+const momento = () => fechaLocal(new Date());
 
 export function aPdf({ titulo, encabezados, filas }) {
   return new Promise((resolver, rechazar) => {

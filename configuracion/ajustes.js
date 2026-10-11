@@ -8,6 +8,8 @@ export const SERVIDOR = {
 
 export const APLICACION = {
   URL: process.env.APP_URL ?? 'http://localhost:5173',
+  // el servidor corre en utc; las fechas que ve la gente van en hora de la institucion
+  ZONA_HORARIA: process.env.ZONA_HORARIA ?? 'America/Asuncion',
 };
 
 export const POLITICA_CLAVE = {

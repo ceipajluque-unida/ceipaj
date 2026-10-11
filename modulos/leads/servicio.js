@@ -89,9 +89,10 @@ export async function concretarMatricula(leadId, fecha, usuarioId, ip) {
   const conexion = await bd.getConnection();
   try {
     await conexion.beginTransaction();
-    // la condicion se repite en el update: si lo dieron de baja recien, no pasa
+    // la condicion se repite en el update: si lo dieron de baja recien, no pasa.
+    // la planilla trae solo el dia: la matricula no queda antes de su registro ni en el futuro
     const [cambio] = await conexion.query(
-      'UPDATE leads SET estado = ?, fecha_conversion = ? WHERE id = ? AND institucion_id = ? AND activo = 1 AND estado <> ?',
+      'UPDATE leads SET estado = ?, fecha_conversion = LEAST(GREATEST(?, creado_en), NOW()) WHERE id = ? AND institucion_id = ? AND activo = 1 AND estado <> ?',
       [ESTADOS_LEAD.MATRICULADO, fecha ?? new Date(), leadId, institucionId, ESTADOS_LEAD.MATRICULADO]
     );
     if (cambio.affectedRows === 0) {

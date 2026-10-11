@@ -1,6 +1,7 @@
 import { bd } from '../../../servidor/bd/conexion.js';
 import { ErrorVisible } from '../../../servidor/errores.js';
 import { validarCedula, normalizarCedula } from '../../../comun/validar.js';
+import { leerFechaDelDia } from '../../../comun/fechas.js';
 
 const COLUMNAS_ESPERADAS = 'cedula;nombre;fecha_inscripcion';
 const MAXIMO_FILAS = 2000;
@@ -18,14 +19,6 @@ export async function listarMatriculados(institucionId) {
 function separar(linea) {
   const separador = linea.includes(';') ? ';' : ',';
   return linea.split(separador).map((celda) => celda.trim().replace(/^"|"$/g, ''));
-}
-
-function interpretarFecha(texto) {
-  if (!texto) return null;
-  const partido = texto.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
-  if (partido) return `${partido[3]}-${partido[2].padStart(2, '0')}-${partido[1].padStart(2, '0')}`;
-  const fecha = new Date(texto);
-  return Number.isNaN(fecha.getTime()) ? null : fecha.toISOString().slice(0, 10);
 }
 
 export async function importar(contenido, institucionId) {
@@ -53,7 +46,11 @@ export async function importar(contenido, institucionId) {
       rechazadas.push({ linea: numeroLinea, motivo: 'falta el nombre' });
       continue;
     }
-    const inscripcion = interpretarFecha(fecha);
+    const inscripcion = leerFechaDelDia(fecha);
+    if (inscripcion && inscripcion > new Date()) {
+      rechazadas.push({ linea: numeroLinea, motivo: `la fecha de inscripción ${fecha} todavía no llegó (se escribe día/mes/año)` });
+      continue;
+    }
 
     await bd.query(
       `INSERT INTO academico_matriculados (cedula, nombre, fecha_inscripcion, origen, institucion_id)

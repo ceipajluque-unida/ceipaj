@@ -4,6 +4,7 @@ import { generarXlsx, generarPdf } from './documentos.js';
 import { ErrorVisible } from '../../servidor/errores.js';
 import { registrarAuditoria } from '../../servidor/auditoria.js';
 import { PERMISOS_EXPORTACION } from '../../configuracion/permisos.js';
+import { hoyLocal } from '../../comun/fechas.js';
 
 export async function indicadores(req, res) {
   res.json(await servicio.obtenerIndicadores());
@@ -22,7 +23,7 @@ export async function exportar(req, res) {
 
   await registrarAuditoria({ usuarioId: req.usuario.id, accion: 'reporte_exportado', detalle: `${tabla} (${formato})`, ip: req.ip });
 
-  const nombre = `${tabla}-${new Date().toISOString().slice(0, 10)}`;
+  const nombre = `${tabla}-${hoyLocal()}`;
 
   if (formato === 'xlsx') {
     const archivo = await generarXlsx(tabla);

@@ -2,6 +2,7 @@ import { bd } from '../../servidor/bd/conexion.js';
 import { registrarAuditoria } from '../../servidor/auditoria.js';
 import { ErrorVisible } from '../../servidor/errores.js';
 import { validarCedula, normalizarCedula } from '../../comun/validar.js';
+import { leerFechaDelDia } from '../../comun/fechas.js';
 import { ACADEMICO } from '../../configuracion/ajustes.js';
 import { conInstitucion, institucionActual } from '../../servidor/contexto.js';
 import { timingSafeEqual } from 'node:crypto';
@@ -70,8 +71,11 @@ export async function recibirMatriculados(cuerpo, ip) {
       rechazados.push({ posicion: indice, motivo: 'falta el nombre' });
       continue;
     }
-    const fecha = fila?.fecha_inscripcion ? new Date(fila.fecha_inscripcion) : null;
-    const inscripcion = fecha && !Number.isNaN(fecha.getTime()) ? fecha.toISOString().slice(0, 10) : null;
+    const inscripcion = leerFechaDelDia(fila?.fecha_inscripcion);
+    if (inscripcion && inscripcion > new Date()) {
+      rechazados.push({ posicion: indice, motivo: 'la fecha de inscripción todavía no llegó' });
+      continue;
+    }
     await bd.query(
       `INSERT INTO academico_matriculados (cedula, nombre, fecha_inscripcion, origen, institucion_id)
        VALUES (?, ?, COALESCE(?, NOW()), 'api', ?)

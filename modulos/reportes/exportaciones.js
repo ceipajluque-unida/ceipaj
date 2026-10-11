@@ -2,6 +2,7 @@ import { bd } from '../../servidor/bd/conexion.js';
 import { ErrorVisible } from '../../servidor/errores.js';
 import { institucionActual } from '../../servidor/contexto.js';
 import { aCsv } from '../../comun/tablaExportable.js';
+import { fechaLocal } from '../../comun/fechas.js';
 
 const FILAS_MAXIMAS = 5000;
 
@@ -10,8 +11,8 @@ const EXPORTACIONES = {
     encabezados: ['Nombre', 'Cédula', 'Teléfono', 'Correo', 'Canal', 'Estado', 'Aliado', 'Fecha de conversión', 'Registrado el'],
     sql: `SELECT l.nombre AS nombre, l.cedula AS cedula, l.telefono AS telefono, l.correo AS correo,
                  l.canal AS canal, l.estado AS estado, u.nombre AS aliado,
-                 DATE_FORMAT(l.fecha_conversion, '%d/%m/%Y %H:%i') AS convertido_el,
-                 DATE_FORMAT(l.creado_en, '%d/%m/%Y %H:%i') AS registrado_el
+                 l.fecha_conversion AS convertido_el,
+                 l.creado_en AS registrado_el
             FROM leads l
             LEFT JOIN aliados a ON a.id = l.aliado_id
             LEFT JOIN usuarios u ON u.id = a.usuario_id
@@ -21,7 +22,7 @@ const EXPORTACIONES = {
   interacciones: {
     encabezados: ['Interesado', 'Cédula', 'Tipo', 'Detalle', 'Registrado por', 'Fecha'],
     sql: `SELECT le.nombre AS interesado, le.cedula AS cedula, i.tipo AS tipo, i.detalle AS detalle,
-                 u.nombre AS registrado_por, DATE_FORMAT(i.fecha, '%d/%m/%Y %H:%i') AS fecha
+                 u.nombre AS registrado_por, i.fecha AS fecha
             FROM interacciones i
             JOIN leads le ON le.id = i.lead_id
             JOIN usuarios u ON u.id = i.usuario_id
@@ -31,7 +32,7 @@ const EXPORTACIONES = {
   comisiones: {
     encabezados: ['Aliado', 'Institución', 'Interesado matriculado', 'Monto (Gs.)', 'Estado', 'Fecha'],
     sql: `SELECT u.nombre AS aliado, a.institucion AS institucion, le.nombre AS interesado,
-                 c.monto AS monto, c.estado AS estado, DATE_FORMAT(c.creado_en, '%d/%m/%Y %H:%i') AS fecha
+                 c.monto AS monto, c.estado AS estado, c.creado_en AS fecha
             FROM comisiones c
             JOIN aliados a ON a.id = c.aliado_id
             JOIN usuarios u ON u.id = a.usuario_id
@@ -43,17 +44,18 @@ const EXPORTACIONES = {
     encabezados: ['Referencia', 'Concepto', 'Medio de pago', 'Monto (Gs.)', 'Moneda', 'Estado', 'Proveedor', 'Creado por', 'Fecha'],
     sql: `SELECT p.referencia AS referencia, p.concepto AS concepto, p.medio_pago AS medio_pago, p.monto AS monto, p.moneda AS moneda,
                  p.estado AS estado, p.proveedor AS proveedor, u.nombre AS creado_por,
-                 DATE_FORMAT(p.creado_en, '%d/%m/%Y %H:%i') AS fecha
+                 p.creado_en AS fecha
             FROM pagos p
             LEFT JOIN usuarios u ON u.id = p.creado_por
             WHERE p.institucion_id = ?
             ORDER BY p.creado_en DESC`,
   },
   suscripciones: {
+    detalleFecha: 'dia',
     encabezados: ['Plan', 'Estado', 'Monto (Gs.)', 'Inicio', 'Vencimiento', 'Pago'],
     sql: `SELECT s.plan AS plan, s.estado AS estado, s.monto AS monto,
-                 DATE_FORMAT(s.fecha_inicio, '%d/%m/%Y') AS inicio,
-                 DATE_FORMAT(s.fecha_fin, '%d/%m/%Y') AS vencimiento,
+                 s.fecha_inicio AS inicio,
+                 s.fecha_fin AS vencimiento,
                  p.referencia AS pago
             FROM suscripciones s
             LEFT JOIN pagos p ON p.id = s.pago_id
@@ -61,8 +63,9 @@ const EXPORTACIONES = {
             ORDER BY s.fecha_inicio DESC`,
   },
   auditoria: {
+    detalleFecha: 'segundo',
     encabezados: ['Fecha', 'Usuario', 'Acción', 'Detalle', 'Dirección IP'],
-    sql: `SELECT DATE_FORMAT(au.fecha, '%d/%m/%Y %H:%i:%s') AS fecha, u.nombre AS usuario,
+    sql: `SELECT au.fecha AS fecha, u.nombre AS usuario,
                  au.accion AS accion, au.detalle AS detalle, au.direccion_ip AS ip
             FROM auditoria au
             LEFT JOIN usuarios u ON u.id = au.usuario_id
@@ -80,7 +83,9 @@ export async function obtenerDatos(tabla) {
   const institucionId = institucionActual();
   if (institucionId === null) throw new ErrorVisible('Esta operación es de una institución.', 403);
   const [filas] = await bd.query(`${definicion.sql} LIMIT ?`, [institucionId, FILAS_MAXIMAS]);
-  return { encabezados: definicion.encabezados, filas: filas.map((fila) => Object.values(fila)) };
+  // las fechas se escriben aca y no en la consulta: la base esta en utc
+  const celda = (valor) => (valor instanceof Date ? fechaLocal(valor, definicion.detalleFecha) : valor);
+  return { encabezados: definicion.encabezados, filas: filas.map((fila) => Object.values(fila).map(celda)) };
 }
 
 

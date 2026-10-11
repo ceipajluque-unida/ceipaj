@@ -1,11 +1,12 @@
 import { aCsv, aXlsx, aPdf } from '../../comun/tablaExportable.js';
 import * as servicio from './servicio.js';
 import { PLATAFORMA } from '../../configuracion/ajustes.js';
+import { fechaLocal } from '../../comun/fechas.js';
 
 // los tres reportes del negocio del proveedor. no reusan el modulo de reportes
 // porque aquel filtra por institucion y estos miran todas juntas.
 
-const fecha = (v) => (v ? new Date(v).toLocaleDateString('es-PY') : '');
+const fecha = (v) => fechaLocal(v, 'dia');
 const ESTADO_PLAN = { vigente: 'Vigente', vencido: 'Vencido', sin_plan: 'Nunca contrató' };
 
 const REPORTES = {

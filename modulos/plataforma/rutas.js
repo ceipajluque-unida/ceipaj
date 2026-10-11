@@ -4,6 +4,7 @@ import * as documentos from './documentos.js';
 import { autenticar, permitirModulo } from '../../servidor/middleware/autenticar.js';
 import { registrarAuditoria } from '../../servidor/auditoria.js';
 import { ErrorVisible } from '../../servidor/errores.js';
+import { hoyLocal } from '../../comun/fechas.js';
 
 export const rutasPlataforma = Router();
 
@@ -27,7 +28,7 @@ rutasPlataforma.get('/exportar/:reporte', async (req, res) => {
     detalle: `${documentos.tituloDe(reporte)} (${formato})`, ip: req.ip,
   });
 
-  const nombre = `plataforma-${reporte}-${new Date().toISOString().slice(0, 10)}`;
+  const nombre = `plataforma-${reporte}-${hoyLocal()}`;
   if (formato === 'xlsx') {
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', `attachment; filename="${nombre}.xlsx"`);
