@@ -32,17 +32,19 @@ function sesionDe(usuario, recordar) {
 
 const ultimoEnvioAlterno = new Map();
 
-function soloApp(usuario) {
-  return usuario.rol === ROLES.SUPERADMINISTRADOR;
+// la cuenta del proveedor no es de ninguna institucion: usa el correo de respaldo
+// del servidor, asi que solo se le ofrece si esta configurado. el sms no lo tiene
+export function metodosDelProveedor() {
+  return correoConfigurado() ? ['app', 'email'] : ['app'];
 }
 
 function alternativasPara(usuario) {
-  if (soloApp(usuario)) return [];
+  const permitidos = usuario.rol === ROLES.SUPERADMINISTRADOR ? metodosDelProveedor() : ['app', 'email', 'sms'];
   const otras = [];
   if (usuario.secreto_2fa && usuario.metodo_2fa !== 'app') otras.push('app');
   if (usuario.correo && usuario.metodo_2fa !== 'email') otras.push('email');
   if (usuario.telefono && usuario.metodo_2fa !== 'sms') otras.push('sms');
-  return otras;
+  return otras.filter((metodo) => permitidos.includes(metodo));
 }
 
 function metodoPorDefecto() {
@@ -284,8 +286,10 @@ export async function quitarDobleFactor({ usuarioId, clave }, ip) {
 export async function cambiarMetodo2fa({ usuarioId, metodo, telefono }, ip) {
   if (!METODOS_2FA.some((opcion) => opcion.valor === metodo)) throw new ErrorVisible('Método de verificación no válido.');
   const [[quien]] = await bd.query('SELECT rol FROM usuarios WHERE id = ?', [usuarioId]);
-  if (quien?.rol === ROLES.SUPERADMINISTRADOR && metodo !== 'app') {
-    throw new ErrorVisible('La cuenta del proveedor verifica siempre con la app de autenticación.');
+  if (quien?.rol === ROLES.SUPERADMINISTRADOR && !metodosDelProveedor().includes(metodo)) {
+    throw new ErrorVisible(metodo === 'email'
+      ? 'Para verificar por correo, el servidor tiene que tener una cuenta de correo configurada. Mientras tanto, la cuenta del proveedor verifica con la aplicación.'
+      : 'La cuenta del proveedor verifica con la aplicación o por correo.');
   }
   if (metodo === 'sms') {
     if (!String(telefono ?? '').trim()) throw new ErrorVisible('Para el 2FA por SMS hace falta un teléfono.');

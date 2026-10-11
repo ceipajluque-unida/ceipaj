@@ -132,12 +132,11 @@ export async function perfil(req, res) {
     modulosBloqueados: modulos.filter((clave) => !moduloIncluido(plan, clave)),
     roles,
     plan: { clave: plan.clave, texto: plan.texto, vigente: plan.vigente, fechaFin: plan.fechaFin, diasRestantes: plan.diasRestantes },
-    // al proveedor solo se le ofrece la app: el correo y el sms son ajustes
-    // del colegio y su cuenta no pertenece a ninguna institucion
+    // al proveedor se le ofrece la app y, si el servidor tiene correo, tambien el correo
     sin2fa: Boolean(extra?.sin_2fa),
     puedeQuitar2fa: req.usuario.rol === ROLES.SUPERADMINISTRADOR,
     metodos2fa: req.usuario.rol === ROLES.SUPERADMINISTRADOR
-      ? METODOS_2FA.filter((m) => m.valor === 'app')
+      ? METODOS_2FA.filter((m) => servicio.metodosDelProveedor().includes(m.valor))
       : METODOS_2FA,
     // las pantallas lo usan para saber si la clave temporal se manda por correo o se muestra en pantalla
     correoActivo: correoConfigurado(),
